@@ -1,0 +1,361 @@
+package com.seventhmoon.jamnow;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
+import com.seventhmoon.jamnow.Data.FileChooseItem;
+
+import java.io.File;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+
+
+public class FileChooseActivity extends AppCompatActivity {
+
+    private static final String TAG = FileChooseActivity.class.getName();
+
+    public static boolean FileChooseLongClick = false;
+    public static boolean FileChooseSelectAll = false;
+
+    private FileChooseArrayAdapter fileChooseArrayAdapter;
+    ListView listView;
+    private File currentDir;
+    private Menu actionmenu;
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.file_choose_list);
+
+        listView = (ListView) findViewById(R.id.listViewFileChoose);
+
+        currentDir = new File(Environment.getExternalStorageDirectory().getPath());
+        Log.e(TAG, "currentDir = "+Environment.getExternalStorageDirectory().getPath());
+        //fileChooseArrayAdapter = new FileChooseArrayAdapter(this, R.layout.file_choose_in_row, );
+        fill(currentDir);
+    }
+
+    @Override
+    protected void onDestroy() {
+        FileChooseLongClick = false;
+        FileChooseSelectAll = false;
+        super.onDestroy();
+    }
+
+    @Override
+    public void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
+    }
+    @Override
+    public void onResume() {
+
+        Log.i(TAG, "onResume");
+        super.onResume();
+    }
+
+    public void onBackPressed() {
+        if (FileChooseLongClick) {
+            MenuItem menuItem = actionmenu.findItem(R.id.action_selectall);
+
+            FileChooseLongClick = false;
+            FileChooseSelectAll = false;
+            menuItem.setTitle("Select All");
+
+
+            for(int i=0;i<listView.getCount(); i++) {
+                FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+                if (fileChooseItem.getCheckBox() != null) {
+                    fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                    fileChooseItem.getCheckBox().setChecked(false);
+                }
+                fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+
+            }
+        } else {
+            finish();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.file_choose_menu, menu);
+
+        MenuItem item_all;
+
+        item_all = menu.findItem(R.id.action_selectall);
+
+        item_all.setVisible(true);
+
+        actionmenu = menu;
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // action with ID action_refresh was selected
+
+            case R.id.action_selectall:
+                if (!FileChooseLongClick) {
+                    FileChooseLongClick = true;
+
+                    if (!FileChooseSelectAll) {
+                        FileChooseSelectAll = true;
+                        item.setTitle("all unselect");
+                        Log.d(TAG, "listView.getCount = "+listView.getCount());
+                        for (int i = 0; i < listView.getCount(); i++) {
+                            FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+
+                            //Log.i(TAG, "item["+i+"]="+fileChooseItem.getName());
+
+                            if (fileChooseItem.getCheckBox() != null) {
+                                //Log.e(TAG, "set item[" + i + "] visible");
+                                if (!fileChooseItem.getName().equals("..")) {
+                                    fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+                                    fileChooseItem.getCheckBox().setChecked(true);
+                                    fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
+                                } else {
+                                    fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                                    fileChooseItem.getCheckBox().setChecked(false);
+                                    fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+                                }
+
+                            } else {
+                                fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
+                            }
+                            //fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
+                        }
+                    } else { //Data.FileChooseSelectAll == true
+                       FileChooseSelectAll = false;
+                        item.setTitle("select all");
+
+                        for (int i = 0; i < listView.getCount(); i++) {
+                            FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+
+                            //Log.i(TAG, "item["+i+"]="+fileChooseItem.getName());
+
+                            if (fileChooseItem.getCheckBox() != null) {
+                                //Log.e(TAG, "set item[" + i + "] visible");
+                                if (!fileChooseItem.getName().equals("..")) {
+                                    fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+                                    fileChooseItem.getCheckBox().setChecked(false);
+                                } else {
+                                    fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                                    fileChooseItem.getCheckBox().setChecked(false);
+                                }
+
+                            }
+                            fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+                        }
+                    }
+
+                } else { //long click == true
+                    if (!FileChooseSelectAll) {
+                        FileChooseSelectAll = true;
+                        item.setTitle("Unselect all");
+                        Log.d(TAG, "listView.getCount = "+listView.getCount());
+                        for (int i = 0; i < listView.getCount(); i++) {
+                            FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+
+                            //Log.i(TAG, "item["+i+"]="+fileChooseItem.getName());
+
+                            if (fileChooseItem.getCheckBox() != null) {
+                                //Log.e(TAG, "set item[" + i + "] visible");
+                                if (!fileChooseItem.getName().equals("..")) {
+                                    //Log.e(TAG, "item["+i+"]="+fileChooseItem.getName());
+                                    //fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+                                    fileChooseItem.getCheckBox().setChecked(true);
+                                    fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
+                                } else {
+                                    fileChooseItem.getCheckBox().setChecked(false);
+                                    fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+                                }
+
+                            } else {
+                                //Log.e(TAG, "item["+i+"]="+fileChooseItem.getName());
+                                fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
+                            }
+                            //fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
+                        }
+                    } else { //Data.FileChooseSelectAll == true
+                        FileChooseSelectAll = false;
+                        item.setTitle("Select all");
+
+                        for (int i = 0; i < listView.getCount(); i++) {
+                            FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+
+                            //Log.i(TAG, "item["+i+"]="+fileChooseItem.getName());
+
+                            if (fileChooseItem.getCheckBox() != null) {
+                                //Log.e(TAG, "set item[" + i + "] visible");
+                                if (!fileChooseItem.getName().equals("..")) {
+                                    //fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+                                    fileChooseItem.getCheckBox().setChecked(false);
+                                } else {
+                                    fileChooseItem.getCheckBox().setChecked(false);
+                                }
+
+                            }
+                            fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+                        }
+
+
+                    }
+
+
+                }
+
+
+
+                break;
+
+            case android.R.id.home:
+
+                break;
+
+            default:
+                break;
+        }
+
+        return true;
+    }
+
+    private void fill(File f)
+    {
+        final File[]dirs = f.listFiles();
+        //this.setTitle("Current Dir: "+f.getName());
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(f.getAbsolutePath());
+        }
+        //txtCurrentDir.setText(f.getAbsolutePath());
+
+        ArrayList<FileChooseItem> dir = new ArrayList<>();
+        ArrayList<FileChooseItem> fls = new ArrayList<>();
+        try{
+            for(File ff: dirs)
+            {
+                Date lastModDate = new Date(ff.lastModified());
+                DateFormat formater = DateFormat.getDateTimeInstance();
+                String date_modify = formater.format(lastModDate);
+                //CheckBox checkBox = new CheckBox(getApplicationContext());
+                if(ff.isDirectory()){
+
+
+                    File[] fbuf = ff.listFiles();
+                    int buf;
+                    if(fbuf != null){
+                        buf = fbuf.length;
+                    }
+                    else buf = 0;
+                    String num_item = String.valueOf(buf);
+                    if(buf == 0) num_item = num_item + " "+"file";
+                    else num_item = num_item + " "+"files";
+
+                    //String formated = lastModDate.toString();
+                    char first = ff.getName().charAt(0);
+                    if (first != '.')
+                        dir.add(new FileChooseItem(ff.getName(),num_item,date_modify,ff.getAbsolutePath(),"directory_icon"));
+                }
+                else
+                {
+                    char first = ff.getName().charAt(0);
+                    if (first != '.')
+                        fls.add(new FileChooseItem(ff.getName(),ff.length() + " Byte", date_modify, ff.getAbsolutePath(),"file_icon"));
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        Collections.sort(dir);
+        Collections.sort(fls);
+        dir.addAll(fls);
+        if(//!f.getName().equalsIgnoreCase("sdcard") ||
+                 !f.getAbsolutePath().equals(Environment.getExternalStorageDirectory().getPath())) {
+            //CheckBox checkBox = new CheckBox(this);
+            dir.add(0, new FileChooseItem("..", "Parent Directory", "", f.getParent(), "directory_up"));
+        }
+        fileChooseArrayAdapter = new FileChooseArrayAdapter(FileChooseActivity.this,R.layout.file_choose_in_row,dir);
+        listView.setAdapter(fileChooseArrayAdapter);
+        listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                FileChooseItem o = fileChooseArrayAdapter.getItem(position);
+                if (o.getPath() != null && (o.getImage().equalsIgnoreCase("directory_icon") || o.getImage().equalsIgnoreCase("directory_up"))) {
+                    currentDir = new File(o.getPath());
+                    fill(currentDir);
+
+                    MenuItem menuItem = actionmenu.findItem(R.id.action_selectall);
+
+                    FileChooseLongClick = false;
+                    FileChooseSelectAll = false;
+                    menuItem.setTitle("Select all");
+
+
+                    for (int i = 0; i < listView.getCount(); i++) {
+                        FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+                        if (fileChooseItem.getCheckBox() != null) {
+                            fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                            fileChooseItem.getCheckBox().setChecked(false);
+                        }
+                        fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+
+                    }
+                } else {
+                    //onFileClick(o);
+                    Log.d(TAG, "click "+o.getName());
+                }
+            }
+        });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                //Log.e(TAG, "position = " + position + ", size = " + listView.getCount());
+                FileChooseLongClick = true;
+                //FileChooseItem fileChooseItem = (FileChooseItem) fileChooseArrayAdapter.getItem(position);
+                //Log.i(TAG, "name = "+fileChooseItem.getName());
+                //Log.e(TAG, "ck = " + fileChooseItem.getCheckBox());
+                //fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+
+                for(int i=0;i<listView.getCount(); i++) {
+                    FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+
+                    //Log.i(TAG, "item["+i+"]="+fileChooseItem.getName());
+
+                    if (fileChooseItem.getCheckBox() != null) {
+                        //Log.e(TAG, "set item[" + i + "] visible");
+                        if (!fileChooseItem.getName().equals(".."))
+                            fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+                        else
+                            fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                    }
+
+                }
+
+
+                return false;
+            }
+        });
+    }
+}
