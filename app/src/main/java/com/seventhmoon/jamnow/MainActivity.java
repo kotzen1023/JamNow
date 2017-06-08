@@ -9,13 +9,20 @@ import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
+
+import com.seventhmoon.jamnow.Data.DottedSeekBar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +35,10 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
     MenuItem item_search;
+    ActionBar actionBar;
+    LinearLayout linearLayoutAB;
+    DottedSeekBar seekBar;
+    Button markButtonA;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +46,25 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onCreate");
 
         setContentView(R.layout.activity_main);
+
+        linearLayoutAB = (LinearLayout) findViewById(R.id.layout_ab_loop);
+        seekBar = (DottedSeekBar) findViewById(R.id.seekBarTime);
+        markButtonA = (Button) findViewById(R.id.btnMarkA);
+
+
+        seekBar.setDots(new int[] {25, 50, 75});
+        //seekBar.setDotsDrawable(R.drawable.);
+        //for action bar
+        actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+
+            actionBar.setDisplayUseLogoEnabled(true);
+            //actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_play_arrow_white_48dp);
+            actionBar.setTitle("All");
+        }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             //init_folder_and_files();
@@ -47,6 +77,14 @@ public class MainActivity extends AppCompatActivity {
                 //init_setting();
             }
         }
+
+        markButtonA.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seekBar.getThumbOffset();
+
+            }
+        });
     }
 
     @Override
@@ -110,6 +148,29 @@ public class MainActivity extends AppCompatActivity {
                 intent = new Intent(MainActivity.this, FileChooseActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.action_play_all:
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_play_arrow_white_48dp);
+                actionBar.setTitle("All");
+                linearLayoutAB.setVisibility(View.GONE);
+                break;
+            case R.id.action_shuffle:
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_shuffle_white_48dp);
+                actionBar.setTitle("Shuffle");
+                linearLayoutAB.setVisibility(View.GONE);
+                break;
+
+            case R.id.action_repeat:
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_repeat_white_48dp);
+                actionBar.setTitle("Repeat");
+                linearLayoutAB.setVisibility(View.GONE);
+                break;
+
+            case R.id.action_loop:
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_loop_white_48dp);
+                actionBar.setTitle("AB Loop");
+                linearLayoutAB.setVisibility(View.VISIBLE);
+                break;
+
         }
         return true;
     }

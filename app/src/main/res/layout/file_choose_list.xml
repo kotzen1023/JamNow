@@ -57,15 +57,17 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="8">
+        android:layout_weight="8"-->
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="@string/file_choose_confirm"
+            android:layout_weight="8"
+            android:text="Add to my favorite"
             android:layout_margin="3dp"
-            android:textSize="20sp"
+
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/btnFileChooseListConfirm"
-            android:layout_weight="1" />
-    </LinearLayout-->
+            android:visibility="gone"/>
+    <!--/LinearLayout-->
 </LinearLayout>

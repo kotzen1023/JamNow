@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
@@ -35,8 +36,10 @@ public class FileChooseActivity extends AppCompatActivity {
 
     private FileChooseArrayAdapter fileChooseArrayAdapter;
     ListView listView;
+    public static Button confirm;
     private File currentDir;
     private Menu actionmenu;
+
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +47,7 @@ public class FileChooseActivity extends AppCompatActivity {
         setContentView(R.layout.file_choose_list);
 
         listView = (ListView) findViewById(R.id.listViewFileChoose);
+        confirm = (Button) findViewById(R.id.btnFileChooseListConfirm);
 
         currentDir = new File(Environment.getExternalStorageDirectory().getPath());
         Log.e(TAG, "currentDir = "+Environment.getExternalStorageDirectory().getPath());
@@ -88,8 +92,37 @@ public class FileChooseActivity extends AppCompatActivity {
                 fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
 
             }
+
+            confirm.setVisibility(View.GONE);
         } else {
-            finish();
+            //Log.e(TAG, "currentDir = "+currentDir+" root = "+Environment.getExternalStorageDirectory().getPath());
+            if (!currentDir.getAbsolutePath().equals(Environment.getExternalStorageDirectory().getPath())) {
+                File parent = new File(currentDir.getParent());
+
+                fill(parent);
+
+                currentDir = new File(parent.getAbsolutePath());
+
+                MenuItem menuItem = actionmenu.findItem(R.id.action_selectall);
+
+                FileChooseLongClick = false;
+                FileChooseSelectAll = false;
+                menuItem.setTitle("Select all");
+
+
+                for (int i = 0; i < listView.getCount(); i++) {
+                    FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+                    if (fileChooseItem.getCheckBox() != null) {
+                        fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                        fileChooseItem.getCheckBox().setChecked(false);
+                    }
+                    fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
+
+                }
+            } else {
+                finish();
+            }
+
         }
     }
 
@@ -143,6 +176,8 @@ public class FileChooseActivity extends AppCompatActivity {
                             }
                             //fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
                         }
+
+                        confirm.setVisibility(View.VISIBLE);
                     } else { //Data.FileChooseSelectAll == true
                        FileChooseSelectAll = false;
                         item.setTitle("select all");
@@ -165,6 +200,7 @@ public class FileChooseActivity extends AppCompatActivity {
                             }
                             fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
                         }
+                        confirm.setVisibility(View.GONE);
                     }
 
                 } else { //long click == true
@@ -195,6 +231,7 @@ public class FileChooseActivity extends AppCompatActivity {
                             }
                             //fileChooseArrayAdapter.mSparseBooleanArray.put(i, true);
                         }
+                        confirm.setVisibility(View.VISIBLE);
                     } else { //Data.FileChooseSelectAll == true
                         FileChooseSelectAll = false;
                         item.setTitle("Select all");
@@ -217,7 +254,7 @@ public class FileChooseActivity extends AppCompatActivity {
                             fileChooseArrayAdapter.mSparseBooleanArray.put(i, false);
                         }
 
-
+                        confirm.setVisibility(View.GONE);
                     }
 
 
@@ -296,6 +333,8 @@ public class FileChooseActivity extends AppCompatActivity {
         fileChooseArrayAdapter = new FileChooseArrayAdapter(FileChooseActivity.this,R.layout.file_choose_in_row,dir);
         listView.setAdapter(fileChooseArrayAdapter);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

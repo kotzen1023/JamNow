@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
+import static com.seventhmoon.jamnow.FileChooseActivity.confirm;
 
 
 public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
@@ -175,6 +176,18 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
                 }
             }
             //}
+            int count = 0;
+            for (int i=0; i<mSparseBooleanArray.size(); i++) {
+                if (mSparseBooleanArray.get(i)) {
+                    count++;
+                }
+            }
+
+            if (count > 0) {
+                confirm.setVisibility(View.VISIBLE);
+            } else  {
+                confirm.setVisibility(View.GONE);
+            }
         }
     };
 

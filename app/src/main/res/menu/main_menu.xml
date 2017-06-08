@@ -6,13 +6,13 @@
         android:title="Search"
         app:showAsAction="ifRoom|collapseActionView|withText"
         app:actionViewClass="android.support.v7.widget.SearchView"
-        android:icon="@drawable/ic_search_black_24dp">
+        android:icon="@drawable/ic_search_white_24dp">
     </item>
 
     <item
         android:id="@+id/action_add"
         android:title="Add"
-        android:icon="@drawable/ic_add_black_24dp"
+        android:icon="@drawable/ic_add_white_24dp"
         app:showAsAction="ifRoom|withText" />
 
     <!--item
@@ -24,7 +24,7 @@
         android:id="@+id/action_decrypt"
         android:title="@string/honey_key_decrypt"
         android:icon="@drawable/ic_lock_open_white_24dp"
-        app:showAsAction="ifRoom|withText" />
+        app:showAsAction="ifRoom|withText" /-->
 
     <item
         android:id="@+id/action_settings"
@@ -34,18 +34,34 @@
 
         <menu>
             <item
-                android:id="@+id/action_selectall"
-                android:title="@string/honey_key_all"
-                android:icon="@drawable/ic_select_all_white_24dp"
+                android:id="@+id/action_play_all"
+                android:title="All"
+                android:icon="@drawable/ic_play_arrow_black_24dp"
                 app:showAsAction="ifRoom|withText" />
 
             <item
-                android:id="@+id/action_share"
-                android:title="@string/honey_key_share"
-                android:icon="@drawable/ic_share_white_24dp"
+                android:id="@+id/action_shuffle"
+                android:title="Shuffle"
+                android:icon="@drawable/ic_shuffle_black_24dp"
                 app:showAsAction="ifRoom|withText" />
 
             <item
+                android:id="@+id/action_repeat"
+                android:title="repeat"
+                android:icon="@drawable/ic_repeat_black_24dp"
+                app:showAsAction="ifRoom|withText" />
+
+            <item
+                android:id="@+id/action_loop"
+                android:title="AB loop"
+                android:icon="@drawable/ic_loop_black_24dp"
+                app:showAsAction="ifRoom|withText" />
+
+
+
+
+
+            <!--item
                 android:id="@+id/action_delete"
                 android:title="@string/honey_key_delete"
                 android:icon="@drawable/ic_delete_white_24dp"
@@ -55,9 +71,9 @@
                 android:id="@+id/action_help"
                 android:title="@string/honey_key_help"
                 android:icon="@drawable/ic_help_outline_white_24dp"
-                app:showAsAction="ifRoom|withText" />
+                app:showAsAction="ifRoom|withText" /-->
         </menu>
-    </item-->
+    </item>
 
 
 
