@@ -17,14 +17,18 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
 import com.seventhmoon.jamnow.Data.FileChooseItem;
+import com.seventhmoon.jamnow.Data.Song;
 
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+
+import static com.seventhmoon.jamnow.MainActivity.songList;
 
 
 public class FileChooseActivity extends AppCompatActivity {
@@ -34,12 +38,13 @@ public class FileChooseActivity extends AppCompatActivity {
     public static boolean FileChooseLongClick = false;
     public static boolean FileChooseSelectAll = false;
 
-    private FileChooseArrayAdapter fileChooseArrayAdapter;
-    ListView listView;
+    public static FileChooseArrayAdapter fileChooseArrayAdapter;
+    public static ListView listView;
     public static Button confirm;
     private File currentDir;
     private Menu actionmenu;
 
+    private ArrayList<String> searchList = new ArrayList<>();
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +53,24 @@ public class FileChooseActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.listViewFileChoose);
         confirm = (Button) findViewById(R.id.btnFileChooseListConfirm);
+
+        confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchList.clear();
+
+                for (int i = 0; i < listView.getCount(); i++) {
+                    if (fileChooseArrayAdapter.mSparseBooleanArray.get(i)) {
+                        FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+                        Log.e(TAG, "select : "+fileChooseItem.getPath());
+                        searchList.add(fileChooseItem.getPath());
+                    }
+
+                }
+
+                searchFiles();
+            }
+        });
 
         currentDir = new File(Environment.getExternalStorageDirectory().getPath());
         Log.e(TAG, "currentDir = "+Environment.getExternalStorageDirectory().getPath());
@@ -396,5 +419,83 @@ public class FileChooseActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    public void checkFileAndDuration(File file) {
+        String filenameArray[] = file.getName().split("\\.");
+        String extension = filenameArray[filenameArray.length - 1];
+
+        switch (extension.toLowerCase()) {
+            case "m4a":
+            case "aac":
+            case "mid":
+            case "mp3":
+            case "wav":
+            case "ogg":
+                Log.e(TAG, "add file : "+file.getName()+" to list");
+                Song song = new Song();
+                song.setName(file.getName());
+                song.setPath(file.getAbsolutePath());
+                songList.add(song);
+                break;
+            default:
+                Log.e(TAG, "Unknown Type");
+                break;
+
+
+        }
+
+
+    }
+
+    private void search(File file) {
+
+
+        if (file.exists() && file.isDirectory())
+        {
+            Log.e(TAG, " <Dir>");
+            Log.d(TAG, ""+file.getName()+" is a directory");
+
+            //String[] children = file.list();
+            File[] dirs = file.listFiles();
+
+            for (File children : dirs)
+            {
+                Log.d(TAG, "["+children.getAbsolutePath()+"]");
+                File chk = new File(children.getAbsolutePath());
+                if (chk.exists() && chk.isDirectory()) {
+                    Log.e(TAG, "Enter "+chk.getName()+" :");
+                    search(chk);
+                } else if (chk.isFile()){
+                    Log.e(TAG, " <File>");
+                    checkFileAndDuration(chk);
+                } else {
+                    Log.e(TAG, "Unknown error(1)");
+                }
+            }
+        } else if (file.isFile()) {
+            Log.e(TAG, " <File>");
+            checkFileAndDuration(file);
+        } else {
+            Log.e(TAG, "Unknown error(2)");
+        }
+
+
+        Log.e(TAG, " <search>");
+    }
+
+
+    public void searchFiles() {
+        Log.e(TAG, "<searchFiles>");
+
+        for (int i=0; i<searchList.size(); i++) {
+            File file = new File(searchList.get(i));
+            search(file);
+        }
+
+        Intent newNotifyIntent = new Intent(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
+        sendBroadcast(newNotifyIntent);
+
+        Log.e(TAG, "<searchFiles>");
     }
 }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
 import static com.seventhmoon.jamnow.FileChooseActivity.confirm;
+import static com.seventhmoon.jamnow.FileChooseActivity.fileChooseArrayAdapter;
 
 
 public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
@@ -30,6 +31,7 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
     public SparseBooleanArray mSparseBooleanArray;
     private int layoutResourceId;
     private ArrayList<FileChooseItem> items = new ArrayList<>();
+    private int count = 0;
 
     public FileChooseArrayAdapter(Context context, int textViewResourceId,
                                   ArrayList<FileChooseItem> objects) {
@@ -168,20 +170,28 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
 
                 if (!fileChooseItem.getName().equals("..")) {
                     mSparseBooleanArray.put((Integer) buttonView.getTag(), isChecked);
+                    if (isChecked)
+                        count++;
+                    else
+                        count--;
                 }
                 else {
                     fileChooseItem.getCheckBox().setChecked(false);
                     fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
                     mSparseBooleanArray.put((Integer) buttonView.getTag(), false);
+                    count--;
                 }
             }
             //}
-            int count = 0;
-            for (int i=0; i<mSparseBooleanArray.size(); i++) {
+            /*int count = 0;
+
+            for (int i=0; i<fileChooseArrayAdapter.getCount(); i++) {
                 if (mSparseBooleanArray.get(i)) {
                     count++;
                 }
-            }
+            }*/
+
+            //Log.e(TAG, "Count = "+count);
 
             if (count > 0) {
                 confirm.setVisibility(View.VISIBLE);

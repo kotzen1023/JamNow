@@ -43,7 +43,8 @@
                     android:id="@+id/seekBarTime"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    />
             </LinearLayout>
 
             <LinearLayout
@@ -91,6 +92,7 @@
 
 
                 <Button
+                    android:id="@+id/btnClear"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -99,7 +101,12 @@
 
 
         </LinearLayout>
-
+        <View
+            android:id="@+id/view1"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_weight="0"
+            android:background="#b7b7b7" />
 
         <!--DatePicker
             android:layout_width="match_parent"
@@ -122,11 +129,19 @@
         <ListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/listViewHistory"
+            android:id="@+id/listViewMyFavorite"
             android:layout_gravity="center_horizontal"
             android:focusable="true"
             android:layout_weight="1"/>
     </LinearLayout>
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_weight="0"
+        android:background="#b7b7b7" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -146,12 +161,14 @@
                 android:gravity="center_vertical">
 
                 <ImageView
+                    android:id="@+id/imgSkipPrev"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:src="@drawable/ic_skip_previous_black_48dp"/>
 
                 <ImageView
+                    android:id="@+id/imgFastRewind"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -171,7 +188,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-
+                android:id="@+id/imgPlayOrPause"
                 android:src="@drawable/ic_play_circle_outline_black_48dp"/>
         </LinearLayout>
 
@@ -189,12 +206,14 @@
 
 
                 <ImageView
+                    android:id="@+id/imgFastForward"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:src="@drawable/ic_fast_forward_black_48dp"/>
 
                 <ImageView
+                    android:id="@+id/imgSkipNext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

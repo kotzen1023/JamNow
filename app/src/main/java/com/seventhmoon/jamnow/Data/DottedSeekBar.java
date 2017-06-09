@@ -7,12 +7,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
+import android.util.Log;
 
 
 import com.seventhmoon.jamnow.R;
 
 
 public class DottedSeekBar extends AppCompatSeekBar {
+    private static final String TAG = DottedSeekBar.class.getName();
     /** Int values which corresponds to dots */
     private int[] mDotsPositions = null;
     /** Drawable for dot */
@@ -74,13 +76,17 @@ public class DottedSeekBar extends AppCompatSeekBar {
     protected synchronized void onDraw(final Canvas canvas) {
         super.onDraw(canvas);
 
+        //Log.d(TAG, "Width = "+getMeasuredWidth()+ " height = "+getMeasuredHeight());
+
         final int width = getMeasuredWidth();
+        final int height = getMeasuredHeight();
+        final int top = height/2 - 20;
         final int step = width / getMax();
 
         if (null != mDotsPositions && 0 != mDotsPositions.length && null != mDotBitmap) {
             // draw dots if we have ones
             for (int position : mDotsPositions) {
-                canvas.drawBitmap(mDotBitmap, position * step, 0, null);
+                canvas.drawBitmap(mDotBitmap, position * step, top, null);
             }
         }
     }
