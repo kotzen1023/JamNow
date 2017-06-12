@@ -131,7 +131,8 @@
             android:layout_height="match_parent"
             android:id="@+id/listViewMyFavorite"
             android:layout_gravity="center_horizontal"
-            android:focusable="true"
+            android:choiceMode="singleChoice"
+            android:listSelector="#4d90fe"
             android:layout_weight="1"/>
     </LinearLayout>
 

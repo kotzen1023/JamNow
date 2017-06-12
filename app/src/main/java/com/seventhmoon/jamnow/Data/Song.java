@@ -4,6 +4,7 @@ public class Song {
 	private String name;
 	private String path;
 	private String duration;
+	private boolean selected;
 
 	public String getName() {
 		return name;
@@ -24,5 +25,13 @@ public class Song {
 	}
 	public void setDuration(String duration) {
 		this.duration = duration;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 }

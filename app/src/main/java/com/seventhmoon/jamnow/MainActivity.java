@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -24,9 +25,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,6 +40,7 @@ import android.widget.Toast;
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.DottedSeekBar;
 import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
+import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 
@@ -51,10 +55,17 @@ import static com.seventhmoon.jamnow.Data.FileOperation.init_folder_and_files;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getName();
 
+    private static final int MODE_PLAY_ALL = 0;
+    private static final int MODE_PLAY_SHUFFLE = 1;
+    private static final int MODE_PLAY_REPEAT = 2;
+    private static final int MODE_PLAY_AB_LOOP = 3;
+
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
+
+
     private Context context;
-    ListView myListview;
+    public static ListView myListview;
     SongArrayAdapter songArrayAdapter;
 
     MenuItem item_search;
@@ -64,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     Button markButtonA, markButtonB;
     Button btnClear;
 
-    ImageView imgPlayOrPause;
+    public static ImageView imgPlayOrPause;
     ImageView imgSkipPrev;
     ImageView imgSkipNext;
     ImageView imgFastRewind;
@@ -77,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static BroadcastReceiver mReceiver = null;
     private static boolean isRegister = false;
+    public static int song_selected = 0;
+    public static int current_mode = MODE_PLAY_ALL;
+    MediaOperation mediaOperation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         context = getBaseContext();
+
+        mediaOperation = new MediaOperation(context);
 
         songList.clear();
 
@@ -149,11 +165,62 @@ public class MainActivity extends AppCompatActivity {
         imgPlayOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doPlay();
+                if (songList.size() > 0) { //check if songs exist in list
+
+                    if (mediaOperation.isPause()) { //if stop or pause, play
+
+                        String songPath, songName;
+                        if (song_selected > 0) {
+                            songPath = songArrayAdapter.getItem(song_selected).getPath();
+                            songName = songArrayAdapter.getItem(song_selected).getName();
+                        } else {
+                            songPath = songList.get(0).getPath();
+                            songName = songList.get(0).getName();
+                            songList.get(0).setSelected(true);
+                            //songPath = songArrayAdapter.getItem(0).getPath();
+                            //songName = songArrayAdapter.getItem(0).getName();
+
+                            myListview.setSelection(0);
+                            View itemView = myListview.getChildAt(0);
+                            itemView.setBackgroundColor(Color.rgb(0x4d, 0x90, 0xfe));
+                            itemView.setSelected(true);
+
+                        }
+                        Log.d(TAG, "play "+songName);
+
+
+                        mediaOperation.doPlay(songPath);
+
+                        //imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+                    } else { //playing, pause
+                        Log.d(TAG, "pause");
+                        mediaOperation.doPause();
+
+                        //imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                    }
+                } else {
+                    toast("Song list is empty");
+                }
             }
         });
 
-        //getMusics();
+        myListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "select "+position);
+                view.setSelected(true);
+                song_selected = position;
+
+                //deselect other
+                for (int i=0; i<songList.size(); i++) {
+                    if (i == position) {
+                        songList.get(i).setSelected(true);
+                    } else {
+                        songList.get(i).setSelected(false);
+                    }
+                }
+            }
+        });
 
         IntentFilter filter;
 
@@ -161,19 +228,45 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
-                    Log.d(TAG, "receive brocast !");
+                    Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
 
 
                     songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
                     myListview.setAdapter(songArrayAdapter);
 
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_PLAY_COMPLETE)) {
+                    Log.d(TAG, "receive GET_PLAY_COMPLETE !");
+                    imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.START_TO_PLAY)) {
+                    Log.d(TAG, "receive START_TO_PLAY !("+song_selected+")");
+
+                    myListview.smoothScrollToPosition(song_selected);
+
+                    for (int i=0; i<songList.size(); i++) {
+                        View view;
+                        if ((view = myListview.getChildAt(i)) != null) {
+                            if (i==song_selected) {
+                                view.setSelected(true);
+                                view.setBackgroundColor(Color.rgb(0x4d, 0x90, 0xfe));
+                            }
+                            else {
+                                view.setSelected(false);
+                                view.setBackgroundColor(Color.TRANSPARENT);
+                            }
+                        }
+                    }
+
+                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
                 }
             }
         };
 
+
         if (!isRegister) {
             filter = new IntentFilter();
             filter.addAction(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
+            filter.addAction(Constants.ACTION.GET_PLAY_COMPLETE);
+            filter.addAction(Constants.ACTION.START_TO_PLAY);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;
             Log.d(TAG, "registerReceiver mReceiver");
@@ -475,107 +568,10 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void doStop() {
-        if (mediaPlayer != null) {
-            isPause = false;
-            mediaPlayer.stop();
-            imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-        }
+
+    public void toast(String message) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
+        toast.show();
     }
-
-    private void doPlay() {
-        if (songList == null || songList.size() == 0) {
-            return;
-        }
-        if (isPause) {
-            playing();
-            imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-
-        }else{
-            isPause = true;
-            mediaPlayer.pause();
-            imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-        }
-    }
-
-    private void doNext() {
-        if (songList == null || songList.size() == 0) {
-            return;
-        }
-        if (index < songList.size() - 1) {
-            index++;
-            isPause = false;
-            playing();
-            imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-        }
-    }
-
-    private void doPrev() {
-        if (songList == null || songList.size() == 0) {
-            return;
-        }
-        if (index > 0) {
-            index--;
-            isPause = false;
-            playing();
-            imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-        }
-    }
-
-    private void playing(){
-        /*if (mediaPlayer != null && !isPause) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        if (mediaPlayer == null) {
-            long id = songList.get(index).getId();
-            Uri songUri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
-            mediaPlayer = MediaPlayer.create(this, songUri);
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    Log.e(TAG, "onCompletion");
-                    imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                    doNext();
-
-                }
-            });
-        }
-        mediaPlayer.start();*/
-        //txtSongName.setText("曲目: " + songList.get(index).getTitle() +
-        //        "\n專輯: " + songList.get(index).getAlbum() +
-        //        "\n(" + (index + 1) + "/" + songList.size() + ")");
-    }
-
-    /*private void getMusics(){
-        songList = new ArrayList<>();
-        ContentResolver contentResolver = getContentResolver();
-        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor cursor = contentResolver.query(uri, null, null, null, null);
-        if (cursor == null) {
-            Log.d("=======>", "查詢錯誤");
-        } else if (!cursor.moveToFirst()) {
-            Log.d("=======>", "沒有媒體檔");
-        } else {
-            int titleColumn = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = cursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-            int albumColumn = cursor.getColumnIndex(android.provider.MediaStore.Audio.AudioColumns.ALBUM);
-            int duration = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION);
-            do {
-                long thisId = cursor.getLong(idColumn);
-                String thisTitle = cursor.getString(titleColumn);
-                String thisAlbum = cursor.getString(albumColumn);
-                String thisTime = String.valueOf(duration/60)+":"+String.valueOf(duration%60);
-                Log.d("=======>", "id: " + thisId + ", title: " + thisTitle + ", duration: "+duration);
-                Song song = new Song();
-                song.setId(thisId);
-                song.setTitle(thisTitle);
-                song.setAlbum(thisAlbum);
-                song.setDuration(thisTime);
-
-                songList.add(song);
-            } while (cursor.moveToNext());
-        }
-        Log.d(TAG, "共有 " + songList.size() + " 首歌曲");
-    }*/
 }

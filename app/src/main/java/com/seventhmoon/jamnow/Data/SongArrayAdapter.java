@@ -3,6 +3,8 @@ package com.seventhmoon.jamnow.Data;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
+import static com.seventhmoon.jamnow.MainActivity.song_selected;
 
 
 public class SongArrayAdapter extends ArrayAdapter<Song> {
@@ -51,7 +54,7 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        //Log.e(TAG, "getView = "+ position);
+        Log.e(TAG, "getView = "+ position);
         View view;
         ViewHolder holder;
         if (convertView == null || convertView.getTag() == null) {
@@ -82,7 +85,13 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
             holder.songname.setText(songItem.getName());
             holder.songtime.setText(songItem.getDuration());
 
-
+            if (songItem.isSelected()) {
+                //view.setSelected(true);
+                view.setBackgroundColor(Color.rgb(0x4d, 0x90, 0xfe));
+            } else {
+                //view.setSelected(false);
+                view.setBackgroundColor(Color.TRANSPARENT);
+            }
 
 
 
