@@ -4,14 +4,21 @@ package com.seventhmoon.jamnow.Data;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.media.TimedText;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.seventhmoon.jamnow.MainActivity;
 import com.seventhmoon.jamnow.R;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
+import static com.seventhmoon.jamnow.MainActivity.myListview;
+import static com.seventhmoon.jamnow.MainActivity.seekBar;
+import static com.seventhmoon.jamnow.MainActivity.songDuration;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 import static com.seventhmoon.jamnow.MainActivity.song_selected;
 import static com.seventhmoon.jamnow.R.id.imgPlayOrPause;
@@ -30,8 +37,29 @@ public class MediaOperation {
     public boolean isPause() {
         return pause;
     }
+    private boolean isPlaying = false;
 
+    public int getInfo(String songPath) {
+        int duration = 0;
 
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.reset();
+        } else {
+            mediaPlayer.reset();
+        }
+
+        try {
+            mediaPlayer.setDataSource(songPath);
+            mediaPlayer.prepare();
+            duration = mediaPlayer.getDuration();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return duration;
+    }
 
     public void doStop() {
         if (mediaPlayer != null) {
@@ -60,22 +88,54 @@ public class MediaOperation {
 
         if (song_selected < songList.size() - 1) {
 
+            //songList.get(song_selected).setSelected(false);
+
             song_selected++;
-            songList.get(song_selected).setSelected(true);
+            /*for (int i=0; i<songList.size(); i++) {
+                if (i==song_selected) {
+                    songList.get(song_selected).setSelected(true);
+                } else {
+                    songList.get(song_selected).setSelected(false);
+                }
+            }
+
+            myListview.invalidateViews();*/
+
             String songPath = songList.get(song_selected).getPath();
             playing(songPath);
         }
 
-        /*if (songList == null || songList.size() == 0) {
+    }
+
+    public void doShuffle() {
+        Log.d(TAG, "doShuffle");
+
+        if (songList == null || songList.size() == 0) {
             return;
         }
-        if (index < songList.size() - 1) {
-            index++;
-            isPause = false;
-            playing();
-            imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-        }*/
+
+        if (song_selected < songList.size() - 1) {
+
+            songList.get(song_selected).setSelected(false);
+
+            song_selected++;
+            /*for (int i=0; i<songList.size(); i++) {
+                if (i==song_selected) {
+                    songList.get(song_selected).setSelected(true);
+                } else {
+                    songList.get(song_selected).setSelected(false);
+                }
+            }
+
+            myListview.invalidateViews();*/
+
+            String songPath = songList.get(song_selected).getPath();
+            playing(songPath);
+        }
+
     }
+
+
 
     public static void doPrev() {
         /*if (songList == null || songList.size() == 0) {
@@ -106,13 +166,21 @@ public class MediaOperation {
                 mediaPlayer.setDataSource(songPath);
                 mediaPlayer.prepare();
                 mediaPlayer.start();
+                isPlaying = true;
+
+                playtask goodTask;
+                goodTask = new playtask();
+                goodTask.execute(10);
+
                 Intent newNotifyIntent = new Intent(Constants.ACTION.START_TO_PLAY);
                 context.sendBroadcast(newNotifyIntent);
 
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        songList.get(song_selected).setSelected(false);
+
+                        isPlaying = false;
+
                         Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
                         context.sendBroadcast(newNotifyIntent);
                         switch (current_mode) {
@@ -129,6 +197,10 @@ public class MediaOperation {
 
                     }
                 });
+
+
+
+
             } catch (IOException e) {
                 e.printStackTrace();
                 Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
@@ -139,5 +211,106 @@ public class MediaOperation {
 
     }
 
+    class playtask extends AsyncTask<Integer, Integer, String>
+    {
+        @Override
+        protected String doInBackground(Integer... countTo) {
 
+
+            while(isPlaying) {
+                try {
+
+                    //long percent = 0;
+                    //if (Data.current_file_size > 0)
+                    //    percent = (Data.complete_file_size * 100)/Data.current_file_size;
+
+                    int position = ((mediaPlayer.getCurrentPosition()*100)/mediaPlayer.getDuration());
+
+                    publishProgress(position);
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            Log.d(TAG, "onPreExecute set "+mediaPlayer.getDuration());
+
+
+
+
+            /*loadDialog = new ProgressDialog(PhotoList.this);
+            loadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            loadDialog.setTitle(R.string.photolist_decrypting_title);
+            loadDialog.setProgress(0);
+            loadDialog.setMax(100);
+            loadDialog.setIndeterminate(false);
+            loadDialog.setCancelable(false);
+
+            loadDialog.show();*/
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+
+            super.onProgressUpdate(values);
+
+
+            NumberFormat f = new DecimalFormat("00");
+
+
+            int minutes = (mediaPlayer.getCurrentPosition()/1000)/60;
+
+            int seconds = (mediaPlayer.getCurrentPosition()/1000) % 60;
+
+
+            songDuration.setText(f.format(minutes)+":"+f.format(seconds));
+            seekBar.setProgress(values[0]);
+
+            // 背景工作處理"中"更新的事
+            /*long percent = 0;
+            if (Data.current_file_size > 0)
+                percent = (Data.complete_file_size * 100)/Data.current_file_size;
+
+            decryptDialog.setMessage(getResources().getString(R.string.photolist_decrypting_files) + "(" + values[0] + "/" + selected_names.size() + ") " + percent + "%\n" + selected_names.get(values[0] - 1));
+            */
+            /*if (Data.OnDecompressing) {
+                loadDialog.setTitle(getResources().getString(R.string.decompressing_files_title) + " " + Data.CompressingFileName);
+                loadDialog.setProgress(values[0]);
+            } else if (Data.OnDecrypting) {
+                loadDialog.setTitle(getResources().getString(R.string.decrypting_files_title) + " " + Data.EnryptingOrDecryptingFileName);
+                loadDialog.setProgress(values[0]);
+            } else {
+                loadDialog.setMessage(getResources().getString(R.string.decrypting_files_title));
+            }*/
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            super.onPostExecute(result);
+
+
+            seekBar.setProgress(0);
+            //loadDialog.dismiss();
+            /*btnDecrypt.setVisibility(View.INVISIBLE);
+            btnShare.setVisibility(View.INVISIBLE);
+            btnDelete.setVisibility(View.INVISIBLE);
+            selected_count = 0;*/
+        }
+
+        @Override
+        protected void onCancelled() {
+
+            super.onCancelled();
+        }
+    }
 }

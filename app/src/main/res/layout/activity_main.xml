@@ -31,6 +31,7 @@
                 android:layout_weight="1">
 
                 <TextView
+                    android:id="@+id/textSongDuration"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="6"
@@ -56,12 +57,14 @@
                 >
 
                 <EditText
+                    android:id="@+id/textViewA"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLength="5"
                     android:text="00:00"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:gravity="center"/>
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <Button
                     android:id="@+id/btnMarkA"
@@ -74,6 +77,7 @@
 
 
                 <EditText
+                    android:id="@+id/textViewB"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -132,7 +136,7 @@
             android:id="@+id/listViewMyFavorite"
             android:layout_gravity="center_horizontal"
             android:choiceMode="singleChoice"
-            android:listSelector="#4d90fe"
+
             android:layout_weight="1"/>
     </LinearLayout>
 

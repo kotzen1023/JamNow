@@ -1,6 +1,7 @@
 package com.seventhmoon.jamnow;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -15,6 +16,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -25,16 +27,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.seventhmoon.jamnow.Data.Constants;
@@ -44,13 +49,21 @@ import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.seventhmoon.jamnow.Data.FileOperation.init_folder_and_files;
+import static com.seventhmoon.jamnow.MainActivity.seekBar;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getName();
@@ -71,8 +84,10 @@ public class MainActivity extends AppCompatActivity {
     MenuItem item_search;
     ActionBar actionBar;
     LinearLayout linearLayoutAB;
-    DottedSeekBar seekBar;
+    public static TextView songDuration;
+    public static DottedSeekBar seekBar;
     Button markButtonA, markButtonB;
+    EditText textA, textB;
     Button btnClear;
 
     public static ImageView imgPlayOrPause;
@@ -91,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
     public static int song_selected = 0;
     public static int current_mode = MODE_PLAY_ALL;
     MediaOperation mediaOperation;
+    private static int current_duration = 0;
+
+    //private DateFormat formatter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,10 +121,18 @@ public class MainActivity extends AppCompatActivity {
 
         mediaOperation = new MediaOperation(context);
 
+        //formatter = new SimpleDateFormat("mm:ss");
+
         songList.clear();
 
         linearLayoutAB = (LinearLayout) findViewById(R.id.layout_ab_loop);
+
+        songDuration = (TextView) findViewById(R.id.textSongDuration);
+
         seekBar = (DottedSeekBar) findViewById(R.id.seekBarTime);
+        textA = (EditText) findViewById(R.id.textViewA);
+        textB = (EditText) findViewById(R.id.textViewB);
+
         markButtonA = (Button) findViewById(R.id.btnMarkA);
         markButtonB = (Button) findViewById(R.id.btnMarkB);
         btnClear = (Button) findViewById(R.id.btnClear);
@@ -145,9 +171,49 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                //Log.e(TAG, "onStartTrackingTouch");
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                //Log.e(TAG, "onStopTrackingTouch "+seekBar.getProgress()+" current_duration = "+current_duration);
+
+
+
+                if (current_duration != 0) {
+
+                    NumberFormat f = new DecimalFormat("00");
+                    int per_unit = current_duration / 100;
+                    int duration = seekBar.getProgress() * per_unit;
+
+                    int minutes = (duration/1000)/60;
+
+                    int seconds = (duration/1000) % 60;
+
+                    if (minutes == 0 && seconds == 0 && seekBar.getProgress() == 100) {
+                        seconds = 1;
+                    }
+
+
+                    songDuration.setText(f.format(minutes)+":"+f.format(seconds));
+
+                }
+            }
+        });
+
         markButtonA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                Log.e(TAG, "textA "+textA.getText().toString());
 
                 //seekBar.setDots(new int[] {25, 50, 75});
                 //seekBar.setDotsDrawable(R.drawable.dot);
@@ -173,30 +239,48 @@ public class MainActivity extends AppCompatActivity {
                         if (song_selected > 0) {
                             songPath = songArrayAdapter.getItem(song_selected).getPath();
                             songName = songArrayAdapter.getItem(song_selected).getName();
+                            //songList.get(song_selected).setSelected(true);
+
+                            /*for (int i=0; i<songList.size(); i++) {
+
+                                if (i == song_selected) {
+                                    songList.get(i).setSelected(true);
+
+                                } else {
+                                    songList.get(i).setSelected(false);
+
+                                }
+                            }*/
+
+
                         } else {
                             songPath = songList.get(0).getPath();
                             songName = songList.get(0).getName();
-                            songList.get(0).setSelected(true);
-                            //songPath = songArrayAdapter.getItem(0).getPath();
-                            //songName = songArrayAdapter.getItem(0).getName();
+                            //songList.get(0).setSelected(true);
+                            /*for (int i=0; i<songList.size(); i++) {
 
-                            myListview.setSelection(0);
-                            View itemView = myListview.getChildAt(0);
-                            itemView.setBackgroundColor(Color.rgb(0x4d, 0x90, 0xfe));
-                            itemView.setSelected(true);
+                                if (i == 0) {
+                                    songList.get(i).setSelected(true);
+
+                                } else {
+                                    songList.get(i).setSelected(false);
+
+                                }
+                            }*/
 
                         }
+                        //myListview.invalidateViews();
                         Log.d(TAG, "play "+songName);
 
 
                         mediaOperation.doPlay(songPath);
 
-                        //imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+                        imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
                     } else { //playing, pause
                         Log.d(TAG, "pause");
                         mediaOperation.doPause();
 
-                        //imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                        imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                     }
                 } else {
                     toast("Song list is empty");
@@ -208,17 +292,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "select "+position);
-                view.setSelected(true);
+                NumberFormat f = new DecimalFormat("00");
                 song_selected = position;
 
                 //deselect other
                 for (int i=0; i<songList.size(); i++) {
+
                     if (i == position) {
                         songList.get(i).setSelected(true);
+
                     } else {
                         songList.get(i).setSelected(false);
+
                     }
                 }
+
+                myListview.invalidateViews();
+
+                current_duration = songList.get(song_selected).getDuration();
+
             }
         });
 
@@ -230,19 +322,44 @@ public class MainActivity extends AppCompatActivity {
                 if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
                     Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
 
+                    for(int i=0; i<songList.size(); i++) {
+
+                        int duration = mediaOperation.getInfo(songList.get(i).getPath());
+                        songList.get(i).setDuration(duration);
+                    }
+
 
                     songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
                     myListview.setAdapter(songArrayAdapter);
+
+
 
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_PLAY_COMPLETE)) {
                     Log.d(TAG, "receive GET_PLAY_COMPLETE !");
                     imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.START_TO_PLAY)) {
                     Log.d(TAG, "receive START_TO_PLAY !("+song_selected+")");
+                    /*playtask goodTask;
+                    goodTask = new playtask();
+                    goodTask.execute(10);*/
+
+                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
 
                     myListview.smoothScrollToPosition(song_selected);
 
                     for (int i=0; i<songList.size(); i++) {
+
+
+                        if (i == song_selected) {
+                            songList.get(i).setSelected(true);
+
+                        } else {
+                            songList.get(i).setSelected(false);
+
+                        }
+
+
+                        /*
                         View view;
                         if ((view = myListview.getChildAt(i)) != null) {
                             if (i==song_selected) {
@@ -253,10 +370,11 @@ public class MainActivity extends AppCompatActivity {
                                 view.setSelected(false);
                                 view.setBackgroundColor(Color.TRANSPARENT);
                             }
-                        }
+                        }*/
                     }
+                    myListview.invalidateViews();
 
-                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+
                 }
             }
         };
@@ -573,5 +691,14 @@ public class MainActivity extends AppCompatActivity {
         Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
         toast.show();
+    }
+
+    public Locale getCurrentLocale(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            return getResources().getConfiguration().getLocales().get(0);
+        } else{
+            //noinspection deprecation
+            return getResources().getConfiguration().locale;
+        }
     }
 }

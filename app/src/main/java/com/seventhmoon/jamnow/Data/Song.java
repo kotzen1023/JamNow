@@ -3,7 +3,7 @@ package com.seventhmoon.jamnow.Data;
 public class Song {
 	private String name;
 	private String path;
-	private String duration;
+	private int duration;
 	private boolean selected;
 
 	public String getName() {
@@ -20,10 +20,10 @@ public class Song {
 		this.path = path;
 	}
 
-	public String getDuration() {
+	public int getDuration() {
 		return duration;
 	}
-	public void setDuration(String duration) {
+	public void setDuration(int duration) {
 		this.duration = duration;
 	}
 

@@ -20,6 +20,7 @@ import android.widget.ListView;
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
 import com.seventhmoon.jamnow.Data.FileChooseItem;
+import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 
 import java.io.File;
