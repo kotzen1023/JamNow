@@ -85,15 +85,18 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
         if (songItem != null) {
 
             NumberFormat f = new DecimalFormat("00");
+            NumberFormat f2 = new DecimalFormat("000");
 
 
-            int minutes = (songItem.getDuration()/1000)/60;
+            int minutes = (songItem.getDuration()/60000);
 
             int seconds = (songItem.getDuration()/1000) % 60;
 
-            if (minutes == 0 && seconds == 0) {
-                seconds = 1;
-            }
+            int minisec = (songItem.getDuration()%1000);
+
+            //if (minutes == 0 && seconds == 0) {
+            //    seconds = 1;
+            //}
 
 
             //songDuration.setText(f.format(minutes)+":"+f.format(seconds));
@@ -101,7 +104,7 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
             Bitmap bitmap = BitmapFactory.decodeResource(view.getResources(), R.drawable.ic_audiotrack_black_48dp);
             holder.songicon.setImageBitmap(bitmap);
             holder.songname.setText(songItem.getName());
-            holder.songtime.setText(f.format(minutes)+":"+f.format(seconds));
+            holder.songtime.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
 
             if (songItem.isSelected()) {
                 //Log.e(TAG, ""+position+" is selected.");

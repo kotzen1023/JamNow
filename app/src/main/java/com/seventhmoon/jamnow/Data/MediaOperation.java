@@ -227,7 +227,7 @@ public class MediaOperation {
                     int position = ((mediaPlayer.getCurrentPosition()*100)/mediaPlayer.getDuration());
 
                     publishProgress(position);
-                    Thread.sleep(500);
+                    Thread.sleep(200);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -264,14 +264,16 @@ public class MediaOperation {
 
 
             NumberFormat f = new DecimalFormat("00");
+            NumberFormat f2 = new DecimalFormat("000");
 
 
-            int minutes = (mediaPlayer.getCurrentPosition()/1000)/60;
+            int minutes = (mediaPlayer.getCurrentPosition()/60000);
 
             int seconds = (mediaPlayer.getCurrentPosition()/1000) % 60;
 
+            int minisec = (mediaPlayer.getCurrentPosition()%1000);
 
-            songDuration.setText(f.format(minutes)+":"+f.format(seconds));
+            songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
             seekBar.setProgress(values[0]);
 
             // 背景工作處理"中"更新的事

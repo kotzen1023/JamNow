@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,6 +20,7 @@ public class DottedSeekBar extends AppCompatSeekBar {
     private int[] mDotsPositions = null;
     /** Drawable for dot */
     private Bitmap mDotBitmap = null;
+    private Bitmap mLineBitmap = null;
 
     public DottedSeekBar(final Context context) {
         super(context);
@@ -72,6 +74,10 @@ public class DottedSeekBar extends AppCompatSeekBar {
         invalidate();
     }
 
+    public void setmLine(final int lineResource) {
+        mLineBitmap = BitmapFactory.decodeResource(getResources(), lineResource);
+    }
+
     @Override
     protected synchronized void onDraw(final Canvas canvas) {
         super.onDraw(canvas);
@@ -81,13 +87,33 @@ public class DottedSeekBar extends AppCompatSeekBar {
         final int width = getMeasuredWidth();
         final int height = getMeasuredHeight();
         final int top = height/2 - 20;
+        final int top2 = height/2 - 5;
         final int step = width / getMax();
+
+        boolean isFirst = true;
+        int start_position = 0;
+        int end_position = 0;
 
         if (null != mDotsPositions && 0 != mDotsPositions.length && null != mDotBitmap) {
             // draw dots if we have ones
             for (int position : mDotsPositions) {
+
+                if (isFirst) {
+                    start_position = position;
+                    isFirst = false;
+                } else {
+                    end_position = position;
+                }
+
                 canvas.drawBitmap(mDotBitmap, position * step, top, null);
+
             }
+
+
+        }
+
+        for (int i=start_position; i<end_position; i++) {
+            canvas.drawBitmap(mLineBitmap, i * step, top2, null);
         }
     }
 

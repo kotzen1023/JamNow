@@ -22,210 +22,212 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="4">
+            android:layout_weight="5">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_weight="1">
 
                 <TextView
                     android:id="@+id/textSongDuration"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="6"
-                    android:text="00:00"
+                    android:layout_weight="2"
+                    android:text="00:00.000"
+                    android:textStyle="bold"
                     android:gravity="center"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     />
 
                 <com.seventhmoon.jamnow.Data.DottedSeekBar
                     android:id="@+id/seekBarTime"
+                    style="@android:style/Widget.Holo.Light.SeekBar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    />
+
+                    android:layout_weight="1" />
+
+
             </LinearLayout>
 
-            <LinearLayout
+            <View
+                android:id="@+id/view2"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_weight="1"
-                android:id="@+id/layout_ab_loop"
-                >
-
-                <EditText
-                    android:id="@+id/textViewA"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:maxLength="5"
-                    android:text="00:00"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-                <Button
-                    android:id="@+id/btnMarkA"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="Mark A"/>
-
-
-
-
-                <EditText
-                    android:id="@+id/textViewB"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="00:00"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:gravity="center"/>
-
-                <Button
-                    android:id="@+id/btnMarkB"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="Mark B"/>
-
-
-
-
-                <Button
-                    android:id="@+id/btnClear"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="clear"/>
-            </LinearLayout>
+                android:layout_height="2dp"
+                android:layout_weight="0"
+                android:background="#b7b7b7" />
 
 
         </LinearLayout>
+
+        <ListView
+            android:id="@+id/listViewMyFavorite"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+
+            android:choiceMode="singleChoice" />
+
         <View
             android:id="@+id/view1"
             android:layout_width="match_parent"
-            android:layout_height="3dp"
+            android:layout_height="2dp"
             android:layout_weight="0"
             android:background="#b7b7b7" />
 
-        <!--DatePicker
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/datePicker_start"
-            android:visibility="gone"/>
 
-        <DatePicker
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/datePicker_end"
-            android:visibility="gone"/>
 
-        <View
-            android:id="@+id/viewPersonal"
-            android:layout_width="match_parent"
-            android:layout_height="3dp"
-            android:background="#b7b7b7" /-->
-
-        <ListView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/listViewMyFavorite"
-            android:layout_gravity="center_horizontal"
-            android:choiceMode="singleChoice"
-
-            android:layout_weight="1"/>
     </LinearLayout>
 
-    <View
-        android:id="@+id/view2"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_weight="0"
-        android:background="#b7b7b7" />
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:layout_weight="4">
+        android:orientation="vertical"
+        android:layout_weight="3">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
+            android:orientation="horizontal"
+            android:layout_weight="2"
+            android:id="@+id/layout_ab_loop"
+            >
+
+            <EditText
+                android:id="@+id/textViewA"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:maxLength="9"
+                android:text="00:00.000"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <Button
+                android:id="@+id/btnMarkA"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Mark A"/>
+
+
+
+
+            <EditText
+                android:id="@+id/textViewB"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:maxLength="9"
+                android:text="00:00.000"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:gravity="center"/>
+
+            <Button
+                android:id="@+id/btnMarkB"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Mark B"/>
+
+
+
+
+            <Button
+                android:id="@+id/btnClear"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="clear"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
             android:layout_weight="1">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:layout_weight="1">
 
-                <ImageView
-                    android:id="@+id/imgSkipPrev"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:src="@drawable/ic_skip_previous_black_48dp"/>
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                <ImageView
-                    android:id="@+id/imgFastRewind"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:src="@drawable/ic_fast_rewind_black_48dp"/>
+                    <ImageView
+                        android:id="@+id/imgSkipPrev"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_skip_previous_black_48dp"/>
+
+                    <ImageView
+                        android:id="@+id/imgFastRewind"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_fast_rewind_black_48dp"/>
+
+                </LinearLayout>
 
             </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_weight="1"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/imgPlayOrPause"
-                android:src="@drawable/ic_play_circle_outline_black_48dp"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_weight="1">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-
-                <ImageView
-                    android:id="@+id/imgFastForward"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:src="@drawable/ic_fast_forward_black_48dp"/>
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:gravity="center">
 
                 <ImageView
-                    android:id="@+id/imgSkipNext"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:src="@drawable/ic_skip_next_black_48dp"/>
-
+                    android:layout_height="match_parent"
+                    android:id="@+id/imgPlayOrPause"
+                    android:src="@drawable/ic_play_circle_outline_black_48dp"/>
             </LinearLayout>
-        </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+
+                    <ImageView
+                        android:id="@+id/imgFastForward"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_fast_forward_black_48dp"/>
+
+                    <ImageView
+                        android:id="@+id/imgSkipNext"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:src="@drawable/ic_skip_next_black_48dp"/>
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
+
+
 </LinearLayout>

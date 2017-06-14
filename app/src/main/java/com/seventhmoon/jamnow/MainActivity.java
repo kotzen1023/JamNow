@@ -26,6 +26,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
@@ -108,7 +110,12 @@ public class MainActivity extends AppCompatActivity {
     MediaOperation mediaOperation;
     private static int current_duration = 0;
 
+    private static int progress_mark_a = 0;
+    private static int progress_mark_b = 100;
     //private DateFormat formatter;
+    private static boolean is_seekBarTouch = false;
+    private static boolean is_editMarkA_change = false;
+    private static boolean is_editMarkB_change = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,28 +191,55 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                //Log.e(TAG, "onStopTrackingTouch "+seekBar.getProgress()+" current_duration = "+current_duration);
+                Log.e(TAG, "onStopTrackingTouch ");
 
-
+                //use seekbar, set seekbar value for mark
+                is_seekBarTouch = true;
+                is_editMarkA_change = false;
+                is_editMarkB_change = false;
 
                 if (current_duration != 0) {
 
                     NumberFormat f = new DecimalFormat("00");
-                    int per_unit = current_duration / 100;
-                    int duration = seekBar.getProgress() * per_unit;
+                    NumberFormat f2 = new DecimalFormat("000");
 
-                    int minutes = (duration/1000)/60;
-
-                    int seconds = (duration/1000) % 60;
-
-                    if (minutes == 0 && seconds == 0 && seekBar.getProgress() == 100) {
-                        seconds = 1;
-                    }
+                    double per_unit = (double) current_duration / 100.0;
 
 
-                    songDuration.setText(f.format(minutes)+":"+f.format(seconds));
+
+                    double duration = seekBar.getProgress() * per_unit;
+
+                    Log.e(TAG, "unit = "+String.valueOf(per_unit)+" duration = "+String.valueOf(duration));
+
+                    int minutes = ((int)duration)/60000;
+
+                    int seconds = ((int)duration/1000) % 60;
+
+                    int minisec = (int)duration%1000;
+
+
+                    songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
 
                 }
+            }
+        });
+
+        textA.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                Log.d(TAG, "text A beforeTextChanged");
+                is_editMarkA_change = true;
+                is_seekBarTouch = false;
             }
         });
 
@@ -213,10 +247,203 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.e(TAG, "textA "+textA.getText().toString());
+                if (current_duration != 0) {
+
+                    if (is_seekBarTouch) {
+                        NumberFormat f = new DecimalFormat("00");
+                        NumberFormat f2 = new DecimalFormat("000");
+
+                        double per_unit = (double) current_duration / 100.0;
+
+
+                        double duration = seekBar.getProgress() * per_unit;
+
+                        Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
+
+                        int minutes = ((int) duration) / 60000;
+
+                        int seconds = ((int) duration / 1000) % 60;
+
+                        int minisec = (int) duration % 1000;
+
+
+                        textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+
+                        progress_mark_a = seekBar.getProgress();
+                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                        seekBar.setDotsDrawable(R.drawable.dot);
+
+                        seekBar.setmLine(R.drawable.line);
+                    } else if (is_editMarkA_change) {
+                        String time[];
+                        String secs[];
+
+                        if (textA.getText().length() > 0) {
+
+                            time = textA.getText().toString().split(":");
+
+                            if (time.length == 1) {
+                                toast("can't find ( : )");
+                            } else if (time.length > 2) {
+                                toast("Invalid input!");
+                            } else {
+
+                                secs = time[1].split("\\.");
+
+                                if (secs.length == 0) {
+                                    toast("can't find ( . )");
+                                } else {
+
+                                    if (textA.getText().length() < 9) {
+                                        toast("Mark A range is invalid");
+                                    } else if (time[0].length() != 2 && time[1].length() != 6) {
+                                        toast("Mark A range is invalid");
+                                    } else if (secs[0].length() != 2 && secs[1].length() != 3) {
+                                        toast("Mark A range is invalid");
+                                    } else if (!isNumber(time[0]) ||
+                                                !isNumber(secs[0]) ||
+                                                !isNumber(secs[1]) ) {
+                                        toast("Invalid input!");
+                                    } else {
+
+
+
+                                        int duration = Integer.valueOf(time[0]) * 60000;
+                                        duration += Integer.valueOf(secs[0]) * 1000;
+                                        duration += Integer.valueOf(secs[1]);
+
+                                        progress_mark_a = (duration * 100) / current_duration;
+
+                                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                                        seekBar.setDotsDrawable(R.drawable.dot);
+
+                                        seekBar.setmLine(R.drawable.line);
+                                    }
+                                }
+                            }
+                        } else {
+                            toast("Mark A range should not be empty");
+                        }
+                    }
+                }
+
+                if (progress_mark_b <= progress_mark_a) {
+                    toast("Mark B must greater than Mark A");
+                }
+
+                //Log.e(TAG, "textA "+textA.getText().toString());
 
                 //seekBar.setDots(new int[] {25, 50, 75});
                 //seekBar.setDotsDrawable(R.drawable.dot);
+            }
+        });
+
+        textB.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                Log.d(TAG, "text B beforeTextChanged");
+                is_editMarkB_change = true;
+                is_seekBarTouch = false;
+            }
+        });
+
+        markButtonB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (current_duration != 0) {
+
+                    if (is_seekBarTouch) {
+                        NumberFormat f = new DecimalFormat("00");
+                        NumberFormat f2 = new DecimalFormat("000");
+
+                        double per_unit = (double) current_duration / 100.0;
+
+
+                        double duration = seekBar.getProgress() * per_unit;
+
+                        Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
+
+                        int minutes = ((int) duration) / 60000;
+
+                        int seconds = ((int) duration / 1000) % 60;
+
+                        int minisec = (int) duration % 1000;
+
+
+                        textB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+
+                        progress_mark_b = seekBar.getProgress();
+                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                        seekBar.setDotsDrawable(R.drawable.dot);
+
+
+                    } else if (is_editMarkB_change) {
+                        String time[];
+                        String secs[];
+
+                        if (textB.getText().length() > 0) {
+
+                            time = textB.getText().toString().split(":");
+
+                            if (time.length == 1) {
+                                toast("can't find ( : )");
+                            } else if (time.length > 2) {
+                                toast("Invalid input!");
+                            } else {
+
+                                secs = time[1].split("\\.");
+
+                                if (secs.length == 0) {
+                                    toast("can't find ( . )");
+                                } else {
+
+                                    if (textB.getText().length() < 9) {
+                                        toast("Mark B range is invalid");
+                                    } else if (time[0].length() != 2 && time[1].length() != 6) {
+                                        toast("Mark B range is invalid");
+                                    } else if (secs[0].length() != 2 && secs[1].length() != 3) {
+                                        toast("Mark B range is invalid");
+                                    } else if (!isNumber(time[0]) ||
+                                            !isNumber(secs[0]) ||
+                                            !isNumber(secs[1]) ) {
+                                        toast("Invalid input!");
+                                    } else {
+
+
+
+                                        int duration = Integer.valueOf(time[0]) * 60000;
+                                        duration += Integer.valueOf(secs[0]) * 1000;
+                                        duration += Integer.valueOf(secs[1]);
+
+                                        progress_mark_b = (duration * 100) / current_duration;
+
+                                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                                        seekBar.setDotsDrawable(R.drawable.dot);
+
+                                        seekBar.setmLine(R.drawable.line);
+                                    }
+                                }
+                            }
+                        } else {
+                            toast("Mark A range should not be empty");
+                        }
+                    }
+
+
+                    if (progress_mark_b <= progress_mark_a) {
+                        toast("Mark B must greater than Mark A");
+                    }
+                }
             }
         });
 
@@ -292,7 +519,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "select "+position);
-                NumberFormat f = new DecimalFormat("00");
+
+
                 song_selected = position;
 
                 //deselect other
@@ -693,12 +921,21 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    public Locale getCurrentLocale(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            return getResources().getConfiguration().getLocales().get(0);
-        } else{
-            //noinspection deprecation
-            return getResources().getConfiguration().locale;
+
+    public boolean isNumber(String string) {
+        boolean ret = false;
+
+        if(string.matches("\\d+(?:\\.\\d+)?"))
+        {
+            Log.d(TAG, "string: "+string+" is number");
+            ret = true;
         }
+        else
+        {
+            Log.d(TAG, "string: "+string+" is not number");
+
+        }
+
+        return ret;
     }
 }
