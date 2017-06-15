@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     private static int current_duration = 0;
 
     private static int progress_mark_a = 0;
-    private static int progress_mark_b = 100;
+    private static int progress_mark_b = 1000;
     //private DateFormat formatter;
     private static boolean is_seekBarTouch = false;
     private static boolean is_editMarkA_change = false;
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
                     NumberFormat f = new DecimalFormat("00");
                     NumberFormat f2 = new DecimalFormat("000");
 
-                    double per_unit = (double) current_duration / 100.0;
+                    double per_unit = (double) current_duration / 1000.0;
 
 
 
@@ -253,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
 
-                        double per_unit = (double) current_duration / 100.0;
+                        double per_unit = (double) current_duration / 1000.0;
 
 
                         double duration = seekBar.getProgress() * per_unit;
@@ -272,8 +272,12 @@ public class MainActivity extends AppCompatActivity {
                         progress_mark_a = seekBar.getProgress();
                         seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
                         seekBar.setDotsDrawable(R.drawable.dot);
-
                         seekBar.setmLine(R.drawable.line);
+
+                        if (current_mode == MODE_PLAY_AB_LOOP) {
+                            songList.get(song_selected).setMark_a((int)duration);
+                        }
+
                     } else if (is_editMarkA_change) {
                         String time[];
                         String secs[];
@@ -312,12 +316,18 @@ public class MainActivity extends AppCompatActivity {
                                         duration += Integer.valueOf(secs[0]) * 1000;
                                         duration += Integer.valueOf(secs[1]);
 
-                                        progress_mark_a = (duration * 100) / current_duration;
+                                        progress_mark_a = (duration * 1000) / current_duration;
 
-                                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
-                                        seekBar.setDotsDrawable(R.drawable.dot);
+                                        if (progress_mark_a < 1000) {
+                                            seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                                            seekBar.setDotsDrawable(R.drawable.dot);
 
-                                        seekBar.setmLine(R.drawable.line);
+                                            seekBar.setmLine(R.drawable.line);
+                                        } else {
+                                            toast("Mark A value must less than song duration");
+                                        }
+
+
                                     }
                                 }
                             }
@@ -366,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
 
-                        double per_unit = (double) current_duration / 100.0;
+                        double per_unit = (double) current_duration / 1000.0;
 
 
                         double duration = seekBar.getProgress() * per_unit;
@@ -385,8 +395,11 @@ public class MainActivity extends AppCompatActivity {
                         progress_mark_b = seekBar.getProgress();
                         seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
                         seekBar.setDotsDrawable(R.drawable.dot);
+                        seekBar.setmLine(R.drawable.line);
 
-
+                        if (current_mode == MODE_PLAY_AB_LOOP) {
+                            songList.get(song_selected).setMark_b((int)duration);
+                        }
                     } else if (is_editMarkB_change) {
                         String time[];
                         String secs[];
@@ -425,12 +438,17 @@ public class MainActivity extends AppCompatActivity {
                                         duration += Integer.valueOf(secs[0]) * 1000;
                                         duration += Integer.valueOf(secs[1]);
 
-                                        progress_mark_b = (duration * 100) / current_duration;
+                                        progress_mark_b = (duration * 1000) / current_duration;
 
-                                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
-                                        seekBar.setDotsDrawable(R.drawable.dot);
+                                        if (progress_mark_b <= 1000) {
 
-                                        seekBar.setmLine(R.drawable.line);
+                                            seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                                            seekBar.setDotsDrawable(R.drawable.dot);
+
+                                            seekBar.setmLine(R.drawable.line);
+                                        } else {
+                                            toast("Mark B value must less than song duration or equal to it");
+                                        }
                                     }
                                 }
                             }
@@ -539,6 +557,41 @@ public class MainActivity extends AppCompatActivity {
 
                 current_duration = songList.get(song_selected).getDuration();
 
+                if (current_duration != 0) {
+
+                    NumberFormat f = new DecimalFormat("00");
+                    NumberFormat f2 = new DecimalFormat("000");
+
+                    switch (current_mode) {
+                        case MODE_PLAY_ALL:
+                            break;
+                        case MODE_PLAY_SHUFFLE:
+                            break;
+                        case MODE_PLAY_REPEAT:
+                            break;
+                        case MODE_PLAY_AB_LOOP:
+                            progress_mark_a = (int) ((float) songList.get(position).getMark_a() / (float) current_duration * 1000.0);
+                            progress_mark_b = (int) ((float) songList.get(position).getMark_b() / (float) current_duration * 1000.0);
+
+                            int minutes_a = songList.get(position).getMark_a()/60000;
+                            int seconds_a = (songList.get(position).getMark_a()/1000) % 60;
+                            int minisec_a = songList.get(position).getMark_a()%1000;
+
+                            int minutes_b = songList.get(position).getMark_b()/60000;
+                            int seconds_b = (songList.get(position).getMark_b()/1000) % 60;
+                            int minisec_b = songList.get(position).getMark_b()%1000;
+
+                            seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                            seekBar.setDotsDrawable(R.drawable.dot);
+                            seekBar.setmLine(R.drawable.line);
+
+                            textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
+                            textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
+                            break;
+                    }
+
+                }
+
             }
         });
 
@@ -554,6 +607,8 @@ public class MainActivity extends AppCompatActivity {
 
                         int duration = mediaOperation.getInfo(songList.get(i).getPath());
                         songList.get(i).setDuration(duration);
+                        songList.get(i).setMark_a(0);
+                        songList.get(i).setMark_b(duration);
                     }
 
 
@@ -705,23 +760,27 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_play_arrow_white_48dp);
                 actionBar.setTitle("All");
                 linearLayoutAB.setVisibility(View.GONE);
+                current_mode = MODE_PLAY_ALL;
                 break;
             case R.id.action_shuffle:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_shuffle_white_48dp);
                 actionBar.setTitle("Shuffle");
                 linearLayoutAB.setVisibility(View.GONE);
+                current_mode = MODE_PLAY_SHUFFLE;
                 break;
 
             case R.id.action_repeat:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_repeat_white_48dp);
                 actionBar.setTitle("Repeat");
                 linearLayoutAB.setVisibility(View.GONE);
+                current_mode = MODE_PLAY_REPEAT;
                 break;
 
             case R.id.action_loop:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_loop_white_48dp);
                 actionBar.setTitle("AB Loop");
                 linearLayoutAB.setVisibility(View.VISIBLE);
+                current_mode = MODE_PLAY_AB_LOOP;
                 break;
 
         }

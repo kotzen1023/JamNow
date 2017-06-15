@@ -82,13 +82,22 @@ public class DottedSeekBar extends AppCompatSeekBar {
     protected synchronized void onDraw(final Canvas canvas) {
         super.onDraw(canvas);
 
-        //Log.d(TAG, "Width = "+getMeasuredWidth()+ " height = "+getMeasuredHeight());
+
 
         final int width = getMeasuredWidth();
+
         final int height = getMeasuredHeight();
+        final int thumb = getThumbOffset();
         final int top = height/2 - 20;
         final int top2 = height/2 - 5;
-        final int step = width / getMax();
+        final float step = (float) (width - (getPaddingRight()+getPaddingLeft())) / (float) getMax();
+
+
+        Log.d(TAG, "Width = "+getMeasuredWidth()+ " height = "+getMeasuredHeight()+" getMax = "+getMax()+" thumb = "
+                +getThumbOffset()+" step = "+step+" current pos = "+getProgress()+"left = "+getPaddingLeft()+" right = "+getPaddingRight()
+                );
+
+
 
         boolean isFirst = true;
         int start_position = 0;
@@ -105,15 +114,18 @@ public class DottedSeekBar extends AppCompatSeekBar {
                     end_position = position;
                 }
 
-                canvas.drawBitmap(mDotBitmap, position * step, top, null);
+                canvas.drawBitmap(mDotBitmap, position * step + (thumb-7), top, null);
 
             }
 
 
         }
 
-        for (int i=start_position; i<end_position; i++) {
-            canvas.drawBitmap(mLineBitmap, i * step, top2, null);
+        if (mLineBitmap != null) {
+            for (int i = start_position; i < end_position; i++) {
+                canvas.drawBitmap(mLineBitmap, i * step + (thumb-7), top2, null);
+
+            }
         }
     }
 

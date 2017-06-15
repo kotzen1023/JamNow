@@ -224,7 +224,7 @@ public class MediaOperation {
                     //if (Data.current_file_size > 0)
                     //    percent = (Data.complete_file_size * 100)/Data.current_file_size;
 
-                    int position = ((mediaPlayer.getCurrentPosition()*100)/mediaPlayer.getDuration());
+                    int position = ((mediaPlayer.getCurrentPosition()*1000)/mediaPlayer.getDuration());
 
                     publishProgress(position);
                     Thread.sleep(200);

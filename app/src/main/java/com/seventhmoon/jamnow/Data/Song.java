@@ -4,6 +4,8 @@ public class Song {
 	private String name;
 	private String path;
 	private int duration;
+	private int mark_a;
+	private int mark_b;
 	private boolean selected;
 
 	public String getName() {
@@ -25,6 +27,22 @@ public class Song {
 	}
 	public void setDuration(int duration) {
 		this.duration = duration;
+	}
+
+	public int getMark_a() {
+		return mark_a;
+	}
+
+	public void setMark_a(int mark_a) {
+		this.mark_a = mark_a;
+	}
+
+	public int getMark_b() {
+		return mark_b;
+	}
+
+	public void setMark_b(int mark_b) {
+		this.mark_b = mark_b;
 	}
 
 	public boolean isSelected() {
