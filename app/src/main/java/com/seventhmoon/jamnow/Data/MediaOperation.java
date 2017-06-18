@@ -38,6 +38,7 @@ public class MediaOperation {
         return pause;
     }
     private boolean isPlaying = false;
+    playtask goodTask;
 
     public int getInfo(String songPath) {
         int duration = 0;
@@ -75,8 +76,12 @@ public class MediaOperation {
     }
 
     public void doPause() {
+
+        if (!goodTask.isCancelled())
+            goodTask.cancel(true);
         pause = true;
         mediaPlayer.pause();
+        isPlaying = false;
     }
 
     public void doNext() {
@@ -153,6 +158,7 @@ public class MediaOperation {
         Log.d(TAG, "playing "+songPath);
 
         if (mediaPlayer != null && !pause) {
+
             mediaPlayer.release();
             mediaPlayer = null;
         }
@@ -168,9 +174,10 @@ public class MediaOperation {
                 mediaPlayer.start();
                 isPlaying = true;
 
-                playtask goodTask;
+                //playtask goodTask;
                 goodTask = new playtask();
                 goodTask.execute(10);
+
 
                 Intent newNotifyIntent = new Intent(Constants.ACTION.START_TO_PLAY);
                 context.sendBroadcast(newNotifyIntent);
