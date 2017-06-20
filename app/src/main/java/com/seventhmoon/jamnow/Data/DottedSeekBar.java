@@ -93,9 +93,9 @@ public class DottedSeekBar extends AppCompatSeekBar {
         final float step = (float) (width - (getPaddingRight()+getPaddingLeft())) / (float) getMax();
 
 
-        Log.d(TAG, "Width = "+getMeasuredWidth()+ " height = "+getMeasuredHeight()+" getMax = "+getMax()+" thumb = "
-                +getThumbOffset()+" step = "+step+" current pos = "+getProgress()+"left = "+getPaddingLeft()+" right = "+getPaddingRight()
-                );
+        //Log.d(TAG, "Width = "+getMeasuredWidth()+ " height = "+getMeasuredHeight()+" getMax = "+getMax()+" thumb = "
+        //        +getThumbOffset()+" step = "+step+" current pos = "+getProgress()+"left = "+getPaddingLeft()+" right = "+getPaddingRight()
+        //        );
 
 
 

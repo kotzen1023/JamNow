@@ -97,8 +97,8 @@ public class FileOperation {
         return ret;
     }
 
-    public static boolean check_file_exist(String fileName) {
-        Log.i(TAG, "append_record --- start ---");
+    public static boolean check_record_exist(String fileName) {
+        Log.i(TAG, "check_record_exist --- start ---");
         boolean ret = false;
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -112,6 +112,28 @@ public class FileOperation {
             Log.i(TAG, "file exist");
             ret = true;
         }
+
+        Log.i(TAG, "check_record_exist --- end ---");
+
+        return ret;
+    }
+
+    public static boolean check_file_exist(String filePath) {
+        Log.i(TAG, "check_file_exist --- start ---");
+        boolean ret = false;
+
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            //path = Environment.getExternalStorageDirectory();
+            RootDirectory = Environment.getExternalStorageDirectory();
+        }
+
+        File file = new File(filePath);
+
+        if(file.exists()) {
+            Log.i(TAG, "file exist");
+            ret = true;
+        }
+        Log.i(TAG, "check_file_exist --- end ---");
 
         return ret;
     }

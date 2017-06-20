@@ -4,24 +4,23 @@ package com.seventhmoon.jamnow.Data;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.media.TimedText;
+
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.seventhmoon.jamnow.MainActivity;
-import com.seventhmoon.jamnow.R;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import static com.seventhmoon.jamnow.MainActivity.currentSongPlay;
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
-import static com.seventhmoon.jamnow.MainActivity.myListview;
+
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
 import static com.seventhmoon.jamnow.MainActivity.songDuration;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 import static com.seventhmoon.jamnow.MainActivity.song_selected;
-import static com.seventhmoon.jamnow.R.id.imgPlayOrPause;
+
 
 public class MediaOperation {
     private static final String TAG = MediaOperation.class.getName();
@@ -30,6 +29,14 @@ public class MediaOperation {
     private boolean pause = true;
     private Context context;
 
+    private boolean isPlaying = false;
+
+    playtask goodTask;
+    private int current_position = 0;
+
+
+
+
     public MediaOperation (Context context){
         this.context = context;
     }
@@ -37,10 +44,12 @@ public class MediaOperation {
     public boolean isPause() {
         return pause;
     }
-    private boolean isPlaying = false;
-    playtask goodTask;
 
-    public int getInfo(String songPath) {
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+    public int getSongDuration(String songPath) {
         int duration = 0;
 
         if (mediaPlayer == null) {
@@ -62,6 +71,22 @@ public class MediaOperation {
         return duration;
     }
 
+    public int getCurrentPosition() {
+
+        if (mediaPlayer != null) {
+            current_position = mediaPlayer.getCurrentPosition();
+        } else {
+            current_position = 0;
+        }
+
+        return current_position;
+    }
+
+    public void setCurrentPosition(int position) {
+
+        this.current_position = position;
+    }
+
     public void doStop() {
         if (mediaPlayer != null) {
             pause = false;
@@ -76,6 +101,8 @@ public class MediaOperation {
     }
 
     public void doPause() {
+
+        Log.d(TAG, "doPause ");
 
         if (!goodTask.isCancelled())
             goodTask.cancel(true);
@@ -96,6 +123,7 @@ public class MediaOperation {
             //songList.get(song_selected).setSelected(false);
 
             song_selected++;
+            currentSongPlay = song_selected;
             /*for (int i=0; i<songList.size(); i++) {
                 if (i==song_selected) {
                     songList.get(song_selected).setSelected(true);
@@ -171,6 +199,7 @@ public class MediaOperation {
 
                 mediaPlayer.setDataSource(songPath);
                 mediaPlayer.prepare();
+                mediaPlayer.seekTo(current_position);
                 mediaPlayer.start();
                 isPlaying = true;
 
@@ -185,7 +214,7 @@ public class MediaOperation {
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-
+                        current_position = 0; //play complete, set position = 0
                         isPlaying = false;
 
                         Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
@@ -308,7 +337,9 @@ public class MediaOperation {
             super.onPostExecute(result);
 
 
+
             seekBar.setProgress(0);
+
             //loadDialog.dismiss();
             /*btnDecrypt.setVisibility(View.INVISIBLE);
             btnShare.setVisibility(View.INVISIBLE);

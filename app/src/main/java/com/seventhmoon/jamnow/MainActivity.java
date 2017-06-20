@@ -47,10 +47,13 @@ import android.widget.Toast;
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.DottedSeekBar;
 import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
+import com.seventhmoon.jamnow.Data.FileOperation;
 import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
+import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -64,7 +67,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
+import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
 import static com.seventhmoon.jamnow.Data.FileOperation.init_folder_and_files;
+import static com.seventhmoon.jamnow.Data.FileOperation.read_record;
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
 
 public class MainActivity extends AppCompatActivity {
@@ -101,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     public static ArrayList<Song> songList = new ArrayList<>();
     private int index = 0;
-    private boolean isPause = true;
+
 
     private static BroadcastReceiver mReceiver = null;
     private static boolean isRegister = false;
@@ -116,6 +122,11 @@ public class MainActivity extends AppCompatActivity {
     private static boolean is_seekBarTouch = false;
     private static boolean is_editMarkA_change = false;
     private static boolean is_editMarkB_change = false;
+
+    private static int current_position = 0;
+    ProgressDialog loadDialog = null;
+
+    public static int currentSongPlay = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,12 +180,14 @@ public class MainActivity extends AppCompatActivity {
             //init_folder_and_files();
             //init_setting();
             init_folder_and_files();
+            loadSongs();
+
         } else {
             if(checkAndRequestPermissions()) {
                 // carry on the normal flow, as the case of  permissions  granted.
 
                 init_folder_and_files();
-                //init_setting();
+                loadSongs();
             }
         }
 
@@ -186,12 +199,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                //Log.e(TAG, "onStartTrackingTouch");
+                Log.e(TAG, "onStartTrackingTouch >");
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.e(TAG, "onStopTrackingTouch ");
+                Log.e(TAG, "onStopTrackingTouch <");
 
                 //use seekbar, set seekbar value for mark
                 is_seekBarTouch = true;
@@ -220,7 +233,14 @@ public class MainActivity extends AppCompatActivity {
 
                     songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
 
+                    if (!mediaOperation.isPause()) { // is playing
+                        mediaOperation.doPause();
+                        mediaOperation.setCurrentPosition((int)duration);
+                        mediaOperation.doPlay(songList.get(song_selected).getPath());
+                    }
                 }
+
+
             }
         });
 
@@ -249,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (current_duration != 0) {
 
-                    if (is_seekBarTouch) {
+                    /*if (is_seekBarTouch) {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
 
@@ -278,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
                             songList.get(song_selected).setMark_a((int)duration);
                         }
 
-                    } else if (is_editMarkA_change) {
+                    } else*/ if (is_editMarkA_change) {
                         String time[];
                         String secs[];
 
@@ -334,6 +354,34 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             toast("Mark A range should not be empty");
                         }
+                    } else { //get current seekbar position
+                        NumberFormat f = new DecimalFormat("00");
+                        NumberFormat f2 = new DecimalFormat("000");
+
+                        double per_unit = (double) current_duration / 1000.0;
+
+
+                        double duration = seekBar.getProgress() * per_unit;
+
+                        Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
+
+                        int minutes = ((int) duration) / 60000;
+
+                        int seconds = ((int) duration / 1000) % 60;
+
+                        int minisec = (int) duration % 1000;
+
+
+                        textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+
+                        progress_mark_a = seekBar.getProgress();
+                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                        seekBar.setDotsDrawable(R.drawable.dot);
+                        seekBar.setmLine(R.drawable.line);
+
+                        if (current_mode == MODE_PLAY_AB_LOOP) {
+                            songList.get(song_selected).setMark_a((int)duration);
+                        }
                     }
                 }
 
@@ -372,7 +420,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (current_duration != 0) {
 
-                    if (is_seekBarTouch) {
+                    /*if (is_seekBarTouch) {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
 
@@ -400,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
                         if (current_mode == MODE_PLAY_AB_LOOP) {
                             songList.get(song_selected).setMark_b((int)duration);
                         }
-                    } else if (is_editMarkB_change) {
+                    } else*/ if (is_editMarkB_change) {
                         String time[];
                         String secs[];
 
@@ -455,6 +503,34 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             toast("Mark A range should not be empty");
                         }
+                    } else {
+                        NumberFormat f = new DecimalFormat("00");
+                        NumberFormat f2 = new DecimalFormat("000");
+
+                        double per_unit = (double) current_duration / 1000.0;
+
+
+                        double duration = seekBar.getProgress() * per_unit;
+
+                        Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
+
+                        int minutes = ((int) duration) / 60000;
+
+                        int seconds = ((int) duration / 1000) % 60;
+
+                        int minisec = (int) duration % 1000;
+
+
+                        textB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+
+                        progress_mark_b = seekBar.getProgress();
+                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                        seekBar.setDotsDrawable(R.drawable.dot);
+                        seekBar.setmLine(R.drawable.line);
+
+                        if (current_mode == MODE_PLAY_AB_LOOP) {
+                            songList.get(song_selected).setMark_b((int)duration);
+                        }
                     }
 
 
@@ -484,45 +560,34 @@ public class MainActivity extends AppCompatActivity {
                         if (song_selected > 0) {
                             songPath = songArrayAdapter.getItem(song_selected).getPath();
                             songName = songArrayAdapter.getItem(song_selected).getName();
-                            //songList.get(song_selected).setSelected(true);
-
-                            /*for (int i=0; i<songList.size(); i++) {
-
-                                if (i == song_selected) {
-                                    songList.get(i).setSelected(true);
-
-                                } else {
-                                    songList.get(i).setSelected(false);
-
-                                }
-                            }*/
-
-
                         } else {
                             songPath = songList.get(0).getPath();
                             songName = songList.get(0).getName();
-                            //songList.get(0).setSelected(true);
-                            /*for (int i=0; i<songList.size(); i++) {
-
-                                if (i == 0) {
-                                    songList.get(i).setSelected(true);
-
-                                } else {
-                                    songList.get(i).setSelected(false);
-
-                                }
-                            }*/
-
                         }
                         //myListview.invalidateViews();
-                        Log.d(TAG, "play "+songName);
-
-
+                        Log.d(TAG, "play "+songName+" position = "+current_position);
+                        mediaOperation.setCurrentPosition(current_position);
+                        currentSongPlay = song_selected;
                         mediaOperation.doPlay(songPath);
 
                         imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
                     } else { //playing, pause
-                        Log.d(TAG, "pause");
+                        Log.d(TAG, "pause currentSongPlay = "+currentSongPlay+" song_selected = "+song_selected);
+
+                        if (currentSongPlay != song_selected) {
+                            Log.e(TAG, "select play change");
+                            current_position = 0;
+                            mediaOperation.setCurrentPosition(0);
+                        } else {
+                            current_position = mediaOperation.getCurrentPosition();
+                        }
+
+
+
+
+
+                        Log.e(TAG, "current_position = "+current_position);
+
                         mediaOperation.doPause();
 
                         imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
@@ -537,6 +602,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "select "+position);
+
 
 
                 song_selected = position;
@@ -595,17 +661,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
         IntentFilter filter;
 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
+                if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_SONGLIST_FROM_RECORD_FILE_COMPLETE)) {
+
+                    songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
+                    myListview.setAdapter(songArrayAdapter);
+
+                    loadDialog.dismiss();
+
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
                     Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
 
                     for(int i=0; i<songList.size(); i++) {
 
-                        int duration = mediaOperation.getInfo(songList.get(i).getPath());
+                        int duration = mediaOperation.getSongDuration(songList.get(i).getPath());
                         songList.get(i).setDuration(duration);
                         songList.get(i).setMark_a(0);
                         songList.get(i).setMark_b(duration);
@@ -615,7 +690,19 @@ public class MainActivity extends AppCompatActivity {
                     songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
                     myListview.setAdapter(songArrayAdapter);
 
+                    //write list file
+                    for (int i=0; i<songList.size(); i++) {
+                        String msg;
+                        if (i== 0) {
+                            msg = songList.get(i).getPath()+";"+
+                                    songList.get(i).getDuration()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                        } else {
+                            msg = "|"+songList.get(i).getPath()+";"+
+                                    songList.get(i).getDuration()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                        }
 
+                        FileOperation.append_record(msg, "favorite");
+                    }
 
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_PLAY_COMPLETE)) {
                     Log.d(TAG, "receive GET_PLAY_COMPLETE !");
@@ -668,9 +755,62 @@ public class MainActivity extends AppCompatActivity {
             filter.addAction(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
             filter.addAction(Constants.ACTION.GET_PLAY_COMPLETE);
             filter.addAction(Constants.ACTION.START_TO_PLAY);
+            filter.addAction(Constants.ACTION.GET_SONGLIST_FROM_RECORD_FILE_COMPLETE);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;
             Log.d(TAG, "registerReceiver mReceiver");
+        }
+    }
+
+    public void loadSongs() {
+
+        if (check_record_exist("favorite")) {
+            Log.d(TAG, "load file success!");
+            loadDialog = new ProgressDialog(this);
+            loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            loadDialog.setTitle("Loading...");
+            loadDialog.setIndeterminate(false);
+            loadDialog.setCancelable(false);
+
+            loadDialog.show();
+
+            Intent intent = new Intent(context, GetSongListFromRecordService.class);
+            intent.setAction(Constants.ACTION.GET_SONGLIST_ACTION);
+            intent.putExtra("FILENAME", "favorite");
+            context.startService(intent);
+
+            /*String message = read_record("favorite");
+            Log.d(TAG, "message = "+ message);
+            String msg[] = message.split("\\|");
+
+            Log.d(TAG, "msg[0] = "+ msg[0]);
+
+
+
+
+            for (int i=0; i<msg.length; i++) {
+
+                String info[] = msg[i].split(";");
+
+                Song new_song = new Song();
+                File file = new File(info[0]); //path
+
+                if (check_file_exist(info[0])) { // if file exist, then add
+                    new_song.setName(file.getName());
+                    new_song.setPath(info[0]);
+                    new_song.setDuration(Integer.valueOf(info[1]));
+                    new_song.setMark_a(Integer.valueOf(info[2]));
+                    new_song.setMark_b(Integer.valueOf(info[3]));
+                    songList.add(new_song);
+                }
+            }
+
+
+
+            loadDialog.dismiss();
+
+            songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
+            myListview.setAdapter(songArrayAdapter);*/
         }
     }
 

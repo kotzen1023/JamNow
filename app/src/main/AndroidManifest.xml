@@ -20,6 +20,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".FileChooseActivity"></activity>
+
+
+        <service android:name=".Service.GetSongListFromRecordService" />
     </application>
 
 </manifest>
