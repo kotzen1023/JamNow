@@ -26,13 +26,15 @@ public class MediaOperation {
     private static final String TAG = MediaOperation.class.getName();
 
     private static MediaPlayer mediaPlayer;
+    private int current_play_mode = 0;
     private boolean pause = true;
     private Context context;
 
-    private boolean isPlaying = false;
 
     playtask goodTask;
     private int current_position = 0;
+
+    private boolean taskDone = true;
 
 
 
@@ -41,12 +43,16 @@ public class MediaOperation {
         this.context = context;
     }
 
-    public boolean isPause() {
-        return pause;
+    public int getCurrent_play_mode() {
+        return current_play_mode;
     }
 
-    public boolean isPlaying() {
-        return isPlaying;
+    public void setCurrent_play_mode(int current_play_mode) {
+        this.current_play_mode = current_play_mode;
+    }
+
+    public boolean isPause() {
+        return pause;
     }
 
     public int getSongDuration(String songPath) {
@@ -104,11 +110,10 @@ public class MediaOperation {
 
         Log.d(TAG, "doPause ");
 
-        if (!goodTask.isCancelled())
-            goodTask.cancel(true);
+        //if (!goodTask.isCancelled())
+        //    goodTask.cancel(true);
         pause = true;
         mediaPlayer.pause();
-        isPlaying = false;
     }
 
     public void doNext() {
@@ -201,11 +206,12 @@ public class MediaOperation {
                 mediaPlayer.prepare();
                 mediaPlayer.seekTo(current_position);
                 mediaPlayer.start();
-                isPlaying = true;
 
-                //playtask goodTask;
-                goodTask = new playtask();
-                goodTask.execute(10);
+                if (taskDone) {
+                    goodTask = new playtask();
+                    goodTask.execute(10);
+                    taskDone = false;
+                }
 
 
                 Intent newNotifyIntent = new Intent(Constants.ACTION.START_TO_PLAY);
@@ -215,7 +221,6 @@ public class MediaOperation {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
                         current_position = 0; //play complete, set position = 0
-                        isPlaying = false;
 
                         Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
                         context.sendBroadcast(newNotifyIntent);
@@ -253,7 +258,7 @@ public class MediaOperation {
         protected String doInBackground(Integer... countTo) {
 
 
-            while(isPlaying) {
+            while(mediaPlayer.isPlaying()) {
                 try {
 
                     //long percent = 0;
@@ -337,8 +342,13 @@ public class MediaOperation {
             super.onPostExecute(result);
 
 
+            if (pause) { //if pause, don't change progress
+                Log.d(TAG, "Pause was pressed while playing");
+            } else {
+                seekBar.setProgress(0);
+            }
 
-            seekBar.setProgress(0);
+            taskDone = true;
 
             //loadDialog.dismiss();
             /*btnDecrypt.setVisibility(View.INVISIBLE);

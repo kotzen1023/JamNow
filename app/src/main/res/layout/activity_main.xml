@@ -53,6 +53,80 @@
 
             </LinearLayout>
 
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_weight="4"
+                android:id="@+id/layout_ab_loop"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_weight="6">
+
+                    <EditText
+                        android:id="@+id/textViewA"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:maxLength="9"
+                        android:text="00:00.000"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                    <ImageView
+                        android:id="@+id/btnMarkA"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        custom:srcCompat="@drawable/ic_label_a_outline_black_48dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_weight="6">
+
+                    <EditText
+                        android:id="@+id/textViewB"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:maxLength="9"
+                        android:text="00:00.000"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:gravity="center"/>
+
+                    <ImageView
+                        android:id="@+id/btnMarkB"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        custom:srcCompat="@drawable/ic_label_b_outline_black_48dp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/btnClear"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="9"
+                    custom:srcCompat="@drawable/ic_clear_black_48dp" />
+
+            </LinearLayout>
+
             <View
                 android:id="@+id/view2"
                 android:layout_width="match_parent"
@@ -60,24 +134,22 @@
                 android:layout_weight="0"
                 android:background="#b7b7b7" />
 
+            <ListView
+                android:id="@+id/listViewMyFavorite"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
 
+                android:choiceMode="singleChoice" />
+
+            <View
+                android:id="@+id/view3"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_weight="0"
+                android:background="#b7b7b7" />
         </LinearLayout>
-
-        <ListView
-            android:id="@+id/listViewMyFavorite"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-
-            android:choiceMode="singleChoice" />
-
-        <View
-            android:id="@+id/view1"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:layout_weight="0"
-            android:background="#b7b7b7" />
 
 
 
@@ -91,61 +163,7 @@
         android:orientation="vertical"
         android:layout_weight="3">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_weight="2"
-            android:id="@+id/layout_ab_loop"
-            >
 
-            <EditText
-                android:id="@+id/textViewA"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:maxLength="9"
-                android:text="00:00.000"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
-            <Button
-                android:id="@+id/btnMarkA"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Mark A"/>
-
-
-
-
-            <EditText
-                android:id="@+id/textViewB"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:maxLength="9"
-                android:text="00:00.000"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:gravity="center"/>
-
-            <Button
-                android:id="@+id/btnMarkB"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Mark B"/>
-
-
-
-
-            <Button
-                android:id="@+id/btnClear"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="clear"/>
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

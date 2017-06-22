@@ -4,21 +4,16 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentUris;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.AsyncTask;
+
 import android.os.Build;
-import android.provider.MediaStore;
+
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -29,13 +24,13 @@ import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.DragEvent;
+
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
+
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -46,7 +41,7 @@ import android.widget.Toast;
 
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.DottedSeekBar;
-import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
+
 import com.seventhmoon.jamnow.Data.FileOperation;
 import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
@@ -83,7 +78,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
-
+    static SharedPreferences pref ;
+    static SharedPreferences.Editor editor;
+    private static final String FILE_NAME = "Preference";
 
     private Context context;
     public static ListView myListview;
@@ -94,9 +91,9 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout linearLayoutAB;
     public static TextView songDuration;
     public static DottedSeekBar seekBar;
-    Button markButtonA, markButtonB;
+    ImageView markButtonA, markButtonB;
     EditText textA, textB;
-    Button btnClear;
+    ImageView btnClear;
 
     public static ImageView imgPlayOrPause;
     ImageView imgSkipPrev;
@@ -104,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView imgFastRewind;
     ImageView imgFastForward;
 
-    private MediaPlayer mediaPlayer;
+    //private MediaPlayer mediaPlayer;
     public static ArrayList<Song> songList = new ArrayList<>();
     private int index = 0;
 
@@ -128,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static int currentSongPlay = 0;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,7 +136,12 @@ public class MainActivity extends AppCompatActivity {
 
         context = getBaseContext();
 
+        pref = getSharedPreferences(FILE_NAME, MODE_PRIVATE);
+        current_mode = pref.getInt("PLAY_MODE", 0);
+
+
         mediaOperation = new MediaOperation(context);
+        mediaOperation.setCurrent_play_mode(current_mode);
 
         //formatter = new SimpleDateFormat("mm:ss");
 
@@ -151,9 +155,9 @@ public class MainActivity extends AppCompatActivity {
         textA = (EditText) findViewById(R.id.textViewA);
         textB = (EditText) findViewById(R.id.textViewB);
 
-        markButtonA = (Button) findViewById(R.id.btnMarkA);
-        markButtonB = (Button) findViewById(R.id.btnMarkB);
-        btnClear = (Button) findViewById(R.id.btnClear);
+        markButtonA = (ImageView) findViewById(R.id.btnMarkA);
+        markButtonB = (ImageView) findViewById(R.id.btnMarkB);
+        btnClear = (ImageView) findViewById(R.id.btnClear);
 
         myListview = (ListView) findViewById(R.id.listViewMyFavorite);
 
@@ -172,8 +176,34 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayUseLogoEnabled(true);
             //actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_play_arrow_white_48dp);
-            actionBar.setTitle("All");
+            //actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
+            //actionBar.setTitle("All");
+
+            switch (current_mode) {
+                case MODE_PLAY_ALL:
+                    actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
+                    actionBar.setTitle("All");
+                    linearLayoutAB.setVisibility(View.GONE);
+                    break;
+                case MODE_PLAY_SHUFFLE:
+                    actionBar.setHomeAsUpIndicator(R.drawable.ic_shuffle_white_48dp);
+                    actionBar.setTitle("Shuffle");
+                    linearLayoutAB.setVisibility(View.GONE);
+                    break;
+
+                case MODE_PLAY_REPEAT:
+                    actionBar.setHomeAsUpIndicator(R.drawable.ic_repeat_white_48dp);
+                    actionBar.setTitle("Repeat");
+                    linearLayoutAB.setVisibility(View.GONE);
+                    break;
+
+                case MODE_PLAY_AB_LOOP:
+                    actionBar.setHomeAsUpIndicator(R.drawable.ic_loop_white_48dp);
+                    actionBar.setTitle("AB Loop");
+                    linearLayoutAB.setVisibility(View.VISIBLE);
+                    break;
+
+            }
         }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -237,6 +267,9 @@ public class MainActivity extends AppCompatActivity {
                         mediaOperation.doPause();
                         mediaOperation.setCurrentPosition((int)duration);
                         mediaOperation.doPlay(songList.get(song_selected).getPath());
+                    } else { //pause
+                        current_position = (int)duration;
+                        mediaOperation.setCurrentPosition(current_position);
                     }
                 }
 
@@ -269,36 +302,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (current_duration != 0) {
 
-                    /*if (is_seekBarTouch) {
-                        NumberFormat f = new DecimalFormat("00");
-                        NumberFormat f2 = new DecimalFormat("000");
-
-                        double per_unit = (double) current_duration / 1000.0;
-
-
-                        double duration = seekBar.getProgress() * per_unit;
-
-                        Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
-
-                        int minutes = ((int) duration) / 60000;
-
-                        int seconds = ((int) duration / 1000) % 60;
-
-                        int minisec = (int) duration % 1000;
-
-
-                        textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
-
-                        progress_mark_a = seekBar.getProgress();
-                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
-                        seekBar.setDotsDrawable(R.drawable.dot);
-                        seekBar.setmLine(R.drawable.line);
-
-                        if (current_mode == MODE_PLAY_AB_LOOP) {
-                            songList.get(song_selected).setMark_a((int)duration);
-                        }
-
-                    } else*/ if (is_editMarkA_change) {
+                    if (is_editMarkA_change) {
                         String time[];
                         String secs[];
 
@@ -420,35 +424,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (current_duration != 0) {
 
-                    /*if (is_seekBarTouch) {
-                        NumberFormat f = new DecimalFormat("00");
-                        NumberFormat f2 = new DecimalFormat("000");
-
-                        double per_unit = (double) current_duration / 1000.0;
-
-
-                        double duration = seekBar.getProgress() * per_unit;
-
-                        Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
-
-                        int minutes = ((int) duration) / 60000;
-
-                        int seconds = ((int) duration / 1000) % 60;
-
-                        int minisec = (int) duration % 1000;
-
-
-                        textB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
-
-                        progress_mark_b = seekBar.getProgress();
-                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
-                        seekBar.setDotsDrawable(R.drawable.dot);
-                        seekBar.setmLine(R.drawable.line);
-
-                        if (current_mode == MODE_PLAY_AB_LOOP) {
-                            songList.get(song_selected).setMark_b((int)duration);
-                        }
-                    } else*/ if (is_editMarkB_change) {
+                    if (is_editMarkB_change) {
                         String time[];
                         String secs[];
 
@@ -544,8 +520,14 @@ public class MainActivity extends AppCompatActivity {
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //seekBar.setDots(new int[] {});
-                //seekBar.setDotsDrawable(R.drawable.dot);
+                seekBar.setDots(new int[] {});
+                seekBar.setDotsDrawable(R.drawable.dot);
+
+                progress_mark_a = 0;
+                textA.setText("00:00.000");
+
+                progress_mark_b = 1000;
+                textB.setText("00:00.000");
             }
         });
 
@@ -828,10 +810,12 @@ public class MainActivity extends AppCompatActivity {
             mReceiver = null;
         }
 
-        if (mediaPlayer != null) {
+        /*if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
-        }
+        }*/
+
+
 
 
 
@@ -890,6 +874,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         Intent intent;
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
         switch (item.getItemId()) {
             case R.id.action_add:
 
@@ -897,16 +884,36 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
             case R.id.action_play_all:
-                actionBar.setHomeAsUpIndicator(R.drawable.ic_play_arrow_white_48dp);
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
                 actionBar.setTitle("All");
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_ALL;
+
+                //clear loop
+                seekBar.setDots(new int[] {});
+                seekBar.setDotsDrawable(R.drawable.dot);
+
+                progress_mark_a = 0;
+                textA.setText("00:00.000");
+
+                progress_mark_b = 1000;
+                textB.setText("00:00.000");
                 break;
             case R.id.action_shuffle:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_shuffle_white_48dp);
                 actionBar.setTitle("Shuffle");
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_SHUFFLE;
+
+                //clear loop
+                seekBar.setDots(new int[] {});
+                seekBar.setDotsDrawable(R.drawable.dot);
+
+                progress_mark_a = 0;
+                textA.setText("00:00.000");
+
+                progress_mark_b = 1000;
+                textB.setText("00:00.000");
                 break;
 
             case R.id.action_repeat:
@@ -914,16 +921,65 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setTitle("Repeat");
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_REPEAT;
+
+                //clear loop
+                seekBar.setDots(new int[] {});
+                seekBar.setDotsDrawable(R.drawable.dot);
+
+                progress_mark_a = 0;
+                textA.setText("00:00.000");
+
+                progress_mark_b = 1000;
+                textB.setText("00:00.000");
                 break;
 
             case R.id.action_loop:
+
+                Log.e(TAG, "song_selected = "+song_selected);
+
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_loop_white_48dp);
                 actionBar.setTitle("AB Loop");
                 linearLayoutAB.setVisibility(View.VISIBLE);
                 current_mode = MODE_PLAY_AB_LOOP;
+
+                int minutes_a = 0;
+                int seconds_a = 0;
+                int minisec_a = 0;
+                int minutes_b = 0;
+                int seconds_b = 0;
+                int minisec_b = 0;
+
+                if (current_duration > 0 ) {
+                    progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_duration * 1000.0);
+                    progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_duration * 1000.0);
+
+                    minutes_a = songList.get(song_selected).getMark_a() / 60000;
+                    seconds_a = (songList.get(song_selected).getMark_a() / 1000) % 60;
+                    minisec_a = songList.get(song_selected).getMark_a() % 1000;
+
+                    minutes_b = songList.get(song_selected).getMark_b() / 60000;
+                    seconds_b = (songList.get(song_selected).getMark_b() / 1000) % 60;
+                    minisec_b = songList.get(song_selected).getMark_b() % 1000;
+
+                    seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                    seekBar.setDotsDrawable(R.drawable.dot);
+                    seekBar.setmLine(R.drawable.line);
+                } else {
+                    seekBar.setDots(new int[]{0, 1000});
+                    seekBar.setDotsDrawable(R.drawable.dot);
+                    seekBar.setmLine(R.drawable.line);
+                }
+
+                textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
+                textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
                 break;
 
         }
+
+        editor = pref.edit();
+        editor.putInt("PLAY_MODE", current_mode);
+        editor.apply();
+
         return true;
     }
 
