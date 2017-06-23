@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     SongArrayAdapter songArrayAdapter;
 
     MenuItem item_search;
-    ActionBar actionBar;
+    public static ActionBar actionBar;
     LinearLayout linearLayoutAB;
     public static TextView songDuration;
     public static DottedSeekBar seekBar;
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     public static int song_selected = 0;
     public static int current_mode = MODE_PLAY_ALL;
     MediaOperation mediaOperation;
-    private static int current_duration = 0;
+    private static int current_song_duration = 0;
 
     private static int progress_mark_a = 0;
     private static int progress_mark_b = 1000;
@@ -125,7 +125,11 @@ public class MainActivity extends AppCompatActivity {
 
     public static int currentSongPlay = 0;
 
+    public static int songPlayBeforePause = 0;
+    public static int songPlayAfterPauseToPlay = 0;
 
+    private static String currentAcitonBarTitle;
+    private static boolean isPlayPress = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,24 +186,28 @@ public class MainActivity extends AppCompatActivity {
             switch (current_mode) {
                 case MODE_PLAY_ALL:
                     actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
-                    actionBar.setTitle("All");
+                    currentAcitonBarTitle = getResources().getString(R.string.play_mode_all);
+                    actionBar.setTitle(currentAcitonBarTitle);
                     linearLayoutAB.setVisibility(View.GONE);
                     break;
                 case MODE_PLAY_SHUFFLE:
                     actionBar.setHomeAsUpIndicator(R.drawable.ic_shuffle_white_48dp);
-                    actionBar.setTitle("Shuffle");
+                    currentAcitonBarTitle = getResources().getString(R.string.play_mode_shuffle);
+                    actionBar.setTitle(currentAcitonBarTitle);
                     linearLayoutAB.setVisibility(View.GONE);
                     break;
 
                 case MODE_PLAY_REPEAT:
                     actionBar.setHomeAsUpIndicator(R.drawable.ic_repeat_white_48dp);
-                    actionBar.setTitle("Repeat");
+                    currentAcitonBarTitle = getResources().getString(R.string.play_mode_repeat);
+                    actionBar.setTitle(currentAcitonBarTitle);
                     linearLayoutAB.setVisibility(View.GONE);
                     break;
 
                 case MODE_PLAY_AB_LOOP:
                     actionBar.setHomeAsUpIndicator(R.drawable.ic_loop_white_48dp);
-                    actionBar.setTitle("AB Loop");
+                    currentAcitonBarTitle = getResources().getString(R.string.play_mode_ab_loop);
+                    actionBar.setTitle(currentAcitonBarTitle);
                     linearLayoutAB.setVisibility(View.VISIBLE);
                     break;
 
@@ -224,12 +232,41 @@ public class MainActivity extends AppCompatActivity {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //Log.e(TAG, "=> onProgressChanged");
+
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //is playing
+                    //Log.e(TAG, "song was playing, don't change");
+                } else {
+
+                    if (current_song_duration != 0) {
+
+                        //NumberFormat f = new DecimalFormat("00");
+                        //NumberFormat f2 = new DecimalFormat("000");
+
+                        double per_unit = (double) current_song_duration / 1000.0;
+
+                        double duration = seekBar.getProgress() * per_unit;
+
+                        //Log.e(TAG, "=> onProgressChanged unit = "+String.valueOf(per_unit)+" duration = "+String.valueOf(duration));
+
+                        setSongDuration((int) duration);
+                        //setActionBarTitle((int) duration);
+                    }
+                }
 
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 Log.e(TAG, "onStartTrackingTouch >");
+
+                if (isPlayPress) { //play is pressed
+                    if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                        mediaOperation.doPause();
+                    }
+                }
+
+
             }
 
             @Override
@@ -241,12 +278,12 @@ public class MainActivity extends AppCompatActivity {
                 is_editMarkA_change = false;
                 is_editMarkB_change = false;
 
-                if (current_duration != 0) {
+                if (current_song_duration != 0) {
 
                     NumberFormat f = new DecimalFormat("00");
                     NumberFormat f2 = new DecimalFormat("000");
 
-                    double per_unit = (double) current_duration / 1000.0;
+                    double per_unit = (double) current_song_duration / 1000.0;
 
 
 
@@ -254,23 +291,49 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.e(TAG, "unit = "+String.valueOf(per_unit)+" duration = "+String.valueOf(duration));
 
-                    int minutes = ((int)duration)/60000;
+                    /*int minutes = ((int)duration)/60000;
 
                     int seconds = ((int)duration/1000) % 60;
 
-                    int minisec = (int)duration%1000;
+                    int minisec = (int)duration%1000;*/
 
+                    setSongDuration((int)duration);
+                    //setActionBarTitle((int)duration);
 
-                    songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+                    //songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+                    /*switch (current_mode) {
+                        case MODE_PLAY_ALL:
+                            actionBar.setTitle(getResources().getString(R.string.play_mode_all)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+                            break;
+                        case MODE_PLAY_SHUFFLE:
+                            actionBar.setTitle(getResources().getString(R.string.play_mode_shuffle)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+                            break;
+                        case MODE_PLAY_REPEAT:
+                            actionBar.setTitle(getResources().getString(R.string.play_mode_repeat)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+                            break;
+                        case MODE_PLAY_AB_LOOP:
+                            actionBar.setTitle(getResources().getString(R.string.play_mode_ab_loop)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+                            break;
+                    }*/
 
-                    if (!mediaOperation.isPause()) { // is playing
+                    if (isPlayPress) { //play is pressed, state: pause -> start
+                        mediaOperation.setSeekTo((int)duration);
+                        mediaOperation.doPlay(songList.get(song_selected).getPath());
+                    } else {
+                        current_position = (int)duration;
+                        mediaOperation.setCurrentPosition(current_position);
+                    }
+
+                    /*if (!mediaOperation.isPause()) { // is playing
                         mediaOperation.doPause();
                         mediaOperation.setCurrentPosition((int)duration);
                         mediaOperation.doPlay(songList.get(song_selected).getPath());
                     } else { //pause
                         current_position = (int)duration;
                         mediaOperation.setCurrentPosition(current_position);
-                    }
+                    }*/
+                } else {
+                    Log.e(TAG, "current_song_duration = 0");
                 }
 
 
@@ -300,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (current_duration != 0) {
+                if (current_song_duration != 0) {
 
                     if (is_editMarkA_change) {
                         String time[];
@@ -340,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                                         duration += Integer.valueOf(secs[0]) * 1000;
                                         duration += Integer.valueOf(secs[1]);
 
-                                        progress_mark_a = (duration * 1000) / current_duration;
+                                        progress_mark_a = (duration * 1000) / current_song_duration;
 
                                         if (progress_mark_a < 1000) {
                                             seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
@@ -362,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
 
-                        double per_unit = (double) current_duration / 1000.0;
+                        double per_unit = (double) current_song_duration / 1000.0;
 
 
                         double duration = seekBar.getProgress() * per_unit;
@@ -422,7 +485,7 @@ public class MainActivity extends AppCompatActivity {
         markButtonB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (current_duration != 0) {
+                if (current_song_duration != 0) {
 
                     if (is_editMarkB_change) {
                         String time[];
@@ -462,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
                                         duration += Integer.valueOf(secs[0]) * 1000;
                                         duration += Integer.valueOf(secs[1]);
 
-                                        progress_mark_b = (duration * 1000) / current_duration;
+                                        progress_mark_b = (duration * 1000) / current_song_duration;
 
                                         if (progress_mark_b <= 1000) {
 
@@ -483,7 +546,7 @@ public class MainActivity extends AppCompatActivity {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
 
-                        double per_unit = (double) current_duration / 1000.0;
+                        double per_unit = (double) current_song_duration / 1000.0;
 
 
                         double duration = seekBar.getProgress() * per_unit;
@@ -536,7 +599,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (songList.size() > 0) { //check if songs exist in list
 
-                    if (mediaOperation.isPause()) { //if stop or pause, play
+                    if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { // a song is playing, do pause
+                        Log.d(TAG, "[imgPlayOrPause] isPlaying");
+                        songPlayBeforePause = song_selected; //save song location before pause
+                        mediaOperation.doPause();
+                        current_position = mediaOperation.getCurrentPosition();
+                        isPlayPress = false;
+                        //imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                    } else { //state is paused, stopped...
 
                         String songPath, songName;
                         if (song_selected > 0) {
@@ -545,6 +615,53 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             songPath = songList.get(0).getPath();
                             songName = songList.get(0).getName();
+                            current_song_duration = songList.get(0).getDuration();
+                        }
+
+                        //here we compare song_select before pause and play
+                        songPlayAfterPauseToPlay = song_selected;
+                        currentSongPlay = song_selected;
+
+                        isPlayPress = true;
+
+
+                        if (songPlayBeforePause == songPlayAfterPauseToPlay) {
+                            Log.d(TAG, "The same song from pause to play");
+
+                            if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                                mediaOperation.setSeekTo(current_position);
+
+                            } else if (mediaOperation.getCurrent_state() == Constants.STATE.PlaybackCompleted) {
+
+                            }
+
+
+                        } else {
+                            Log.d(TAG, "The song was different from pause to play, stop!");
+                            mediaOperation.doStop();
+
+                            current_position = 0;
+                            //mediaOperation.setCurrentPosition(0);
+                        }
+
+                        Log.d(TAG, "play "+songName+" position = "+current_position);
+                        mediaOperation.setCurrentPosition(current_position);
+                        mediaOperation.doPlay(songPath);
+
+                        //imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
+                    }
+
+                    /*if (mediaOperation.isPause()) { //if stop or pause, play
+                        isPlayPress = true;
+
+                        String songPath, songName;
+                        if (song_selected > 0) {
+                            songPath = songArrayAdapter.getItem(song_selected).getPath();
+                            songName = songArrayAdapter.getItem(song_selected).getName();
+                        } else {
+                            songPath = songList.get(0).getPath();
+                            songName = songList.get(0).getName();
+                            current_song_duration = songList.get(0).getDuration();
                         }
                         //myListview.invalidateViews();
                         Log.d(TAG, "play "+songName+" position = "+current_position);
@@ -554,6 +671,7 @@ public class MainActivity extends AppCompatActivity {
 
                         imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
                     } else { //playing, pause
+                        isPlayPress = false;
                         Log.d(TAG, "pause currentSongPlay = "+currentSongPlay+" song_selected = "+song_selected);
 
                         if (currentSongPlay != song_selected) {
@@ -573,7 +691,7 @@ public class MainActivity extends AppCompatActivity {
                         mediaOperation.doPause();
 
                         imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                    }
+                    }*/
                 } else {
                     toast("Song list is empty");
                 }
@@ -584,8 +702,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "select "+position);
-
-
 
                 song_selected = position;
 
@@ -603,9 +719,9 @@ public class MainActivity extends AppCompatActivity {
 
                 myListview.invalidateViews();
 
-                current_duration = songList.get(song_selected).getDuration();
+                current_song_duration = songList.get(song_selected).getDuration();
 
-                if (current_duration != 0) {
+                if (current_song_duration != 0) {
 
                     NumberFormat f = new DecimalFormat("00");
                     NumberFormat f2 = new DecimalFormat("000");
@@ -618,8 +734,8 @@ public class MainActivity extends AppCompatActivity {
                         case MODE_PLAY_REPEAT:
                             break;
                         case MODE_PLAY_AB_LOOP:
-                            progress_mark_a = (int) ((float) songList.get(position).getMark_a() / (float) current_duration * 1000.0);
-                            progress_mark_b = (int) ((float) songList.get(position).getMark_b() / (float) current_duration * 1000.0);
+                            progress_mark_a = (int) ((float) songList.get(position).getMark_a() / (float) current_song_duration * 1000.0);
+                            progress_mark_b = (int) ((float) songList.get(position).getMark_b() / (float) current_song_duration * 1000.0);
 
                             int minutes_a = songList.get(position).getMark_a()/60000;
                             int seconds_a = (songList.get(position).getMark_a()/1000) % 60;
@@ -689,8 +805,8 @@ public class MainActivity extends AppCompatActivity {
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_PLAY_COMPLETE)) {
                     Log.d(TAG, "receive GET_PLAY_COMPLETE !");
                     imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.START_TO_PLAY)) {
-                    Log.d(TAG, "receive START_TO_PLAY !("+song_selected+")");
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.MEDIAPLAYER_STATE_STARTED)) {
+                    Log.d(TAG, "receive MEDIAPLAYER_STATE_STARTED !("+song_selected+")");
                     /*playtask goodTask;
                     goodTask = new playtask();
                     goodTask.execute(10);*/
@@ -727,6 +843,9 @@ public class MainActivity extends AppCompatActivity {
                     myListview.invalidateViews();
 
 
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED)) {
+                    Log.d(TAG, "receive MEDIAPLAYER_STATE_PAUSED !");
+                    imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                 }
             }
         };
@@ -736,8 +855,9 @@ public class MainActivity extends AppCompatActivity {
             filter = new IntentFilter();
             filter.addAction(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
             filter.addAction(Constants.ACTION.GET_PLAY_COMPLETE);
-            filter.addAction(Constants.ACTION.START_TO_PLAY);
             filter.addAction(Constants.ACTION.GET_SONGLIST_FROM_RECORD_FILE_COMPLETE);
+            filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
+            filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;
             Log.d(TAG, "registerReceiver mReceiver");
@@ -885,7 +1005,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_play_all:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
-                actionBar.setTitle("All");
+                currentAcitonBarTitle = getResources().getString(R.string.play_mode_all);
+                actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_ALL;
 
@@ -901,7 +1022,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_shuffle:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_shuffle_white_48dp);
-                actionBar.setTitle("Shuffle");
+                currentAcitonBarTitle = getResources().getString(R.string.play_mode_shuffle);
+                actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_SHUFFLE;
 
@@ -918,7 +1040,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_repeat:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_repeat_white_48dp);
-                actionBar.setTitle("Repeat");
+                currentAcitonBarTitle = getResources().getString(R.string.play_mode_repeat);
+                actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_REPEAT;
 
@@ -938,7 +1061,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "song_selected = "+song_selected);
 
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_loop_white_48dp);
-                actionBar.setTitle("AB Loop");
+                currentAcitonBarTitle = getResources().getString(R.string.play_mode_ab_loop);
+                actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.VISIBLE);
                 current_mode = MODE_PLAY_AB_LOOP;
 
@@ -949,9 +1073,9 @@ public class MainActivity extends AppCompatActivity {
                 int seconds_b = 0;
                 int minisec_b = 0;
 
-                if (current_duration > 0 ) {
-                    progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_duration * 1000.0);
-                    progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_duration * 1000.0);
+                if (current_song_duration > 0 ) {
+                    progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
+                    progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
 
                     minutes_a = songList.get(song_selected).getMark_a() / 60000;
                     seconds_a = (songList.get(song_selected).getMark_a() / 1000) % 60;
@@ -1192,5 +1316,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return ret;
+    }
+
+    public static void setSongDuration(int timeStamp) {
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
+
+        int minutes = (timeStamp/60000);
+
+        int seconds = (timeStamp/1000) % 60;
+
+        int minisec = (timeStamp%1000);
+
+        songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+    }
+
+    public static void setActionBarTitle(int timeStamp) {
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
+
+        int minutes = (timeStamp/60000);
+
+        int seconds = (timeStamp/1000) % 60;
+
+        int minisec = (timeStamp%1000);
+
+        actionBar.setTitle(currentAcitonBarTitle+"            "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
     }
 }

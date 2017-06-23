@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">JamNow</string>
+    <string name="play_mode_all">All</string>
+    <string name="play_mode_shuffle">Shuffle</string>
+    <string name="play_mode_repeat">Single Repeat</string>
+    <string name="play_mode_ab_loop">AB Loop</string>
+    <string name="menu_add">Add</string>
 </resources>

@@ -17,13 +17,18 @@ import static com.seventhmoon.jamnow.MainActivity.currentSongPlay;
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
 
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
+import static com.seventhmoon.jamnow.MainActivity.setActionBarTitle;
+import static com.seventhmoon.jamnow.MainActivity.setSongDuration;
 import static com.seventhmoon.jamnow.MainActivity.songDuration;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 import static com.seventhmoon.jamnow.MainActivity.song_selected;
+import static com.seventhmoon.jamnow.Data.Constants.STATE;
 
 
 public class MediaOperation {
     private static final String TAG = MediaOperation.class.getName();
+
+
 
     private static MediaPlayer mediaPlayer;
     private int current_play_mode = 0;
@@ -35,12 +40,27 @@ public class MediaOperation {
     private int current_position = 0;
 
     private boolean taskDone = true;
+    private boolean isPlayingValid = false;
 
-
+    private STATE current_state = STATE.Created;
 
 
     public MediaOperation (Context context){
         this.context = context;
+    }
+
+    public STATE getCurrent_state() {
+        return current_state;
+    }
+
+    public void setSeekTo(int offset) {
+        if (current_state == STATE.Prepared ||
+                current_state == STATE.Started ||
+                current_state == STATE.Paused ||
+                current_state == STATE.PlaybackCompleted) {
+
+            mediaPlayer.seekTo(offset);
+        }
     }
 
     public int getCurrent_play_mode() {
@@ -63,6 +83,7 @@ public class MediaOperation {
             mediaPlayer.reset();
         } else {
             mediaPlayer.reset();
+
         }
 
         try {
@@ -95,8 +116,16 @@ public class MediaOperation {
 
     public void doStop() {
         if (mediaPlayer != null) {
-            pause = false;
-            mediaPlayer.stop();
+
+            if (current_state == STATE.Prepared ||
+                    current_state == STATE.Started ||
+                    current_state == STATE.Paused ||
+                    current_state == STATE.PlaybackCompleted) {
+
+                pause = false;
+                mediaPlayer.stop();
+                current_state = STATE.Stopped;
+            }
         }
     }
 
@@ -112,8 +141,16 @@ public class MediaOperation {
 
         //if (!goodTask.isCancelled())
         //    goodTask.cancel(true);
-        pause = true;
-        mediaPlayer.pause();
+        if (current_state == STATE.Started) {
+            pause = true;
+            mediaPlayer.pause();
+            //set state
+            current_state = Constants.STATE.Paused;
+
+            Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
+            context.sendBroadcast(newNotifyIntent);
+        }
+
     }
 
     public void doNext() {
@@ -188,24 +225,54 @@ public class MediaOperation {
     }
 
     private void playing(String songPath){
-        Log.d(TAG, "playing "+songPath);
+        Log.d(TAG, "<playing "+songPath+">");
 
-        if (mediaPlayer != null && !pause) {
+        if (mediaPlayer != null) {
 
-            mediaPlayer.release();
-            mediaPlayer = null;
+            if (current_state == STATE.Paused) {
+                Log.d(TAG, "State: "+STATE.Paused);
+                mediaPlayer.start();
+                //set state
+                current_state = STATE.Started;
+
+                if (taskDone) {
+                    goodTask = new playtask();
+                    goodTask.execute(10);
+                    taskDone = false;
+                }
+
+                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
+                context.sendBroadcast(newNotifyIntent);
+            } else {
+                isPlayingValid = false;
+                mediaPlayer.release();
+                //set state
+                current_state = STATE.End;
+                mediaPlayer = null;
+            }
         }
 
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
-            mediaPlayer.reset();
+            //set state
+            current_state = STATE.Created;
 
+            mediaPlayer.reset();
+            //set state
+            current_state = STATE.Idle;
+            isPlayingValid = true;
             try {
 
                 mediaPlayer.setDataSource(songPath);
+                //set state
+                current_state = STATE.Initialized;
                 mediaPlayer.prepare();
+                //set state
+                current_state = STATE.Prepared;
                 mediaPlayer.seekTo(current_position);
                 mediaPlayer.start();
+                //set state
+                current_state = STATE.Started;
 
                 if (taskDone) {
                     goodTask = new playtask();
@@ -214,12 +281,15 @@ public class MediaOperation {
                 }
 
 
-                Intent newNotifyIntent = new Intent(Constants.ACTION.START_TO_PLAY);
+                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
                 context.sendBroadcast(newNotifyIntent);
 
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
+                        //set state
+                        current_state = STATE.PlaybackCompleted;
+
                         current_position = 0; //play complete, set position = 0
 
                         Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
@@ -249,7 +319,7 @@ public class MediaOperation {
             }
         }
 
-
+        Log.d(TAG, "<playing>");
     }
 
     class playtask extends AsyncTask<Integer, Integer, String>
@@ -258,14 +328,15 @@ public class MediaOperation {
         protected String doInBackground(Integer... countTo) {
 
 
-            while(mediaPlayer.isPlaying()) {
+            while(current_state == STATE.Started) {
+
                 try {
 
                     //long percent = 0;
                     //if (Data.current_file_size > 0)
                     //    percent = (Data.complete_file_size * 100)/Data.current_file_size;
 
-                    int position = ((mediaPlayer.getCurrentPosition()*1000)/mediaPlayer.getDuration());
+                    int position = ((mediaPlayer.getCurrentPosition() * 1000) / mediaPlayer.getDuration());
 
                     publishProgress(position);
                     Thread.sleep(200);
@@ -304,7 +375,7 @@ public class MediaOperation {
             super.onProgressUpdate(values);
 
 
-            NumberFormat f = new DecimalFormat("00");
+            /*NumberFormat f = new DecimalFormat("00");
             NumberFormat f2 = new DecimalFormat("000");
 
 
@@ -314,7 +385,9 @@ public class MediaOperation {
 
             int minisec = (mediaPlayer.getCurrentPosition()%1000);
 
-            songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+            songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));*/
+            setSongDuration(mediaPlayer.getCurrentPosition());
+            //setActionBarTitle(mediaPlayer.getCurrentPosition());
             seekBar.setProgress(values[0]);
 
             // 背景工作處理"中"更新的事
@@ -345,6 +418,7 @@ public class MediaOperation {
             if (pause) { //if pause, don't change progress
                 Log.d(TAG, "Pause was pressed while playing");
             } else {
+                Log.e(TAG, "pause is not been pressed.");
                 seekBar.setProgress(0);
             }
 

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">JamNow</string>
+    <string name="play_mode_all">全部撥放</string>
+    <string name="play_mode_shuffle">隨機撥放</string>
+    <string name="play_mode_repeat">單一重複</string>
+    <string name="play_mode_ab_loop">AB段循環</string>
+    <string name="menu_add">新增</string>
+</resources>

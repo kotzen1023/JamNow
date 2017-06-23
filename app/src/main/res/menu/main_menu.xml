@@ -11,7 +11,7 @@
 
     <item
         android:id="@+id/action_add"
-        android:title="Add"
+        android:title="@string/menu_add"
         android:icon="@drawable/ic_add_white_24dp"
         app:showAsAction="ifRoom|withText" />
 
@@ -35,25 +35,25 @@
         <menu>
             <item
                 android:id="@+id/action_play_all"
-                android:title="All"
+                android:title="@string/play_mode_all"
                 android:icon="@drawable/ic_all_inclusive_black_24dp"
                 app:showAsAction="ifRoom|withText" />
 
             <item
                 android:id="@+id/action_shuffle"
-                android:title="Shuffle"
+                android:title="@string/play_mode_shuffle"
                 android:icon="@drawable/ic_shuffle_black_24dp"
                 app:showAsAction="ifRoom|withText" />
 
             <item
                 android:id="@+id/action_repeat"
-                android:title="repeat"
+                android:title="@string/play_mode_repeat"
                 android:icon="@drawable/ic_repeat_black_24dp"
                 app:showAsAction="ifRoom|withText" />
 
             <item
                 android:id="@+id/action_loop"
-                android:title="AB loop"
+                android:title="@string/play_mode_ab_loop"
                 android:icon="@drawable/ic_loop_black_24dp"
                 app:showAsAction="ifRoom|withText" />
 
