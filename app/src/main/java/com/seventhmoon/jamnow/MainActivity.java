@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     public static int song_selected = 0;
     public static int current_mode = MODE_PLAY_ALL;
     MediaOperation mediaOperation;
-    private static int current_song_duration = 0;
+    public static int current_song_duration = 0;
 
     private static int progress_mark_a = 0;
     private static int progress_mark_b = 1000;
@@ -123,10 +123,11 @@ public class MainActivity extends AppCompatActivity {
     private static int current_position = 0;
     ProgressDialog loadDialog = null;
 
-    public static int currentSongPlay = 0;
+    //public static int currentSongPlay = 0;
 
-    public static int songPlayBeforePause = 0;
-    public static int songPlayAfterPauseToPlay = 0;
+
+
+    public static int songPlaying = 0;
 
     private static String currentAcitonBarTitle;
     private static boolean isPlayPress = false;
@@ -263,6 +264,18 @@ public class MainActivity extends AppCompatActivity {
                 if (isPlayPress) { //play is pressed
                     if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
                         mediaOperation.doPause();
+                        Log.d(TAG, "songPlaying = "+songPlaying+" song_selected = "+song_selected);
+
+                        if (songPlaying == song_selected) {
+                            Log.d(TAG, "seekBar: The same song from pause to play");
+
+                            //mediaOperation.setSeekTo(current_position);
+                        } else {
+                            Log.d(TAG, "seekBar: The song was different from pause to play, stop!");
+                            songPlaying = song_selected;
+                            mediaOperation.doStop();
+                            //current_position = 0;
+                        }
                     }
                 }
 
@@ -317,8 +330,12 @@ public class MainActivity extends AppCompatActivity {
                     }*/
 
                     if (isPlayPress) { //play is pressed, state: pause -> start
-                        mediaOperation.setSeekTo((int)duration);
-                        mediaOperation.doPlay(songList.get(song_selected).getPath());
+                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                            mediaOperation.setSeekTo((int) duration);
+                            mediaOperation.doPlay(songList.get(song_selected).getPath());
+                        } else {
+                            mediaOperation.doPlay(songList.get(song_selected).getPath());
+                        }
                     } else {
                         current_position = (int)duration;
                         mediaOperation.setCurrentPosition(current_position);
@@ -362,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
         markButtonA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int text_a_duration;
 
                 if (current_song_duration != 0) {
 
@@ -399,11 +417,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                                        int duration = Integer.valueOf(time[0]) * 60000;
-                                        duration += Integer.valueOf(secs[0]) * 1000;
-                                        duration += Integer.valueOf(secs[1]);
+                                        text_a_duration = Integer.valueOf(time[0]) * 60000;
+                                        text_a_duration += Integer.valueOf(secs[0]) * 1000;
+                                        text_a_duration += Integer.valueOf(secs[1]);
 
-                                        progress_mark_a = (duration * 1000) / current_song_duration;
+                                        progress_mark_a = (text_a_duration * 1000) / current_song_duration;
 
                                         if (progress_mark_a < 1000) {
                                             seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
@@ -450,11 +468,34 @@ public class MainActivity extends AppCompatActivity {
                             songList.get(song_selected).setMark_a((int)duration);
                         }
                     }
+
+
+
+                    if (progress_mark_b <= progress_mark_a) {
+                        toast("Mark B must greater than Mark A");
+
+                        progress_mark_a = 0;
+                        progress_mark_b = 1000;
+
+                        songList.get(song_selected).setMark_a(0);
+                        songList.get(song_selected).setMark_b(current_song_duration);
+
+                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                        seekBar.setDotsDrawable(R.drawable.dot);
+                        seekBar.setmLine(R.drawable.line);
+
+                        mediaOperation.setAb_loop_start(0);
+                        mediaOperation.setAb_loop_end(current_song_duration);
+                    } else {
+                        Log.e(TAG, "Mark A reset");
+                        //if (current_mode == MODE_PLAY_AB_LOOP) {
+                            mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                            mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                        //}
+                    }
                 }
 
-                if (progress_mark_b <= progress_mark_a) {
-                    toast("Mark B must greater than Mark A");
-                }
+
 
                 //Log.e(TAG, "textA "+textA.getText().toString());
 
@@ -572,9 +613,27 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-
                     if (progress_mark_b <= progress_mark_a) {
                         toast("Mark B must greater than Mark A");
+
+                        progress_mark_a = 0;
+                        progress_mark_b = 1000;
+
+                        songList.get(song_selected).setMark_a(0);
+                        songList.get(song_selected).setMark_b(current_song_duration);
+
+                        seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                        seekBar.setDotsDrawable(R.drawable.dot);
+                        seekBar.setmLine(R.drawable.line);
+
+                        mediaOperation.setAb_loop_start(0);
+                        mediaOperation.setAb_loop_end(current_song_duration);
+                    } else {
+                        Log.e(TAG, "Mark B reset");
+                        //if (current_mode == MODE_PLAY_AB_LOOP) {
+                            mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                            mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                        //}
                     }
                 }
             }
@@ -600,15 +659,19 @@ public class MainActivity extends AppCompatActivity {
                 if (songList.size() > 0) { //check if songs exist in list
 
                     if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { // a song is playing, do pause
-                        Log.d(TAG, "[imgPlayOrPause] isPlaying");
-                        songPlayBeforePause = song_selected; //save song location before pause
+                        Log.d(TAG, "[imgPlayOrPause] isPlaying, songPlaying = "+songPlaying);
+                        isPlayPress = false;
+
+                        //songPlayBeforePause = song_selected; //save song location before pause
                         mediaOperation.doPause();
                         current_position = mediaOperation.getCurrentPosition();
-                        isPlayPress = false;
+
                         //imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                     } else { //state is paused, stopped...
-
+                        Log.d(TAG, "[imgPlayOrPause] state is paused, stopped...");
                         String songPath, songName;
+                        isPlayPress = true;
+
                         if (song_selected > 0) {
                             songPath = songArrayAdapter.getItem(song_selected).getPath();
                             songName = songArrayAdapter.getItem(song_selected).getName();
@@ -618,14 +681,48 @@ public class MainActivity extends AppCompatActivity {
                             current_song_duration = songList.get(0).getDuration();
                         }
 
+                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                            Log.d(TAG, "state: Paused");
+
+                            if (songPlaying == song_selected) {
+                                Log.d(TAG, "The same song from pause to play");
+
+                                if (current_mode == MODE_PLAY_AB_LOOP) {
+                                    if (current_position >= songList.get(song_selected).getMark_b()) {
+                                        current_position = songList.get(song_selected).getMark_a();
+                                    }
+                                }
+
+                                mediaOperation.setSeekTo(current_position);
+                            } else {
+                                Log.d(TAG, "The song was different from pause to play, stop!");
+                                songPlaying = song_selected;
+                                mediaOperation.doStop();
+                                current_position = 0;
+                            }
+                        } else {
+                            Log.d(TAG, "state: other");
+                            songPlaying = song_selected;
+
+                            if (current_mode == MODE_PLAY_AB_LOOP) {
+                                current_position = songList.get(song_selected).getMark_a();
+                                mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                            }
+                        }
+
+                        Log.d(TAG, "play "+songName+" position = "+current_position);
+                        mediaOperation.setCurrentPosition(current_position);
+                        mediaOperation.doPlay(songPath);
+
                         //here we compare song_select before pause and play
-                        songPlayAfterPauseToPlay = song_selected;
-                        currentSongPlay = song_selected;
-
-                        isPlayPress = true;
+                        //songPlayAfterPauseToPlay = song_selected;
 
 
-                        if (songPlayBeforePause == songPlayAfterPauseToPlay) {
+
+
+
+                        /*if (songPlayBeforePause == songPlayAfterPauseToPlay) {
                             Log.d(TAG, "The same song from pause to play");
 
                             if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
@@ -642,11 +739,9 @@ public class MainActivity extends AppCompatActivity {
 
                             current_position = 0;
                             //mediaOperation.setCurrentPosition(0);
-                        }
+                        }*/
 
-                        Log.d(TAG, "play "+songName+" position = "+current_position);
-                        mediaOperation.setCurrentPosition(current_position);
-                        mediaOperation.doPlay(songPath);
+
 
                         //imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
                     }
