@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         mediaOperation = new MediaOperation(context);
+
         mediaOperation.setCurrent_play_mode(current_mode);
 
         //formatter = new SimpleDateFormat("mm:ss");
@@ -650,6 +651,12 @@ public class MainActivity extends AppCompatActivity {
 
                 progress_mark_b = 1000;
                 textB.setText("00:00.000");
+
+                songList.get(song_selected).setMark_a(0);
+                songList.get(song_selected).setMark_b(current_song_duration);
+
+                mediaOperation.setAb_loop_start(0);
+                mediaOperation.setAb_loop_end(current_song_duration);
             }
         });
 
@@ -676,9 +683,33 @@ public class MainActivity extends AppCompatActivity {
                             songPath = songArrayAdapter.getItem(song_selected).getPath();
                             songName = songArrayAdapter.getItem(song_selected).getName();
                         } else {
-                            songPath = songList.get(0).getPath();
-                            songName = songList.get(0).getName();
-                            current_song_duration = songList.get(0).getDuration();
+
+                            if (current_mode == MODE_PLAY_SHUFFLE) {
+                                songPath = songList.get(mediaOperation.getShufflePosition()).getPath();
+                                songName = songList.get(mediaOperation.getShufflePosition()).getName();
+                                song_selected = mediaOperation.getShufflePosition();
+
+                                //deselect other
+                                for (int i=0; i<songList.size(); i++) {
+
+                                    if (i == song_selected) {
+                                        songList.get(i).setSelected(true);
+
+                                    } else {
+                                        songList.get(i).setSelected(false);
+
+                                    }
+                                }
+
+                                myListview.invalidateViews();
+
+                                current_song_duration = songList.get(song_selected).getDuration();
+                            } else {
+
+                                songPath = songList.get(0).getPath();
+                                songName = songList.get(0).getName();
+                                current_song_duration = songList.get(0).getDuration();
+                            }
                         }
 
                         if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
@@ -698,7 +729,14 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, "The song was different from pause to play, stop!");
                                 songPlaying = song_selected;
                                 mediaOperation.doStop();
-                                current_position = 0;
+
+                                if (current_mode == MODE_PLAY_AB_LOOP) {
+                                    current_position = songList.get(song_selected).getMark_a();
+                                    mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                    mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                } else {
+                                    current_position = 0;
+                                }
                             }
                         } else {
                             Log.d(TAG, "state: other");
@@ -793,6 +831,217 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        imgSkipPrev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "imgSkipPrev");
+
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing
+                    mediaOperation.doStop();
+                    mediaOperation.doPrev();
+                } else {
+                    if (song_selected > 0 && song_selected < songList.size() ) { //song_selected must >= 1
+                        song_selected--;
+                    } else {
+                        song_selected = 0;
+                    }
+
+                    //deselect other
+                    for (int i=0; i<songList.size(); i++) {
+
+                        if (i == song_selected) {
+                            songList.get(i).setSelected(true);
+
+                        } else {
+                            songList.get(i).setSelected(false);
+
+                        }
+                    }
+
+                    myListview.invalidateViews();
+
+                    current_song_duration = songList.get(song_selected).getDuration();
+                }
+
+                if (current_song_duration != 0) {
+
+                    NumberFormat f = new DecimalFormat("00");
+                    NumberFormat f2 = new DecimalFormat("000");
+
+                    switch (current_mode) {
+                        case MODE_PLAY_ALL:
+                            break;
+                        case MODE_PLAY_SHUFFLE:
+                            break;
+                        case MODE_PLAY_REPEAT:
+                            break;
+                        case MODE_PLAY_AB_LOOP:
+                            progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
+                            progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
+
+                            int minutes_a = songList.get(song_selected).getMark_a()/60000;
+                            int seconds_a = (songList.get(song_selected).getMark_a()/1000) % 60;
+                            int minisec_a = songList.get(song_selected).getMark_a()%1000;
+
+                            int minutes_b = songList.get(song_selected).getMark_b()/60000;
+                            int seconds_b = (songList.get(song_selected).getMark_b()/1000) % 60;
+                            int minisec_b = songList.get(song_selected).getMark_b()%1000;
+
+                            seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                            seekBar.setDotsDrawable(R.drawable.dot);
+                            seekBar.setmLine(R.drawable.line);
+
+                            textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
+                            textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
+
+
+                            break;
+                    }
+
+                }
+            }
+        });
+
+        imgSkipNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "imgSkipNext");
+
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing
+                    mediaOperation.doStop();
+                    mediaOperation.doNext();
+                } else {
+                    if (song_selected < songList.size()-1 ) { //song_selected must >= 1
+                        song_selected++;
+                    } else {
+                        song_selected = songList.size()-1;
+                    }
+
+                    //deselect other
+                    for (int i=0; i<songList.size(); i++) {
+
+                        if (i == song_selected) {
+                            songList.get(i).setSelected(true);
+
+                        } else {
+                            songList.get(i).setSelected(false);
+
+                        }
+                    }
+
+                    myListview.invalidateViews();
+
+                    current_song_duration = songList.get(song_selected).getDuration();
+                }
+
+                if (current_song_duration != 0) {
+
+                    NumberFormat f = new DecimalFormat("00");
+                    NumberFormat f2 = new DecimalFormat("000");
+
+                    switch (current_mode) {
+                        case MODE_PLAY_ALL:
+                            break;
+                        case MODE_PLAY_SHUFFLE:
+                            break;
+                        case MODE_PLAY_REPEAT:
+                            break;
+                        case MODE_PLAY_AB_LOOP:
+                            progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
+                            progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
+
+                            int minutes_a = songList.get(song_selected).getMark_a()/60000;
+                            int seconds_a = (songList.get(song_selected).getMark_a()/1000) % 60;
+                            int minisec_a = songList.get(song_selected).getMark_a()%1000;
+
+                            int minutes_b = songList.get(song_selected).getMark_b()/60000;
+                            int seconds_b = (songList.get(song_selected).getMark_b()/1000) % 60;
+                            int minisec_b = songList.get(song_selected).getMark_b()%1000;
+
+                            seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                            seekBar.setDotsDrawable(R.drawable.dot);
+                            seekBar.setmLine(R.drawable.line);
+
+                            textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
+                            textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
+
+
+                            break;
+                    }
+
+                }
+            }
+        });
+
+        imgFastRewind.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Log.d(TAG, "state : "+mediaOperation.getCurrent_state());
+
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                    mediaOperation.doPause();
+                    current_position = mediaOperation.getCurrentPosition();
+                    if (current_position > 10000) {
+                        mediaOperation.setSeekTo(current_position-10000);
+                    } else {
+                        mediaOperation.setSeekTo(0);
+                    }
+
+                    mediaOperation.doPlay(songList.get(song_selected).getPath());
+                } else {
+
+                    if (mediaOperation.getCurrent_state() == Constants.STATE.Prepared ||
+                            mediaOperation.getCurrent_state() == Constants.STATE.Paused ||
+                            mediaOperation.getCurrent_state() == Constants.STATE.PlaybackCompleted) {
+                        current_position = mediaOperation.getCurrentPosition();
+                        if (current_position > 10000) {
+                            current_position = current_position - 10000;
+                        } else {
+                            current_position = 0;
+                        }
+                        mediaOperation.setSeekTo(current_position);
+                    }
+
+                    setSeekBarLocation(current_position);
+                    setSongDuration(current_position);
+                }
+            }
+        });
+
+        imgFastForward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "state : "+mediaOperation.getCurrent_state());
+
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                    mediaOperation.doPause();
+                    current_position = mediaOperation.getCurrentPosition()+10000;
+                    if (current_position >= current_song_duration) {
+                        mediaOperation.setSeekTo(current_song_duration);
+                    } else {
+                        mediaOperation.setSeekTo(current_position);
+                    }
+
+                    mediaOperation.doPlay(songList.get(song_selected).getPath());
+                } else {
+
+                    if (mediaOperation.getCurrent_state() == Constants.STATE.Prepared ||
+                            mediaOperation.getCurrent_state() == Constants.STATE.Paused ||
+                            mediaOperation.getCurrent_state() == Constants.STATE.PlaybackCompleted) {
+                        current_position = mediaOperation.getCurrentPosition()+10000;
+                        if (current_position >= current_song_duration) {
+                            current_position = current_song_duration;
+                        }
+                        mediaOperation.setSeekTo(current_position);
+                    }
+
+                    setSeekBarLocation(current_position);
+                    setSongDuration(current_position);
+                }
+            }
+        });
+
         myListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -867,6 +1116,8 @@ public class MainActivity extends AppCompatActivity {
                     myListview.setAdapter(songArrayAdapter);
 
                     loadDialog.dismiss();
+                    //set shuffle list
+                    mediaOperation.shuffleReset();
 
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
                     Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
@@ -1439,5 +1690,22 @@ public class MainActivity extends AppCompatActivity {
         int minisec = (timeStamp%1000);
 
         actionBar.setTitle(currentAcitonBarTitle+"            "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+    }
+
+    public static void setSeekBarLocation(int timeStamp) {
+
+        if (timeStamp == 0) {
+            seekBar.setProgress(0);
+        } else {
+
+            double per_unit = (double) current_song_duration / 1000.0;
+            double progress = (double) timeStamp / per_unit;
+
+            Log.d(TAG, "unit = " + per_unit + ", progress = " + progress);
+
+            seekBar.setProgress((int)progress);
+        }
+
+
     }
 }

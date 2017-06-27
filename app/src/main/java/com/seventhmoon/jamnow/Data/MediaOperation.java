@@ -12,6 +12,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 
 
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
@@ -33,12 +35,12 @@ public class MediaOperation {
 
 
     private static MediaPlayer mediaPlayer;
-    private int current_play_mode = 0;
+    private static int current_play_mode = 0;
     private boolean pause = true;
     private Context context;
 
 
-    playtask goodTask;
+    private static playtask goodTask;
     private int current_position = 0;
     private int ab_loop_start = 0;
     private int ab_loop_end = 0;
@@ -48,13 +50,51 @@ public class MediaOperation {
 
     private STATE current_state = STATE.Created;
 
+    private ArrayList<Integer> shuffleList = new ArrayList<>();
+    private int current_shuffle_index = 0;
+
 
     public MediaOperation (Context context){
         this.context = context;
     }
 
+    public int getCurrent_play_mode() {
+        return current_play_mode;
+    }
+
+    public void setCurrent_play_mode(int current_play_mode) {
+        this.current_play_mode = current_play_mode;
+    }
+
     public STATE getCurrent_state() {
         return current_state;
+    }
+
+    public void shuffleReset() {
+        if (shuffleList.size() > 0) {
+            shuffleList.clear();
+        }
+
+        for (int i=0; i< songList.size(); i++) {
+            shuffleList.add(i);
+        }
+        Collections.shuffle(shuffleList);
+
+        for (int i=0 ;i<shuffleList.size(); i++) {
+            Log.e(TAG, "shuffleList["+i+"] = "+shuffleList.get(i));
+        }
+    }
+
+    public int getCurrent_shuffle_index() {
+        return current_shuffle_index;
+    }
+
+    public void setCurrent_shuffle_index(int current_shuffle_index) {
+        this.current_shuffle_index = current_shuffle_index;
+    }
+
+    public int getShufflePosition() {
+        return shuffleList.get(current_shuffle_index);
     }
 
     public void setAb_loop_start(int ab_loop_start) {
@@ -66,6 +106,7 @@ public class MediaOperation {
     }
 
 
+
     public void setSeekTo(int offset) {
         if (current_state == STATE.Prepared ||
                 current_state == STATE.Started ||
@@ -74,14 +115,6 @@ public class MediaOperation {
 
             mediaPlayer.seekTo(offset);
         }
-    }
-
-    public int getCurrent_play_mode() {
-        return current_play_mode;
-    }
-
-    public void setCurrent_play_mode(int current_play_mode) {
-        this.current_play_mode = current_play_mode;
     }
 
     public boolean isPause() {
@@ -130,6 +163,7 @@ public class MediaOperation {
     }
 
     public void doStop() {
+        Log.d(TAG, "doStop");
         if (mediaPlayer != null) {
 
             if (current_state == STATE.Prepared ||
@@ -142,6 +176,14 @@ public class MediaOperation {
                 current_state = STATE.Stopped;
             }
         }
+
+        if (goodTask != null) {
+            Log.e(TAG, "cancel task");
+            goodTask.cancel(true);
+            goodTask = null;
+        }
+
+        taskDone = true;
     }
 
     public void doPlay(String songPath) {
@@ -158,7 +200,7 @@ public class MediaOperation {
         //if (!goodTask.isCancelled())
         //    goodTask.cancel(true);
         if (current_state == STATE.Started) {
-            taskDone = true; //stop progress
+            //taskDone = true; //stop progress
 
             pause = true;
             mediaPlayer.pause();
@@ -171,6 +213,52 @@ public class MediaOperation {
 
     }
 
+    public void doPrev() {
+        Log.d(TAG, "doPrev");
+
+        if (songList == null || songList.size() == 0) {
+            return;
+        }
+
+        if (current_mode == 1) { //shuffle
+            //find out current select
+            for (int i=0; i<songList.size(); i++) {
+                if (song_selected == shuffleList.get(i)) {
+                    current_shuffle_index = i;
+                }
+            }
+
+            //get next
+
+            if (current_shuffle_index > 0) {
+                current_shuffle_index--;
+            } else {
+                current_shuffle_index = 0;
+            }
+            song_selected = shuffleList.get(current_shuffle_index);
+        } else {
+
+            if (song_selected > 0 && song_selected < songList.size()) { //song_selected must >= 1
+                song_selected--;
+            } else {
+                song_selected = 0;
+            }
+        }
+
+        songPlaying = song_selected;
+        current_song_duration = songList.get(song_selected).getDuration();
+
+        ab_loop_start = songList.get(song_selected).getMark_a();
+        ab_loop_end = songList.get(song_selected).getMark_b();
+
+        if (current_mode == 3) { //ab loop
+            current_position = ab_loop_start;
+        }
+
+        String songPath = songList.get(song_selected).getPath();
+        playing(songPath);
+    }
+
     public void doNext() {
         Log.d(TAG, "doNext");
 
@@ -178,26 +266,46 @@ public class MediaOperation {
             return;
         }
 
-        if (song_selected < songList.size() - 1) {
-
-            //songList.get(song_selected).setSelected(false);
-
-            song_selected++;
-            songPlaying = song_selected;
-            current_song_duration = songList.get(song_selected).getDuration();
-            /*for (int i=0; i<songList.size(); i++) {
-                if (i==song_selected) {
-                    songList.get(song_selected).setSelected(true);
-                } else {
-                    songList.get(song_selected).setSelected(false);
+        if (current_mode == 1) { //shuffle
+            //find out current select
+            for (int i=0; i<songList.size(); i++) {
+                if (song_selected == shuffleList.get(i)) {
+                    current_shuffle_index = i;
                 }
             }
 
-            myListview.invalidateViews();*/
+            //get next
 
-            String songPath = songList.get(song_selected).getPath();
-            playing(songPath);
+            if (current_shuffle_index < shuffleList.size() - 1) {
+                current_shuffle_index++;
+            } else {
+                current_shuffle_index = 0;
+            }
+            song_selected = shuffleList.get(current_shuffle_index);
+        } else {
+            if (song_selected < songList.size() - 1) {
+
+                //songList.get(song_selected).setSelected(false);
+
+                song_selected++;
+
+            } else {
+                song_selected = songList.size() - 1;
+            }
         }
+
+        songPlaying = song_selected;
+        current_song_duration = songList.get(song_selected).getDuration();
+
+        ab_loop_start = songList.get(song_selected).getMark_a();
+        ab_loop_end = songList.get(song_selected).getMark_b();
+
+        if (current_mode == 3) { //ab loop
+            current_position = ab_loop_start;
+        }
+
+        String songPath = songList.get(song_selected).getPath();
+        playing(songPath);
 
     }
 
@@ -208,24 +316,27 @@ public class MediaOperation {
             return;
         }
 
-        if (song_selected < songList.size() - 1) {
-
-            songList.get(song_selected).setSelected(false);
-
-            song_selected++;
-            /*for (int i=0; i<songList.size(); i++) {
-                if (i==song_selected) {
-                    songList.get(song_selected).setSelected(true);
-                } else {
-                    songList.get(song_selected).setSelected(false);
-                }
+        //find out current select
+        for (int i=0; i<songList.size(); i++) {
+            if (song_selected == shuffleList.get(i)) {
+                current_shuffle_index = i;
             }
-
-            myListview.invalidateViews();*/
-
-            String songPath = songList.get(song_selected).getPath();
-            playing(songPath);
         }
+
+        //get next
+
+        if (current_shuffle_index < shuffleList.size() - 1) {
+            current_shuffle_index++;
+        } else {
+            current_shuffle_index = 0;
+        }
+        song_selected = shuffleList.get(current_shuffle_index);
+        songPlaying = song_selected;
+
+        current_song_duration = songList.get(song_selected).getDuration();
+
+        String songPath = songList.get(song_selected).getPath();
+        playing(songPath);
 
     }
 
@@ -289,17 +400,7 @@ public class MediaOperation {
         }
     }
 
-    public static void doPrev() {
-        /*if (songList == null || songList.size() == 0) {
-            return;
-        }
-        if (index > 0) {
-            index--;
-            isPause = false;
-            playing();
-            imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-        }*/
-    }
+
 
     private void playing(String songPath){
         Log.d(TAG, "<playing "+songPath+">");
@@ -312,12 +413,12 @@ public class MediaOperation {
                 //set state
                 current_state = STATE.Started;
 
-                if (taskDone) {
+                /*if (taskDone) {
                     taskDone = false;
                     goodTask = new playtask();
                     goodTask.execute(10);
 
-                }
+                }*/
 
                 Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
                 context.sendBroadcast(newNotifyIntent);
@@ -380,6 +481,7 @@ public class MediaOperation {
                                 doNext();
                                 break;
                             case 1: //play shuffle
+                                doShuffle();
                                 break;
                             case 2: //single repeat
                                 doSingleRepeat();
@@ -405,22 +507,26 @@ public class MediaOperation {
         Log.d(TAG, "<playing>");
     }
 
-    class playtask extends AsyncTask<Integer, Integer, String>
+    class playtask extends AsyncTask <Integer, Integer, String>
     {
         @Override
-        protected String doInBackground(Integer... countTo) {
+        protected String doInBackground(Integer... countTo)  {
 
 
             //while(current_state == STATE.Started) {
             while(!taskDone) {
 
                 if (current_mode == 3) {//ab loop, check if current position is bigger than mark_b
+
                     if (mediaPlayer.getCurrentPosition() < ab_loop_start || mediaPlayer.getCurrentPosition() > ab_loop_end) {
 
-                        Log.d(TAG, "position = "+mediaPlayer.getCurrentPosition()+"ab_loop_start = "+ab_loop_start+" ab_loop_end = "+ab_loop_end);
-                        mediaPlayer.pause();
-                        mediaPlayer.seekTo(ab_loop_start);
-                        mediaPlayer.start();
+                        if (current_state == STATE.Started) { //pause must in started state
+
+                            Log.d(TAG, "position = " + mediaPlayer.getCurrentPosition() + "ab_loop_start = " + ab_loop_start + " ab_loop_end = " + ab_loop_end);
+                            mediaPlayer.pause();
+                            mediaPlayer.seekTo(ab_loop_start);
+                            mediaPlayer.start();
+                        }
                     }
                 }
 
@@ -437,6 +543,7 @@ public class MediaOperation {
 
 
                     Thread.sleep(200);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
