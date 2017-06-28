@@ -1355,7 +1355,7 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_ALL;
-
+                mediaOperation.setCurrent_play_mode(current_mode);
                 //clear loop
                 seekBar.setDots(new int[] {});
                 seekBar.setDotsDrawable(R.drawable.dot);
@@ -1372,7 +1372,7 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_SHUFFLE;
-
+                mediaOperation.setCurrent_play_mode(current_mode);
                 //clear loop
                 seekBar.setDots(new int[] {});
                 seekBar.setDotsDrawable(R.drawable.dot);
@@ -1390,7 +1390,7 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_REPEAT;
-
+                mediaOperation.setCurrent_play_mode(current_mode);
                 //clear loop
                 seekBar.setDots(new int[] {});
                 seekBar.setDotsDrawable(R.drawable.dot);
@@ -1411,7 +1411,7 @@ public class MainActivity extends AppCompatActivity {
                 actionBar.setTitle(currentAcitonBarTitle);
                 linearLayoutAB.setVisibility(View.VISIBLE);
                 current_mode = MODE_PLAY_AB_LOOP;
-
+                mediaOperation.setCurrent_play_mode(current_mode);
                 int minutes_a = 0;
                 int seconds_a = 0;
                 int minisec_a = 0;
