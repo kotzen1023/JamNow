@@ -1,8 +1,13 @@
 package com.seventhmoon.jamnow.Data;
 
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -319,4 +324,6 @@ public class FileOperation {
 
         return dest_file.getName();
     }
+
+
 }

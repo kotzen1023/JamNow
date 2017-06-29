@@ -46,9 +46,11 @@ import com.seventhmoon.jamnow.Data.FileOperation;
 import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
+import com.seventhmoon.jamnow.Media.AudioOperation;
 import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     public static int song_selected = 0;
     public static int current_mode = MODE_PLAY_ALL;
     MediaOperation mediaOperation;
+    AudioOperation audioOperation;
     public static int current_song_duration = 0;
 
     private static int progress_mark_a = 0;
@@ -146,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         mediaOperation = new MediaOperation(context);
+        audioOperation = new AudioOperation(context);
+
 
         mediaOperation.setCurrent_play_mode(current_mode);
 
@@ -752,6 +757,12 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "play "+songName+" position = "+current_position);
                         mediaOperation.setCurrentPosition(current_position);
                         mediaOperation.doPlay(songPath);
+                        /*try {
+                            audioOperation.PlayAudioFileViaAudioTrack(songPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }*/
+
 
                         //here we compare song_select before pause and play
                         //songPlayAfterPauseToPlay = song_selected;
@@ -1112,6 +1123,8 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_SONGLIST_FROM_RECORD_FILE_COMPLETE)) {
 
+
+
                     songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
                     myListview.setAdapter(songArrayAdapter);
 
@@ -1122,13 +1135,13 @@ public class MainActivity extends AppCompatActivity {
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
                     Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
 
-                    for(int i=0; i<songList.size(); i++) {
+                    /*for(int i=0; i<songList.size(); i++) {
 
                         int duration = mediaOperation.getSongDuration(songList.get(i).getPath());
                         songList.get(i).setDuration(duration);
                         songList.get(i).setMark_a(0);
                         songList.get(i).setMark_b(duration);
-                    }
+                    }*/
 
 
                     songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);

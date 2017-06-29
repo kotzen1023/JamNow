@@ -3,12 +3,20 @@ package com.seventhmoon.jamnow.Data;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.media.MediaPlayer;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -426,6 +434,17 @@ public class MediaOperation {
     private void playing(String songPath){
         Log.d(TAG, "<playing "+songPath+">");
 
+
+
+
+
+
+
+        //int bitRate = mf.getInteger(MediaFormat.KEY_BIT_RATE);
+        //int sampleRate = mf.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+
+        //Log.d(TAG, "bitRate = "+bitRate+", sampleRate = "+sampleRate);
+
         if (mediaPlayer != null) {
 
             if (current_state == STATE.Paused) {
@@ -462,11 +481,15 @@ public class MediaOperation {
             try {
 
                 mediaPlayer.setDataSource(songPath);
+
                 //set state
                 current_state = STATE.Initialized;
                 mediaPlayer.prepare();
                 //set state
                 current_state = STATE.Prepared;
+
+
+
                 mediaPlayer.seekTo(current_position);
                 mediaPlayer.start();
                 //set state

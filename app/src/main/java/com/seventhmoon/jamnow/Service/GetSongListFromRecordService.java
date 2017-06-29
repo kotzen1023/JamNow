@@ -3,6 +3,9 @@ package com.seventhmoon.jamnow.Service;
 import android.app.IntentService;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.util.Log;
 
 import com.seventhmoon.jamnow.Data.Constants;
@@ -11,10 +14,14 @@ import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 import com.seventhmoon.jamnow.R;
 
 import java.io.File;
+import java.io.IOException;
 
+import static com.seventhmoon.jamnow.Data.FileOperation.RootDirectory;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
+
 import static com.seventhmoon.jamnow.Data.FileOperation.read_record;
+
 import static com.seventhmoon.jamnow.MainActivity.songList;
 
 
@@ -66,12 +73,18 @@ public class GetSongListFromRecordService extends IntentService {
                 Song new_song = new Song();
                 File file = new File(info[0]); //path
 
+
+
                 if (check_file_exist(info[0])) { // if file exist, then add
+
+
+
                     new_song.setName(file.getName());
                     new_song.setPath(info[0]);
                     new_song.setDuration(Integer.valueOf(info[1]));
                     new_song.setMark_a(Integer.valueOf(info[2]));
                     new_song.setMark_b(Integer.valueOf(info[3]));
+
                     songList.add(new_song);
                 }
             }

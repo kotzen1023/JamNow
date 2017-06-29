@@ -1,6 +1,7 @@
 package com.seventhmoon.jamnow;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
 import com.seventhmoon.jamnow.Data.FileChooseItem;
 import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
+import com.seventhmoon.jamnow.Media.AudioOperation;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -39,6 +41,8 @@ public class FileChooseActivity extends AppCompatActivity {
     public static boolean FileChooseLongClick = false;
     public static boolean FileChooseSelectAll = false;
 
+    private Context context;
+
     public static FileChooseArrayAdapter fileChooseArrayAdapter;
     public static ListView listView;
     public static Button confirm;
@@ -47,10 +51,16 @@ public class FileChooseActivity extends AppCompatActivity {
 
     private ArrayList<String> searchList = new ArrayList<>();
 
+    AudioOperation audioOperation;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.file_choose_list);
+
+        context = getBaseContext();
+
+        audioOperation = new AudioOperation(context);
 
         listView = (ListView) findViewById(R.id.listViewFileChoose);
         confirm = (Button) findViewById(R.id.btnFileChooseListConfirm);
@@ -423,30 +433,34 @@ public class FileChooseActivity extends AppCompatActivity {
     }
 
     public void checkFileAndDuration(File file) {
+
         String filenameArray[] = file.getName().split("\\.");
         String extension = filenameArray[filenameArray.length - 1];
 
-        switch (extension.toLowerCase()) {
-            case "m4a":
-            case "aac":
-            case "mid":
-            case "mp3":
-            case "wav":
-            case "ogg":
-                Log.e(TAG, "add file : "+file.getName()+" to list");
-                Song song = new Song();
-                song.setName(file.getName());
-                song.setPath(file.getAbsolutePath());
-                songList.add(song);
-                break;
-            default:
-                Log.e(TAG, "Unknown Type");
-                break;
+
+        audioOperation.getAudioInfo(file.getAbsolutePath());
+
+        /*
+            switch (extension.toLowerCase()) {
+                case "m4a":
+                case "aac":
+                case "mid":
+                case "mp3":
+                case "wav":
+                case "ogg":
+                    Log.d(TAG, "add file : " + file.getName() + " to list");
+                    Song song = new Song();
+                    song.setName(file.getName());
+                    song.setPath(file.getAbsolutePath());
+                    songList.add(song);
+                    break;
+                default:
+                    Log.e(TAG, "Unknown Type");
+                    break;
 
 
-        }
-
-
+            }
+         */
     }
 
     private void search(File file) {
