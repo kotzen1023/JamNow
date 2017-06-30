@@ -22,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 
@@ -29,6 +30,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 
 import android.widget.EditText;
@@ -48,6 +50,7 @@ import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 import com.seventhmoon.jamnow.Media.AudioOperation;
 import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
+import com.seventhmoon.jamnow.Service.SaveListToFileService;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +69,7 @@ import java.util.Map;
 
 import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
+import static com.seventhmoon.jamnow.Data.FileOperation.clear_record;
 import static com.seventhmoon.jamnow.Data.FileOperation.init_folder_and_files;
 import static com.seventhmoon.jamnow.Data.FileOperation.read_record;
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
@@ -445,6 +449,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             toast("Mark A range should not be empty");
                         }
+                        is_editMarkA_change = false;
                     } else { //get current seekbar position
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
@@ -589,6 +594,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             toast("Mark A range should not be empty");
                         }
+                        is_editMarkB_change = false;
                     } else {
                         NumberFormat f = new DecimalFormat("00");
                         NumberFormat f2 = new DecimalFormat("000");
@@ -708,12 +714,12 @@ public class MainActivity extends AppCompatActivity {
 
                                 myListview.invalidateViews();
 
-                                current_song_duration = songList.get(song_selected).getDuration();
+                                current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
                             } else {
 
                                 songPath = songList.get(0).getPath();
                                 songName = songList.get(0).getName();
-                                current_song_duration = songList.get(0).getDuration();
+                                current_song_duration = (int)(songList.get(0).getDuration_u()/1000);
                             }
                         }
 
@@ -756,86 +762,21 @@ public class MainActivity extends AppCompatActivity {
 
                         Log.d(TAG, "play "+songName+" position = "+current_position);
                         mediaOperation.setCurrentPosition(current_position);
-                        mediaOperation.doPlay(songPath);
-                        /*try {
-                            audioOperation.PlayAudioFileViaAudioTrack(songPath);
+                        //mediaOperation.doPlay(songPath);
+                        try {
+                            audioOperation.PlayAudioFileViaAudioTrack(songList.get(song_selected));
                         } catch (IOException e) {
                             e.printStackTrace();
-                        }*/
+                        }
 
 
                         //here we compare song_select before pause and play
                         //songPlayAfterPauseToPlay = song_selected;
 
 
-
-
-
-                        /*if (songPlayBeforePause == songPlayAfterPauseToPlay) {
-                            Log.d(TAG, "The same song from pause to play");
-
-                            if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
-                                mediaOperation.setSeekTo(current_position);
-
-                            } else if (mediaOperation.getCurrent_state() == Constants.STATE.PlaybackCompleted) {
-
-                            }
-
-
-                        } else {
-                            Log.d(TAG, "The song was different from pause to play, stop!");
-                            mediaOperation.doStop();
-
-                            current_position = 0;
-                            //mediaOperation.setCurrentPosition(0);
-                        }*/
-
-
-
-                        //imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
                     }
 
-                    /*if (mediaOperation.isPause()) { //if stop or pause, play
-                        isPlayPress = true;
 
-                        String songPath, songName;
-                        if (song_selected > 0) {
-                            songPath = songArrayAdapter.getItem(song_selected).getPath();
-                            songName = songArrayAdapter.getItem(song_selected).getName();
-                        } else {
-                            songPath = songList.get(0).getPath();
-                            songName = songList.get(0).getName();
-                            current_song_duration = songList.get(0).getDuration();
-                        }
-                        //myListview.invalidateViews();
-                        Log.d(TAG, "play "+songName+" position = "+current_position);
-                        mediaOperation.setCurrentPosition(current_position);
-                        currentSongPlay = song_selected;
-                        mediaOperation.doPlay(songPath);
-
-                        imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
-                    } else { //playing, pause
-                        isPlayPress = false;
-                        Log.d(TAG, "pause currentSongPlay = "+currentSongPlay+" song_selected = "+song_selected);
-
-                        if (currentSongPlay != song_selected) {
-                            Log.e(TAG, "select play change");
-                            current_position = 0;
-                            mediaOperation.setCurrentPosition(0);
-                        } else {
-                            current_position = mediaOperation.getCurrentPosition();
-                        }
-
-
-
-
-
-                        Log.e(TAG, "current_position = "+current_position);
-
-                        mediaOperation.doPause();
-
-                        imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                    }*/
                 } else {
                     toast("Song list is empty");
                 }
@@ -871,7 +812,7 @@ public class MainActivity extends AppCompatActivity {
 
                     myListview.invalidateViews();
 
-                    current_song_duration = songList.get(song_selected).getDuration();
+                    current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
                 }
 
                 if (current_song_duration != 0) {
@@ -942,7 +883,7 @@ public class MainActivity extends AppCompatActivity {
 
                     myListview.invalidateViews();
 
-                    current_song_duration = songList.get(song_selected).getDuration();
+                    current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
                 }
 
                 if (current_song_duration != 0) {
@@ -1056,7 +997,14 @@ public class MainActivity extends AppCompatActivity {
         myListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 Log.d(TAG, "select "+position);
+
+
+
+
+
+
 
                 song_selected = position;
 
@@ -1074,7 +1022,7 @@ public class MainActivity extends AppCompatActivity {
 
                 myListview.invalidateViews();
 
-                current_song_duration = songList.get(song_selected).getDuration();
+                current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
 
                 if (current_song_duration != 0) {
 
@@ -1116,6 +1064,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
         IntentFilter filter;
 
         mReceiver = new BroadcastReceiver() {
@@ -1147,19 +1096,35 @@ public class MainActivity extends AppCompatActivity {
                     songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
                     myListview.setAdapter(songArrayAdapter);
 
+                    Intent saveintent = new Intent(MainActivity.this, SaveListToFileService.class);
+                    saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
+                    saveintent.putExtra("FILENAME", "favorite");
+                    context.startService(saveintent);
+
+                    loadDialog = new ProgressDialog(MainActivity.this);
+                    loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    loadDialog.setTitle("Saving...");
+                    loadDialog.setIndeterminate(false);
+                    loadDialog.setCancelable(false);
+
+                    loadDialog.show();
+
+                    //clear list
+                    /*clear_record("favorite");
+
                     //write list file
                     for (int i=0; i<songList.size(); i++) {
                         String msg;
                         if (i== 0) {
                             msg = songList.get(i).getPath()+";"+
-                                    songList.get(i).getDuration()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                                    songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
                         } else {
                             msg = "|"+songList.get(i).getPath()+";"+
-                                    songList.get(i).getDuration()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                                    songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
                         }
 
                         FileOperation.append_record(msg, "favorite");
-                    }
+                    }*/
 
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_PLAY_COMPLETE)) {
                     Log.d(TAG, "receive GET_PLAY_COMPLETE !");
@@ -1205,6 +1170,8 @@ public class MainActivity extends AppCompatActivity {
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED)) {
                     Log.d(TAG, "receive MEDIAPLAYER_STATE_PAUSED !");
                     imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_SONGLIST_TO_FILE_COMPLETE)) {
+                    loadDialog.dismiss();
                 }
             }
         };
@@ -1215,6 +1182,7 @@ public class MainActivity extends AppCompatActivity {
             filter.addAction(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
             filter.addAction(Constants.ACTION.GET_PLAY_COMPLETE);
             filter.addAction(Constants.ACTION.GET_SONGLIST_FROM_RECORD_FILE_COMPLETE);
+            filter.addAction(Constants.ACTION.SAVE_SONGLIST_TO_FILE_COMPLETE);
             filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
             filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
             context.registerReceiver(mReceiver, filter);

@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 
 
@@ -68,10 +69,12 @@ public class AudioOperation {
                     Song song = new Song();
                     song.setName(file.getName());
                     song.setPath(file.getAbsolutePath());
-                    song.setDuration((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
+                    //song.setDuration((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
                     song.setDuration_u(mf.getLong(MediaFormat.KEY_DURATION));
                     song.setChannel((byte)mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
                     song.setSample_rate(mf.getInteger(MediaFormat.KEY_SAMPLE_RATE));
+                    song.setMark_a(0);
+                    song.setMark_b((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
                     songList.add(song);
                 }
 
@@ -91,13 +94,42 @@ public class AudioOperation {
         return infoMsg;
     }
 
-    public void PlayAudioFileViaAudioTrack(String filePath) throws IOException
+    public void PlayAudioFileViaAudioTrack(Song song) throws IOException
     {
         Log.d(TAG, "<PlayAudioFileViaAudioTrack>");
 
+
         // We keep temporarily filePath globally as we have only two sample sounds now..
-        if (filePath==null)
+        if (song.getPath() == null || !check_file_exist(song.getPath()))
             return;
+
+        //check before play
+        MediaExtractor mex = new MediaExtractor();
+        try {
+            mex.setDataSource(song.getPath());// the adresss location of the sound on sdcard.
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MediaFormat mf;
+        long duration_u ;
+        int channel;
+        int sample_rate;
+
+        try {
+            mf = mex.getTrackFormat(0);
+            duration_u = mf.getLong(MediaFormat.KEY_DURATION);
+            channel = mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+            sample_rate = mf.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+
+            Log.d(TAG, "duration_u : "+duration_u);
+            Log.d(TAG, "channel: "+channel);
+            Log.d(TAG, "sample rate: "+sample_rate);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
 
 
 
@@ -121,7 +153,7 @@ public class AudioOperation {
         //Reading the file..
         byte[] byteData = null;
         File file = null;
-        file = new File(filePath);
+        file = new File(song.getPath());
 
         byteData = new byte[(int)count];
         FileInputStream in = null;

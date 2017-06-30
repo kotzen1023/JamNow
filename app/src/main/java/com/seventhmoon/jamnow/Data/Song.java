@@ -7,7 +7,7 @@ public class Song {
 	private String path;
 	private byte channel;
 	private int sample_rate;
-	private int duration;
+	//private int duration;
 	private long duration_u;
 	private int mark_a;
 	private int mark_b;
@@ -44,12 +44,12 @@ public class Song {
 		this.sample_rate = sample_rate;
 	}
 
-	public int getDuration() {
+	/*public int getDuration() {
 		return duration;
 	}
 	public void setDuration(int duration) {
 		this.duration = duration;
-	}
+	}*/
 
 	public long getDuration_u() {
 		return duration_u;

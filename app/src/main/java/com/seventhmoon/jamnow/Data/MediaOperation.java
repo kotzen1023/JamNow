@@ -267,7 +267,7 @@ public class MediaOperation {
         }
 
         songPlaying = song_selected;
-        current_song_duration = songList.get(song_selected).getDuration();
+        current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
 
         ab_loop_start = songList.get(song_selected).getMark_a();
         ab_loop_end = songList.get(song_selected).getMark_b();
@@ -318,7 +318,7 @@ public class MediaOperation {
         }
 
         songPlaying = song_selected;
-        current_song_duration = songList.get(song_selected).getDuration();
+        current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
 
         ab_loop_start = songList.get(song_selected).getMark_a();
         ab_loop_end = songList.get(song_selected).getMark_b();
@@ -357,7 +357,7 @@ public class MediaOperation {
         song_selected = shuffleList.get(current_shuffle_index);
         songPlaying = song_selected;
 
-        current_song_duration = songList.get(song_selected).getDuration();
+        current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
 
         String songPath = songList.get(song_selected).getPath();
         playing(songPath);
@@ -378,7 +378,7 @@ public class MediaOperation {
 
             //song_selected++;
             songPlaying = song_selected;
-            current_song_duration = songList.get(song_selected).getDuration();
+            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
             /*for (int i=0; i<songList.size(); i++) {
                 if (i==song_selected) {
                     songList.get(song_selected).setSelected(true);
@@ -409,7 +409,7 @@ public class MediaOperation {
 
             //song_selected++;
             songPlaying = song_selected;
-            current_song_duration = songList.get(song_selected).getDuration();
+            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
             current_position = songList.get(song_selected).getMark_a();
             ab_loop_end = songList.get(song_selected).getMark_b();
             /*for (int i=0; i<songList.size(); i++) {

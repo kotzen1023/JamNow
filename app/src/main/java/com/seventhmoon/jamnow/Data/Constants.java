@@ -9,6 +9,8 @@ public class Constants {
         String GET_PLAY_COMPLETE = "com.seventhmoon.JamNow.GetPlayComplete";
         String GET_SONGLIST_ACTION = "com.seventhmoon.JamNow.GetSongListAction";
         String GET_SONGLIST_FROM_RECORD_FILE_COMPLETE = "com.seventhmoon.JamNow.GetSongListFromRecordFileComplete";
+        String SAVE_SONGLIST_ACTION = "com.seventhmoon.JamNow.SaveSongListAction";
+        String SAVE_SONGLIST_TO_FILE_COMPLETE = "com.seventhmoon.JamNow.SaveSongListToFileComplete";
 
         String MEDIAPLAYER_STATE_STARTED = "com.seventhmoon.JamNow.MediaPlayerStateStarted";
         String MEDIAPLAYER_STATE_PAUSED = "com.seventhmoon.JamNow.MediaPlayerStatePaused";

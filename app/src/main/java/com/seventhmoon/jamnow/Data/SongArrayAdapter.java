@@ -88,11 +88,11 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
             NumberFormat f2 = new DecimalFormat("000");
 
 
-            int minutes = (songItem.getDuration()/60000);
+            int minutes = (int)(songItem.getDuration_u()/60000000);
 
-            int seconds = (songItem.getDuration()/1000) % 60;
+            int seconds = (int)(songItem.getDuration_u()/1000000) % 60;
 
-            int minisec = (songItem.getDuration()%1000);
+            int minisec = (int)((songItem.getDuration_u()/1000)%1000);
 
             //if (minutes == 0 && seconds == 0) {
             //    seconds = 1;
@@ -104,7 +104,8 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
             Bitmap bitmap = BitmapFactory.decodeResource(view.getResources(), R.drawable.ic_audiotrack_black_48dp);
             holder.songicon.setImageBitmap(bitmap);
             holder.songname.setText(songItem.getName());
-            holder.songtime.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+            //holder.songtime.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+            holder.songtime.setText(f.format(minutes)+":"+f.format(seconds));
 
             if (songItem.isSelected()) {
                 //Log.e(TAG, ""+position+" is selected.");

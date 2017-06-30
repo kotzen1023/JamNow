@@ -58,17 +58,20 @@ public class GetSongListFromRecordService extends IntentService {
 
 
             String message = read_record(filename);
-            Log.d(TAG, "message = "+ message);
+            //Log.d(TAG, "message = "+ message);
             String msg[] = message.split("\\|");
 
-            Log.d(TAG, "msg[0] = "+ msg[0]);
+            //Log.d(TAG, "msg[0] = "+ msg[0]);
 
 
 
 
             for (int i=0; i<msg.length; i++) {
 
+                Log.d(TAG, "msg["+i+"] = "+ msg[i]);
                 String info[] = msg[i].split(";");
+
+
 
                 Song new_song = new Song();
                 File file = new File(info[0]); //path
@@ -81,7 +84,7 @@ public class GetSongListFromRecordService extends IntentService {
 
                     new_song.setName(file.getName());
                     new_song.setPath(info[0]);
-                    new_song.setDuration(Integer.valueOf(info[1]));
+                    new_song.setDuration_u(Long.valueOf(info[1]));
                     new_song.setMark_a(Integer.valueOf(info[2]));
                     new_song.setMark_b(Integer.valueOf(info[3]));
 

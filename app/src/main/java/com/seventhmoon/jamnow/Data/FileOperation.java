@@ -168,7 +168,7 @@ public class FileOperation {
                     Log.e(TAG, "create "+matchRecord.getName()+" failed!");
             }
 
-            //if exist, wrire emapt string
+            //if exist, write empty string
             try {
                 FileWriter fw = new FileWriter(matchRecord.getAbsolutePath());
                 fw.write("");

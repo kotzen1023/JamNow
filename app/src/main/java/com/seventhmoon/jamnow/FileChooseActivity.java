@@ -80,6 +80,7 @@ public class FileChooseActivity extends AppCompatActivity {
                 }
 
                 searchFiles();
+                finish();
             }
         });
 
