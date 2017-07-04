@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
     private static boolean is_editMarkB_change = false;
 
     private static int current_position = 0;
+    private static double current_position_d = 0.0;
     ProgressDialog loadDialog = null;
 
     //public static int currentSongPlay = 0;
@@ -157,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         mediaOperation.setCurrent_play_mode(current_mode);
+        audioOperation.setCurrent_play_mode(current_mode);
 
         //formatter = new SimpleDateFormat("mm:ss");
 
@@ -676,16 +678,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (songList.size() > 0) { //check if songs exist in list
 
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { // a song is playing, do pause
+                    if (audioOperation.isPlaying()) {
                         Log.d(TAG, "[imgPlayOrPause] isPlaying, songPlaying = "+songPlaying);
                         isPlayPress = false;
 
-                        //songPlayBeforePause = song_selected; //save song location before pause
-                        mediaOperation.doPause();
-                        current_position = mediaOperation.getCurrentPosition();
+                        audioOperation.doPause();
+                        current_position_d = audioOperation.getCurrentPosition();
 
-                        //imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                    } else { //state is paused, stopped...
+                    } else {
                         Log.d(TAG, "[imgPlayOrPause] state is paused, stopped...");
                         String songPath, songName;
                         isPlayPress = true;
@@ -695,7 +695,7 @@ public class MainActivity extends AppCompatActivity {
                             songName = songArrayAdapter.getItem(song_selected).getName();
                         } else {
 
-                            if (current_mode == MODE_PLAY_SHUFFLE) {
+                            /*if (current_mode == MODE_PLAY_SHUFFLE) {
                                 songPath = songList.get(mediaOperation.getShufflePosition()).getPath();
                                 songName = songList.get(mediaOperation.getShufflePosition()).getName();
                                 song_selected = mediaOperation.getShufflePosition();
@@ -715,15 +715,15 @@ public class MainActivity extends AppCompatActivity {
                                 myListview.invalidateViews();
 
                                 current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                            } else {
+                            } else {*/
 
                                 songPath = songList.get(0).getPath();
                                 songName = songList.get(0).getName();
                                 current_song_duration = (int)(songList.get(0).getDuration_u()/1000);
-                            }
+                            //}
                         }
 
-                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                        /*if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
                             Log.d(TAG, "state: Paused");
 
                             if (songPlaying == song_selected) {
@@ -758,24 +758,14 @@ public class MainActivity extends AppCompatActivity {
                                 mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
                                 mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
                             }
-                        }
+                        }*/
 
-                        Log.d(TAG, "play "+songName+" position = "+current_position);
-                        mediaOperation.setCurrentPosition(current_position);
+                        Log.d(TAG, "play "+songName+" position = "+current_position_d);
+                        audioOperation.setCurrentPosition(current_position_d);
+                        audioOperation.doPlay(songPath);
+                        //mediaOperation.setCurrentPosition(current_position);
                         //mediaOperation.doPlay(songPath);
-                        try {
-                            audioOperation.PlayAudioFileViaAudioTrack(songList.get(song_selected));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-
-                        //here we compare song_select before pause and play
-                        //songPlayAfterPauseToPlay = song_selected;
-
-
                     }
-
 
                 } else {
                     toast("Song list is empty");
