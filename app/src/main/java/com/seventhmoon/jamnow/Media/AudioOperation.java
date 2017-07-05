@@ -11,9 +11,12 @@ import android.media.MediaFormat;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.seventhmoon.jamnow.Data.Constants;
+import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 
 import java.io.File;
@@ -22,27 +25,35 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.io.android.AndroidAudioPlayer;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
-import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
+
 
 import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
+import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
 import static com.seventhmoon.jamnow.MainActivity.setSongDuration;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 import static com.seventhmoon.jamnow.MainActivity.songPlaying;
+import static com.seventhmoon.jamnow.MainActivity.song_selected;
 
 
 public class AudioOperation {
     private static final String TAG = AudioOperation.class.getName();
 
     private Context context;
+
+    private static boolean is_thread_running = false;
+    private Thread playThread;
+
     private AudioDispatcher adp;
-    private AudioEvent aet;
+    //private AudioEvent aet;
     private static AudioTask goodTask;
     private boolean taskDone = true;
     private boolean pause = true;
@@ -50,6 +61,14 @@ public class AudioOperation {
     private static int current_play_mode = 0;
     private static long song_duration_u = 0;
     private double current_position_u = 0;
+
+    private ArrayList<Integer> shuffleList = new ArrayList<>();
+    private int current_shuffle_index = 0;
+
+    //ab loop
+    private int ab_loop_start = 0;
+    private int ab_loop_end = 0;
+
 
     public AudioOperation (Context context){
         this.context = context;
@@ -71,7 +90,7 @@ public class AudioOperation {
         Log.d(TAG, "<getCurrentPosition>");
 
         if (adp != null) {
-            current_position_u = adp.secondsProcessed();
+            current_position_u = current_position_u + adp.secondsProcessed();
         } else {
             current_position_u = 0.0;
         }
@@ -84,6 +103,26 @@ public class AudioOperation {
     public void setCurrentPosition(double position) {
 
         this.current_position_u = position;
+    }
+
+    public int getCurrent_shuffle_index() {
+        return current_shuffle_index;
+    }
+
+    public void setCurrent_shuffle_index(int current_shuffle_index) {
+        this.current_shuffle_index = current_shuffle_index;
+    }
+
+    public int getShufflePosition() {
+        return shuffleList.get(current_shuffle_index);
+    }
+
+    public void setAb_loop_start(int ab_loop_start) {
+        this.ab_loop_start = ab_loop_start;
+    }
+
+    public void setAb_loop_end(int ab_loop_end) {
+        this.ab_loop_end = ab_loop_end;
     }
 
     public String getAudioInfo(String filePath) {
@@ -151,164 +190,6 @@ public class AudioOperation {
         return infoMsg;
     }
 
-    private void PlayShortAudioFileViaAudioTrack(String filePath) throws IOException
-    {
-        // We keep temporarily filePath globally as we have only two sample sounds now..
-        if (filePath==null)
-            return;
-
-        //Reading the file..
-        byte[] byteData = null;
-        File file = null;
-        file = new File(filePath); // for ex. path= "/sdcard/samplesound.pcm" or "/sdcard/samplesound.wav"
-        byteData = new byte[(int) file.length()];
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream( file );
-            in.read( byteData );
-            in.close();
-
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        // Set and push to audio track..
-        int intSize = android.media.AudioTrack.getMinBufferSize(8000, AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                AudioFormat.ENCODING_PCM_8BIT);
-        AudioTrack at = new AudioTrack(AudioManager.STREAM_MUSIC, 8000, AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                AudioFormat.ENCODING_PCM_8BIT, intSize, AudioTrack.MODE_STREAM);
-        if (at!=null) {
-            at.play();
-            // Write the byte array to the track
-            at.write(byteData, 0, byteData.length);
-            at.stop();
-            at.release();
-        }
-        else
-            Log.d("TCAudio", "audio track is not initialised ");
-
-    }
-
-
-
-    public void PlayAudioFileViaAudioTrack(final int song_select) throws IOException
-    {
-        Log.d(TAG, "<PlayAudioFileViaAudioTrack>");
-
-        MediaCodec decoderAudio = null;
-        MediaFormat mf;
-        long duration_u ;
-        int channel;
-        int sample_rate = 0;
-        int audioTrack = 0;
-
-        // We keep temporarily filePath globally as we have only two sample sounds now..
-        if (songList.get(song_select).getPath() == null || !check_file_exist(songList.get(song_select).getPath()))
-            return;
-
-        //check before play
-        MediaExtractor mex = new MediaExtractor();
-        try {
-            mex.setDataSource(songList.get(song_select).getPath());// the address location of the sound on sdcard.
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        for (int i = 0; i < mex.getTrackCount(); i++) {
-            MediaFormat format = mex.getTrackFormat(i);
-            String mime = format.getString(MediaFormat.KEY_MIME);
-            if (mime.startsWith("audio/")) {
-                Log.d(TAG, "mime type = "+mime);
-                audioTrack = i;
-                mex.selectTrack(audioTrack);
-                mf = format;
-                decoderAudio = MediaCodec.createDecoderByType(mime);
-                sample_rate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-                Log.d(TAG, "sample_rate = "+sample_rate);
-                channel = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
-                Log.d(TAG, "channel = "+channel);
-
-                song_duration_u = format.getLong(MediaFormat.KEY_DURATION);
-                Log.d(TAG, "duration_u = "+song_duration_u);
-
-                decoderAudio.configure(format, null, null, 0);
-
-                break;
-            }
-        }
-
-        if (audioTrack >=0) {
-            if(decoderAudio == null)
-            {
-                Log.e(TAG, "Can't find audio info!");
-                return;
-            }
-            else
-            {
-                int minBufferSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
-                int bufferSize = 4 * minBufferSize;
-                final AudioTrack playAudioTrack = new AudioTrack(
-                        AudioManager.STREAM_MUSIC,
-                        sample_rate,
-                        AudioFormat.CHANNEL_OUT_STEREO,
-                        AudioFormat.ENCODING_PCM_16BIT,
-                        bufferSize,
-                        AudioTrack.MODE_STREAM
-                );
-
-
-
-                if (taskDone) {
-                    File mp3 = new File(songList.get(song_select).getPath());
-                    adp = AudioDispatcherFactory.fromPipe(mp3.getAbsolutePath(), 88200, 5000, 2500);
-
-                    taskDone = false;
-                    goodTask = new AudioTask();
-                    goodTask.execute(10);
-
-                    new AndroidFFMPEGLocator(context);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //File externalStorage = Environment.getExternalStorageDirectory();
-
-                            //AudioDispatcher adp;
-
-
-
-
-                            aet = new AudioEvent(adp.getFormat());
-
-                            //Log.e(TAG, "format = " + adp.getFormat().toString()+" end timestamp = "+aet.getSampleRate());
-
-
-                            adp.addAudioProcessor(new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC));
-
-
-                            adp.run();
-                        }
-                    }).start();
-                }
-
-
-
-
-
-            }
-        }
-
-
-
-
-
-
-
-
-
-        Log.d(TAG, "</PlayAudioFileViaAudioTrack>");
-    }
-
     public boolean isPlaying() {
         boolean ret = false;
         if (adp != null && !adp.isStopped()) {
@@ -344,13 +225,29 @@ public class AudioOperation {
 
         Log.d(TAG, "<doPause>");
 
-        if (!adp.isStopped()) {
-            adp.stop();
-            pause = true;
+        //stop the thread
+        Log.e(TAG, "*** cancel thread, send interrupt! ***");
+        is_thread_running = false;
+        playThread.interrupt();
+        playThread = null;
 
-            Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
-            context.sendBroadcast(newNotifyIntent);
+        if (goodTask != null) {
+            Log.e(TAG, "*** cancel task ***");
+            if (!goodTask.isCancelled()) {
+                goodTask.cancel(true);
+                goodTask = null;
+                taskDone = true;
+            }
         }
+
+        if (adp!= null && !adp.isStopped()) {
+            adp.stop();
+        }
+
+        pause = true;
+
+        Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
+        context.sendBroadcast(newNotifyIntent);
 
 
         Log.d(TAG, "</doPause>");
@@ -363,6 +260,57 @@ public class AudioOperation {
         pause = false;
         playing(songPath);
         Log.d(TAG, "</doPlay>");
+    }
+
+    public void doNext() {
+        Log.d(TAG, "<doNext>");
+
+        if (songList == null || songList.size() == 0) {
+            return;
+        }
+
+        if (current_play_mode == 1) { //shuffle
+            //find out current select
+            for (int i=0; i<songList.size(); i++) {
+                if (song_selected == shuffleList.get(i)) {
+                    current_shuffle_index = i;
+                }
+            }
+
+            //get next
+
+            if (current_shuffle_index < shuffleList.size() - 1) {
+                current_shuffle_index++;
+            } else {
+                current_shuffle_index = 0;
+            }
+            song_selected = shuffleList.get(current_shuffle_index);
+        } else {
+            if (song_selected < songList.size() - 1) {
+
+                //songList.get(song_selected).setSelected(false);
+
+                song_selected++;
+
+            } else {
+                song_selected = songList.size() - 1;
+            }
+        }
+
+        songPlaying = song_selected;
+        current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+
+        ab_loop_start = songList.get(song_selected).getMark_a();
+        ab_loop_end = songList.get(song_selected).getMark_b();
+
+        if (current_play_mode == 3) { //ab loop
+            current_position_u = ab_loop_start;
+        }
+
+        String songPath = songList.get(song_selected).getPath();
+        playing(songPath);
+
+        Log.d(TAG, "</doNext>");
     }
 
     private void playing(String songPath) {
@@ -419,14 +367,58 @@ public class AudioOperation {
         if (audioTrack >=0) {
             if (taskDone) {
                 File mp3 = new File(songPath);
-                adp = AudioDispatcherFactory.fromPipe(mp3.getAbsolutePath(), 88200, 5000, 2500);
+
+                Log.e(TAG, "current_position_u = "+current_position_u);
+
+                adp = AudioDispatcherFactory.fromPipe(mp3.getAbsolutePath(), 44100, 5000, 2500, current_position_u);
+
+
 
                 taskDone = false;
                 goodTask = new AudioTask();
                 goodTask.execute(10);
 
+                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
+                context.sendBroadcast(newNotifyIntent);
+
                 new AndroidFFMPEGLocator(context);
-                new Thread(new Runnable() {
+
+                playThread = new Thread() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "<Thread>");
+                        //File externalStorage = Environment.getExternalStorageDirectory();
+
+                        //AudioDispatcher adp;
+
+
+
+
+                        //aet = new AudioEvent(adp.getFormat());
+
+                        //Log.e(TAG, "format = " + adp.getFormat().toString()+" end timestamp = "+aet.getSampleRate());
+                        //androidAudioPlayer = new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC);
+
+                        //adp.skip(current_position_u);
+                        adp.addAudioProcessor(new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC));
+
+
+                        adp.run();
+
+                        Message msg = new Message();
+                        //msg.setData(countBundle);
+                        mHandler.sendMessage(msg);
+
+
+
+                        Log.d(TAG, "</Thread>");
+                    }
+                };
+
+                is_thread_running = true;
+                playThread.start();
+
+                /*new Thread(new Runnable() {
                     @Override
                     public void run() {
                         //File externalStorage = Environment.getExternalStorageDirectory();
@@ -439,19 +431,49 @@ public class AudioOperation {
                         aet = new AudioEvent(adp.getFormat());
 
                         //Log.e(TAG, "format = " + adp.getFormat().toString()+" end timestamp = "+aet.getSampleRate());
+                        //androidAudioPlayer = new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC);
 
-                        adp.skip(current_position_u);
+                        //adp.skip(current_position_u);
                         adp.addAudioProcessor(new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC));
 
 
                         adp.run();
                     }
-                }).start();
+                }).start();*/
             }
         }
 
         Log.d(TAG, "</playing>");
     }
+
+    private Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
+            context.sendBroadcast(newNotifyIntent);
+
+            current_position_u = 0.0;
+
+            switch (current_play_mode) {
+                case 0: //play all
+                    doNext();
+                    break;
+                case 1: //play shuffle
+                    //doShuffle();
+                    break;
+                case 2: //single repeat
+                    //doSingleRepeat();
+                    break;
+                case 3: //an loop
+                    //doABLoop();
+                    break;
+            }
+
+
+            Log.e(TAG, "====>Thread is over.");
+        }
+    };
 
     class AudioTask extends AsyncTask<Integer, Integer, String>
     {
@@ -460,7 +482,7 @@ public class AudioOperation {
 
 
             //while(current_state == STATE.Started) {
-            while(!adp.isStopped()) {
+            while(adp!= null && !adp.isStopped()) {
 
 
 
@@ -490,10 +512,11 @@ public class AudioOperation {
                     //}
                     if (adp != null) {
 
-                        int position = (int) ((adp.secondsProcessed() * 1000000.0 * 1000.0) / song_duration_u);
+                        int position = (int) (((current_position_u + adp.secondsProcessed()) * 1000000.0 * 1000.0) / song_duration_u);
                         Log.d(TAG, "second process :" + adp.secondsProcessed() + " position = " + position);
                         //int position = (int)(aet.getProgress());
-                        publishProgress(position);
+                        if (position > 0)
+                            publishProgress(position);
                     }
 
                     Thread.sleep(200);
@@ -511,7 +534,7 @@ public class AudioOperation {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            Log.d(TAG, "==== onPreExecute ====");
+            Log.d(TAG, "==== AsyncTask onPreExecute ====");
 
 
 
@@ -566,8 +589,12 @@ public class AudioOperation {
 
             super.onPostExecute(result);
 
+            Log.d(TAG, "==== AsyncTask onPostExecute ====");
+
 
             taskDone = true;
+            adp.stop();
+            adp = null;
 
             /*if (pause) { //if pause, don't change progress
                 Log.d(TAG, "Pause was pressed while playing");
@@ -587,6 +614,10 @@ public class AudioOperation {
 
         @Override
         protected void onCancelled() {
+
+            Log.d(TAG, "==== onCancelled ====");
+
+
 
             super.onCancelled();
 

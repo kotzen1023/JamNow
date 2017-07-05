@@ -693,12 +693,14 @@ public class MainActivity extends AppCompatActivity {
                         if (song_selected > 0) {
                             songPath = songArrayAdapter.getItem(song_selected).getPath();
                             songName = songArrayAdapter.getItem(song_selected).getName();
+
+                            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
                         } else {
 
-                            /*if (current_mode == MODE_PLAY_SHUFFLE) {
-                                songPath = songList.get(mediaOperation.getShufflePosition()).getPath();
-                                songName = songList.get(mediaOperation.getShufflePosition()).getName();
-                                song_selected = mediaOperation.getShufflePosition();
+                            if (current_mode == MODE_PLAY_SHUFFLE) {
+                                songPath = songList.get(audioOperation.getShufflePosition()).getPath();
+                                songName = songList.get(audioOperation.getShufflePosition()).getName();
+                                song_selected = audioOperation.getShufflePosition();
 
                                 //deselect other
                                 for (int i=0; i<songList.size(); i++) {
@@ -712,53 +714,40 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
 
-                                myListview.invalidateViews();
-
                                 current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                            } else {*/
+                            } else {
 
                                 songPath = songList.get(0).getPath();
                                 songName = songList.get(0).getName();
                                 current_song_duration = (int)(songList.get(0).getDuration_u()/1000);
-                            //}
+                            }
                         }
 
-                        /*if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
-                            Log.d(TAG, "state: Paused");
+                        myListview.invalidateViews();
 
-                            if (songPlaying == song_selected) {
-                                Log.d(TAG, "The same song from pause to play");
+                        if (songPlaying == song_selected) {
+                            Log.d(TAG, "The same song from pause to play");
 
-                                if (current_mode == MODE_PLAY_AB_LOOP) {
-                                    if (current_position >= songList.get(song_selected).getMark_b()) {
-                                        current_position = songList.get(song_selected).getMark_a();
-                                    }
-                                }
-
-                                mediaOperation.setSeekTo(current_position);
-                            } else {
-                                Log.d(TAG, "The song was different from pause to play, stop!");
-                                songPlaying = song_selected;
-                                mediaOperation.doStop();
-
-                                if (current_mode == MODE_PLAY_AB_LOOP) {
+                            if (current_mode == MODE_PLAY_AB_LOOP) {
+                                if (current_position >= songList.get(song_selected).getMark_b()) {
                                     current_position = songList.get(song_selected).getMark_a();
-                                    mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
-                                    mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
-                                } else {
-                                    current_position = 0;
                                 }
                             }
                         } else {
-                            Log.d(TAG, "state: other");
+                            Log.d(TAG, "The song was different from pause to play, stop!");
                             songPlaying = song_selected;
+
 
                             if (current_mode == MODE_PLAY_AB_LOOP) {
                                 current_position = songList.get(song_selected).getMark_a();
-                                mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
-                                mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                audioOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                audioOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                            } else {
+                                current_position_d = 0.0;
                             }
-                        }*/
+                        }
+
+
 
                         Log.d(TAG, "play "+songName+" position = "+current_position_d);
                         audioOperation.setCurrentPosition(current_position_d);
