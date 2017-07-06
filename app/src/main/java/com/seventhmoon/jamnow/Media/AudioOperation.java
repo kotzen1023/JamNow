@@ -61,6 +61,7 @@ public class AudioOperation {
     private static int current_play_mode = 0;
     private static long song_duration_u = 0;
     private double current_position_u = 0;
+    private double current_offset = 0;
 
     private ArrayList<Integer> shuffleList = new ArrayList<>();
     private int current_shuffle_index = 0;
@@ -89,11 +90,13 @@ public class AudioOperation {
     public double getCurrentPosition() {
         Log.d(TAG, "<getCurrentPosition>");
 
-        if (adp != null) {
-            current_position_u = current_position_u + adp.secondsProcessed();
-        } else {
-            current_position_u = 0.0;
-        }
+        //if (adp == null) {
+        //    current_offset = current_position_u + adp.secondsProcessed();
+        //} else {
+        //    current_offset = 0.0;
+        //    current_offset = current_position_u;
+        //}
+        //Log.e(TAG, "current_offset = "+current_offset);
 
         Log.d(TAG, "</getCurrentPosition>");
 
@@ -225,29 +228,34 @@ public class AudioOperation {
 
         Log.d(TAG, "<doPause>");
 
-        //stop the thread
-        Log.e(TAG, "*** cancel thread, send interrupt! ***");
-        is_thread_running = false;
-        playThread.interrupt();
-        playThread = null;
+        pause = true;
+        current_position_u = current_offset;
 
-        if (goodTask != null) {
+        if (adp!= null && !adp.isStopped()) {
+            adp.stop();
+        }
+
+        //stop the thread
+        //Log.e(TAG, "*** cancel thread, send interrupt! ***");
+        //is_thread_running = false;
+        //playThread.interrupt();
+        //playThread = null;
+
+        /*if (goodTask != null) {
             Log.e(TAG, "*** cancel task ***");
             if (!goodTask.isCancelled()) {
                 goodTask.cancel(true);
                 goodTask = null;
                 taskDone = true;
             }
-        }
+        }*/
 
-        if (adp!= null && !adp.isStopped()) {
-            adp.stop();
-        }
 
-        pause = true;
 
-        Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
-        context.sendBroadcast(newNotifyIntent);
+
+
+        //Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
+        //context.sendBroadcast(newNotifyIntent);
 
 
         Log.d(TAG, "</doPause>");
@@ -403,6 +411,8 @@ public class AudioOperation {
                         adp.addAudioProcessor(new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC));
 
 
+
+
                         adp.run();
 
                         Message msg = new Message();
@@ -450,24 +460,38 @@ public class AudioOperation {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
 
+            //if task is running, cancel it!
+            if (goodTask != null) {
+                Log.e(TAG, "*** cancel task ***");
+                if (!goodTask.isCancelled()) {
+                    goodTask.cancel(true);
+                    goodTask = null;
+                    taskDone = true;
+                    adp = null;
+                }
+            }
+
             Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
             context.sendBroadcast(newNotifyIntent);
 
-            current_position_u = 0.0;
+            if (!pause) {
 
-            switch (current_play_mode) {
-                case 0: //play all
-                    doNext();
-                    break;
-                case 1: //play shuffle
-                    //doShuffle();
-                    break;
-                case 2: //single repeat
-                    //doSingleRepeat();
-                    break;
-                case 3: //an loop
-                    //doABLoop();
-                    break;
+                current_position_u = 0.0;
+
+                switch (current_play_mode) {
+                    case 0: //play all
+                        doNext();
+                        break;
+                    case 1: //play shuffle
+                        //doShuffle();
+                        break;
+                    case 2: //single repeat
+                        //doSingleRepeat();
+                        break;
+                    case 3: //an loop
+                        //doABLoop();
+                        break;
+                }
             }
 
 
@@ -512,7 +536,9 @@ public class AudioOperation {
                     //}
                     if (adp != null) {
 
-                        int position = (int) (((current_position_u + adp.secondsProcessed()) * 1000000.0 * 1000.0) / song_duration_u);
+                        current_offset = current_position_u + adp.secondsProcessed();
+
+                        int position = (int) ((current_offset * 1000000.0 * 1000.0) / song_duration_u);
                         Log.d(TAG, "second process :" + adp.secondsProcessed() + " position = " + position);
                         //int position = (int)(aet.getProgress());
                         if (position > 0)
@@ -572,11 +598,11 @@ public class AudioOperation {
 
             if (values[0] >= 1000) {
                 seekBar.setProgress(1000);
-                //setSongDuration(mediaPlayer.getDuration());
+                setSongDuration((int)(song_duration_u/1000));
             } else {
 
                 seekBar.setProgress(values[0]);
-                //setSongDuration(mediaPlayer.getCurrentPosition());
+                setSongDuration((int)(current_offset*1000.0));
             }
 
 
@@ -592,9 +618,9 @@ public class AudioOperation {
             Log.d(TAG, "==== AsyncTask onPostExecute ====");
 
 
-            taskDone = true;
-            adp.stop();
-            adp = null;
+            //taskDone = true;
+            //adp.stop();
+            //adp = null;
 
             /*if (pause) { //if pause, don't change progress
                 Log.d(TAG, "Pause was pressed while playing");

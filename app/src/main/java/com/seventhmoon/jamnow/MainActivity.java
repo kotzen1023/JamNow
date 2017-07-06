@@ -247,10 +247,29 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 //Log.e(TAG, "=> onProgressChanged");
 
-                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //is playing
+                /*if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //is playing
                     //Log.e(TAG, "song was playing, don't change");
                 } else {
 
+                    if (current_song_duration != 0) {
+
+                        //NumberFormat f = new DecimalFormat("00");
+                        //NumberFormat f2 = new DecimalFormat("000");
+
+                        double per_unit = (double) current_song_duration / 1000.0;
+
+                        double duration = seekBar.getProgress() * per_unit;
+
+                        //Log.e(TAG, "=> onProgressChanged unit = "+String.valueOf(per_unit)+" duration = "+String.valueOf(duration));
+
+                        setSongDuration((int) duration);
+                        //setActionBarTitle((int) duration);
+                    }
+                }*/
+
+                if (!audioOperation.isPause()) { //is playing
+                    //Log.e(TAG, "song was playing, don't change");
+                } else {
                     if (current_song_duration != 0) {
 
                         //NumberFormat f = new DecimalFormat("00");
@@ -274,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "onStartTrackingTouch >");
 
                 if (isPlayPress) { //play is pressed
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                    /*if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
                         mediaOperation.doPause();
                         Log.d(TAG, "songPlaying = "+songPlaying+" song_selected = "+song_selected);
 
@@ -286,6 +305,24 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "seekBar: The song was different from pause to play, stop!");
                             songPlaying = song_selected;
                             mediaOperation.doStop();
+                            //current_position = 0;
+                        }
+                    }*/
+
+                    if (!audioOperation.isPause()) { //if playing, pause
+                        audioOperation.doPause();
+
+                        Log.d(TAG, "songPlaying = "+songPlaying+" song_selected = "+song_selected);
+
+                        if (songPlaying == song_selected) {
+                            Log.d(TAG, "seekBar: The same song from pause to play");
+
+
+                        } else {
+                            Log.d(TAG, "seekBar: The song was different from pause to play, stop!");
+                            songPlaying = song_selected;
+                            current_position_d = 0.0;
+                            //mediaOperation.doStop();
                             //current_position = 0;
                         }
                     }
@@ -325,32 +362,23 @@ public class MainActivity extends AppCompatActivity {
                     setSongDuration((int)duration);
                     //setActionBarTitle((int)duration);
 
-                    //songDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
-                    /*switch (current_mode) {
-                        case MODE_PLAY_ALL:
-                            actionBar.setTitle(getResources().getString(R.string.play_mode_all)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
-                            break;
-                        case MODE_PLAY_SHUFFLE:
-                            actionBar.setTitle(getResources().getString(R.string.play_mode_shuffle)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
-                            break;
-                        case MODE_PLAY_REPEAT:
-                            actionBar.setTitle(getResources().getString(R.string.play_mode_repeat)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
-                            break;
-                        case MODE_PLAY_AB_LOOP:
-                            actionBar.setTitle(getResources().getString(R.string.play_mode_ab_loop)+"    "+f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
-                            break;
-                    }*/
-
                     if (isPlayPress) { //play is pressed, state: pause -> start
-                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
-                            mediaOperation.setSeekTo((int) duration);
-                            mediaOperation.doPlay(songList.get(song_selected).getPath());
+                        //if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                        if (audioOperation.isPause()) {
+                            //mediaOperation.setSeekTo((int) duration);
+                            //mediaOperation.doPlay(songList.get(song_selected).getPath());
+
+                            audioOperation.setCurrentPosition(duration/1000.0);
+                            audioOperation.doPlay(songList.get(song_selected).getPath());
                         } else {
-                            mediaOperation.doPlay(songList.get(song_selected).getPath());
+                            //mediaOperation.doPlay(songList.get(song_selected).getPath());
+                            audioOperation.doPlay(songList.get(song_selected).getPath());
                         }
                     } else {
-                        current_position = (int)duration;
-                        mediaOperation.setCurrentPosition(current_position);
+                        //current_position = (int)duration;
+                        current_position_d = duration/1000.0;
+                        //mediaOperation.setCurrentPosition(current_position);
+                        audioOperation.setCurrentPosition(current_position_d);
                     }
 
                     /*if (!mediaOperation.isPause()) { // is playing
@@ -684,6 +712,7 @@ public class MainActivity extends AppCompatActivity {
 
                         audioOperation.doPause();
                         current_position_d = audioOperation.getCurrentPosition();
+                        Log.e(TAG, "===> current_position_d = "+current_position_d);
 
                     } else {
                         Log.d(TAG, "[imgPlayOrPause] state is paused, stopped...");
@@ -908,34 +937,35 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d(TAG, "state : "+mediaOperation.getCurrent_state());
+                Log.d(TAG, "current_position_d = "+audioOperation.getCurrentPosition());
 
-                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                //if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                if (!audioOperation.isPause()) {
+
                     mediaOperation.doPause();
-                    current_position = mediaOperation.getCurrentPosition();
-                    if (current_position > 10000) {
-                        mediaOperation.setSeekTo(current_position-10000);
-                    } else {
-                        mediaOperation.setSeekTo(0);
-                    }
 
-                    mediaOperation.doPlay(songList.get(song_selected).getPath());
+                    current_position_d = audioOperation.getCurrentPosition();
+                    if (current_position_d > 10.0) {
+                        current_position_d = current_position_d - 10.0;
+                    } else {
+                        current_position_d = 0.0;
+                    }
+                    audioOperation.setCurrentPosition(current_position_d);
+
+                    audioOperation.doPlay(songList.get(song_selected).getPath());
                 } else {
 
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Prepared ||
-                            mediaOperation.getCurrent_state() == Constants.STATE.Paused ||
-                            mediaOperation.getCurrent_state() == Constants.STATE.PlaybackCompleted) {
-                        current_position = mediaOperation.getCurrentPosition();
-                        if (current_position > 10000) {
-                            current_position = current_position - 10000;
-                        } else {
-                            current_position = 0;
-                        }
-                        mediaOperation.setSeekTo(current_position);
-                    }
+                    current_position_d = audioOperation.getCurrentPosition();
 
-                    setSeekBarLocation(current_position);
-                    setSongDuration(current_position);
+                    if (current_position_d > 10.0) {
+                        current_position_d = current_position_d - 10.0;
+                    } else {
+                        current_position_d = 0.0;
+                    }
+                    audioOperation.setCurrentPosition(current_position_d);
+
+                    setSeekBarLocation((int)(current_position_d * 1000.0));
+                    setSongDuration((int)(current_position_d * 1000.0));
                 }
             }
         });
@@ -943,32 +973,35 @@ public class MainActivity extends AppCompatActivity {
         imgFastForward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "state : "+mediaOperation.getCurrent_state());
 
-                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                Log.d(TAG, "current_position_d = "+audioOperation.getCurrentPosition());
+
+                if (!audioOperation.isPause()) { //if playing, pause
                     mediaOperation.doPause();
-                    current_position = mediaOperation.getCurrentPosition()+10000;
-                    if (current_position >= current_song_duration) {
-                        mediaOperation.setSeekTo(current_song_duration);
-                    } else {
-                        mediaOperation.setSeekTo(current_position);
-                    }
+                    //current_position = mediaOperation.getCurrentPosition()+10000;
+                    //current_position = (int)(audioOperation.getCurrentPosition()*1000.0)+10000;
 
-                    mediaOperation.doPlay(songList.get(song_selected).getPath());
+                    current_position_d = audioOperation.getCurrentPosition()+ 10.0;
+
+                    if ((current_position_d * 1000.0) >= current_song_duration) {
+                        //mediaOperation.setSeekTo(current_song_duration);
+                        current_position_d = ((double) current_song_duration)/1000.0;
+                    }
+                    audioOperation.setCurrentPosition(current_position_d);
+
+                    audioOperation.doPlay(songList.get(song_selected).getPath());
                 } else {
 
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Prepared ||
-                            mediaOperation.getCurrent_state() == Constants.STATE.Paused ||
-                            mediaOperation.getCurrent_state() == Constants.STATE.PlaybackCompleted) {
-                        current_position = mediaOperation.getCurrentPosition()+10000;
-                        if (current_position >= current_song_duration) {
-                            current_position = current_song_duration;
-                        }
-                        mediaOperation.setSeekTo(current_position);
-                    }
+                    current_position_d = audioOperation.getCurrentPosition()+ 10.0;
 
-                    setSeekBarLocation(current_position);
-                    setSongDuration(current_position);
+                    if ((current_position_d * 1000.0) >= current_song_duration) {
+                        //mediaOperation.setSeekTo(current_song_duration);
+                        current_position_d = ((double) current_song_duration)/1000.0;
+                    }
+                    audioOperation.setCurrentPosition(current_position_d);
+
+                    setSeekBarLocation((int)(current_position_d * 1000.0));
+                    setSongDuration((int)(current_position_d * 1000.0));
                 }
             }
         });
@@ -1625,6 +1658,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void setSongDuration(int timeStamp) {
+
         NumberFormat f = new DecimalFormat("00");
         NumberFormat f2 = new DecimalFormat("000");
 
