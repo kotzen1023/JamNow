@@ -12,7 +12,7 @@ public class Constants {
         String SAVE_SONGLIST_ACTION = "com.seventhmoon.JamNow.SaveSongListAction";
         String SAVE_SONGLIST_TO_FILE_COMPLETE = "com.seventhmoon.JamNow.SaveSongListToFileComplete";
 
-        String MEDIAPLAYER_STATE_STARTED = "com.seventhmoon.JamNow.MediaPlayerStateStarted";
+        String MEDIAPLAYER_STATE_PLAYED = "com.seventhmoon.JamNow.MediaPlayerStatePlayed";
         String MEDIAPLAYER_STATE_PAUSED = "com.seventhmoon.JamNow.MediaPlayerStatePaused";
     }
 

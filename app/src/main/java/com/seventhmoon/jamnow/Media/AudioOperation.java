@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.effects.FlangerEffect;
 import be.tarsos.dsp.io.android.AndroidAudioPlayer;
 import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
@@ -54,6 +55,7 @@ public class AudioOperation {
 
     private AudioDispatcher adp;
     //private AudioEvent aet;
+    private AndroidAudioPlayer androidAudioPlayer;
     private static AudioTask goodTask;
     private boolean taskDone = true;
     private boolean pause = true;
@@ -202,38 +204,24 @@ public class AudioOperation {
         return ret;
     }
 
-    public void stop() {
-        if (!adp.isStopped()) {
-            adp.stop();
 
-
-
-            Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
-            context.sendBroadcast(newNotifyIntent);
-
-
-        }
-
-        if (goodTask != null) {
-            Log.e(TAG, "cancel task");
-            if (!goodTask.isCancelled()) {
-                goodTask.cancel(true);
-                goodTask = null;
-                taskDone = true;
-            }
-        }
-    }
 
     public void doPause() {
 
         Log.d(TAG, "<doPause>");
 
-        pause = true;
+
         current_position_u = current_offset;
 
         if (adp!= null && !adp.isStopped()) {
+
+            //adp.removeAudioProcessor(androidAudioPlayer);
+            //androidAudioPlayer = null;
             adp.stop();
         }
+
+        pause = true;
+        Log.e(TAG, "*** pause is setting ("+pause+") ***");
 
         //stop the thread
         //Log.e(TAG, "*** cancel thread, send interrupt! ***");
@@ -254,8 +242,7 @@ public class AudioOperation {
 
 
 
-        //Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
-        //context.sendBroadcast(newNotifyIntent);
+
 
 
         Log.d(TAG, "</doPause>");
@@ -265,9 +252,57 @@ public class AudioOperation {
     public void doPlay(String songPath) {
         Log.d(TAG, "<doPlay>");
 
-        pause = false;
+
         playing(songPath);
         Log.d(TAG, "</doPlay>");
+    }
+
+    public void doPrev() {
+        Log.d(TAG, "<doPrev>");
+
+        if (songList == null || songList.size() == 0) {
+            return;
+        }
+
+        if (current_play_mode == 1) { //shuffle
+            //find out current select
+            for (int i=0; i<songList.size(); i++) {
+                if (song_selected == shuffleList.get(i)) {
+                    current_shuffle_index = i;
+                }
+            }
+
+            //get next
+
+            if (current_shuffle_index > 0) {
+                current_shuffle_index--;
+            } else {
+                current_shuffle_index = 0;
+            }
+            song_selected = shuffleList.get(current_shuffle_index);
+        } else {
+
+            if (song_selected > 0 && song_selected < songList.size()) { //song_selected must >= 1
+                song_selected--;
+            } else {
+                song_selected = 0;
+            }
+        }
+
+        songPlaying = song_selected;
+        current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+
+        ab_loop_start = songList.get(song_selected).getMark_a();
+        ab_loop_end = songList.get(song_selected).getMark_b();
+
+        if (current_play_mode == 3) { //ab loop
+            current_position_u = ab_loop_start;
+        }
+
+        String songPath = songList.get(song_selected).getPath();
+        playing(songPath);
+
+        Log.d(TAG, "</doPrev>");
     }
 
     public void doNext() {
@@ -386,8 +421,7 @@ public class AudioOperation {
                 goodTask = new AudioTask();
                 goodTask.execute(10);
 
-                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
-                context.sendBroadcast(newNotifyIntent);
+
 
                 new AndroidFFMPEGLocator(context);
 
@@ -405,10 +439,13 @@ public class AudioOperation {
                         //aet = new AudioEvent(adp.getFormat());
 
                         //Log.e(TAG, "format = " + adp.getFormat().toString()+" end timestamp = "+aet.getSampleRate());
-                        //androidAudioPlayer = new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC);
+                        androidAudioPlayer = new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC);
+
+
 
                         //adp.skip(current_position_u);
-                        adp.addAudioProcessor(new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC));
+                        //adp.addAudioProcessor(new AndroidAudioPlayer(adp.getFormat(), 5000, AudioManager.STREAM_MUSIC));
+                        adp.addAudioProcessor(androidAudioPlayer);
 
 
 
@@ -427,6 +464,12 @@ public class AudioOperation {
 
                 is_thread_running = true;
                 playThread.start();
+
+                pause = false;
+                Log.e(TAG, "*** pause is setting ("+pause+") ***");
+
+                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
+                context.sendBroadcast(newNotifyIntent);
 
                 /*new Thread(new Runnable() {
                     @Override

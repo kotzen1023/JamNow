@@ -11,6 +11,7 @@ import android.media.MediaFormat;
 import android.media.MediaPlayer;
 
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 
@@ -60,6 +61,7 @@ public class MediaOperation {
     private ArrayList<Integer> shuffleList = new ArrayList<>();
     private int current_shuffle_index = 0;
 
+    private float speed = 1;
 
     public MediaOperation (Context context){
         this.context = context;
@@ -112,7 +114,13 @@ public class MediaOperation {
         this.ab_loop_end = ab_loop_end;
     }
 
+    public float getSpeed() {
+        return speed;
+    }
 
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
 
     public void setSeekTo(int offset) {
         Log.d(TAG, "<setSeekTo>");
@@ -460,7 +468,7 @@ public class MediaOperation {
 
                 }*/
 
-                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
+                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
                 context.sendBroadcast(newNotifyIntent);
             } else {
                 mediaPlayer.release();
@@ -491,6 +499,11 @@ public class MediaOperation {
 
 
                 mediaPlayer.seekTo(current_position);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Log.e(TAG, "set setPlaybackParams");
+                    mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
+                }
                 mediaPlayer.start();
                 //set state
                 current_state = STATE.Started;
@@ -503,7 +516,7 @@ public class MediaOperation {
                 }
 
 
-                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_STARTED);
+                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
                 context.sendBroadcast(newNotifyIntent);
 
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
