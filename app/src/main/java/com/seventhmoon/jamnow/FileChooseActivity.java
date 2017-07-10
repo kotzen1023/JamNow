@@ -115,7 +115,7 @@ public class FileChooseActivity extends AppCompatActivity {
 
             FileChooseLongClick = false;
             FileChooseSelectAll = false;
-            menuItem.setTitle("Select All");
+            menuItem.setTitle(getResources().getString(R.string.select_all));
 
 
             for(int i=0;i<listView.getCount(); i++) {
@@ -142,7 +142,7 @@ public class FileChooseActivity extends AppCompatActivity {
 
                 FileChooseLongClick = false;
                 FileChooseSelectAll = false;
-                menuItem.setTitle("Select all");
+                menuItem.setTitle(getResources().getString(R.string.select_all));
 
 
                 for (int i = 0; i < listView.getCount(); i++) {
@@ -187,7 +187,7 @@ public class FileChooseActivity extends AppCompatActivity {
 
                     if (!FileChooseSelectAll) {
                         FileChooseSelectAll = true;
-                        item.setTitle("all unselect");
+                        item.setTitle(getResources().getString(R.string.unselect_all));
                         Log.d(TAG, "listView.getCount = "+listView.getCount());
                         for (int i = 0; i < listView.getCount(); i++) {
                             FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
@@ -215,7 +215,7 @@ public class FileChooseActivity extends AppCompatActivity {
                         confirm.setVisibility(View.VISIBLE);
                     } else { //Data.FileChooseSelectAll == true
                        FileChooseSelectAll = false;
-                        item.setTitle("select all");
+                        item.setTitle(getResources().getString(R.string.select_all));
 
                         for (int i = 0; i < listView.getCount(); i++) {
                             FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
@@ -241,7 +241,7 @@ public class FileChooseActivity extends AppCompatActivity {
                 } else { //long click == true
                     if (!FileChooseSelectAll) {
                         FileChooseSelectAll = true;
-                        item.setTitle("Unselect all");
+                        item.setTitle(getResources().getString(R.string.unselect_all));
                         Log.d(TAG, "listView.getCount = "+listView.getCount());
                         for (int i = 0; i < listView.getCount(); i++) {
                             FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
@@ -269,7 +269,7 @@ public class FileChooseActivity extends AppCompatActivity {
                         confirm.setVisibility(View.VISIBLE);
                     } else { //Data.FileChooseSelectAll == true
                         FileChooseSelectAll = false;
-                        item.setTitle("Select all");
+                        item.setTitle(getResources().getString(R.string.select_all));
 
                         for (int i = 0; i < listView.getCount(); i++) {
                             FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);

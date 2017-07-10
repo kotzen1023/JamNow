@@ -5,4 +5,11 @@
     <string name="play_mode_repeat">Single Repeat</string>
     <string name="play_mode_ab_loop">AB Loop</string>
     <string name="menu_add">Add</string>
+    <string name="select_all">Select All</string>
+    <string name="unselect_all">Unselect All</string>
+    <string name="add_to_list">Add to play list</string>
+    <string name="remove_select">Remove from list</string>
+    <string name="confirm">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove_file_from_list">Remove \n%s \nfrom this list?　(Would not delete this file)</string>
 </resources>

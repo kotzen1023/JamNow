@@ -5,4 +5,11 @@
     <string name="play_mode_repeat">單一重複</string>
     <string name="play_mode_ab_loop">AB段循環</string>
     <string name="menu_add">新增</string>
+    <string name="select_all">全選</string>
+    <string name="unselect_all">全不選</string>
+    <string name="add_to_list">加入播放清單</string>
+    <string name="remove_select">從清單移除</string>
+    <string name="confirm">確定</string>
+    <string name="cancel">取消</string>
+    <string name="remove_file_from_list">將\n %s \n從清單移除?　(不會刪除檔案)</string>
 </resources>

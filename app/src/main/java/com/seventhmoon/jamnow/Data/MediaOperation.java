@@ -12,6 +12,8 @@ import android.media.MediaPlayer;
 
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 
@@ -321,7 +323,8 @@ public class MediaOperation {
                 song_selected++;
 
             } else {
-                song_selected = songList.size() - 1;
+                //song_selected = songList.size() - 1;
+                song_selected = 0; //from start
             }
         }
 
@@ -437,16 +440,48 @@ public class MediaOperation {
         Log.d(TAG, "</doABLoop>");
     }
 
+    private Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
 
+            Log.e(TAG, "Handler: play finished!");
+
+            //if task is running, cancel it!
+            if (goodTask != null) {
+                Log.e(TAG, "*** cancel task ***");
+                if (!goodTask.isCancelled()) {
+                    goodTask.cancel(true);
+                    goodTask = null;
+                    taskDone = true;
+                }
+            }
+
+            Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+            context.sendBroadcast(newNotifyIntent);
+
+            context.sendBroadcast(newNotifyIntent);
+            switch (current_play_mode) {
+                case 0: //play all
+                    doNext();
+                    break;
+                case 1: //play shuffle
+                    doShuffle();
+                    break;
+                case 2: //single repeat
+                    doSingleRepeat();
+                    break;
+                case 3: //an loop
+                    doABLoop();
+                    break;
+            }
+
+
+
+        }
+    };
 
     private void playing(String songPath){
         Log.d(TAG, "<playing "+songPath+">");
-
-
-
-
-
-
 
         //int bitRate = mf.getInteger(MediaFormat.KEY_BIT_RATE);
         //int sampleRate = mf.getInteger(MediaFormat.KEY_SAMPLE_RATE);
@@ -454,9 +489,16 @@ public class MediaOperation {
         //Log.d(TAG, "bitRate = "+bitRate+", sampleRate = "+sampleRate);
 
         if (mediaPlayer != null) {
+            Log.e(TAG, "mediaPlayer != null");
 
-            if (current_state == STATE.Paused) {
+            if (current_state == STATE.Paused) { // if current state is paused,
                 Log.d(TAG, "State: "+STATE.Paused);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Log.e(TAG, "set setPlaybackParams");
+                    mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
+                }
+
                 mediaPlayer.start();
                 //set state
                 current_state = STATE.Started;
@@ -479,6 +521,8 @@ public class MediaOperation {
         }
 
         if (mediaPlayer == null) {
+            Log.e(TAG, "mediaPlayer == null");
+
             mediaPlayer = new MediaPlayer();
             //set state
             current_state = STATE.Created;
@@ -492,62 +536,83 @@ public class MediaOperation {
 
                 //set state
                 current_state = STATE.Initialized;
-                mediaPlayer.prepare();
-                //set state
-                current_state = STATE.Prepared;
 
-
-
-                mediaPlayer.seekTo(current_position);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    Log.e(TAG, "set setPlaybackParams");
-                    mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
-                }
-                mediaPlayer.start();
-                //set state
-                current_state = STATE.Started;
-
-                if (taskDone) {
-                    taskDone = false;
-                    goodTask = new playtask();
-                    goodTask.execute(10);
-
+                while (true) {
+                    try {
+                        mediaPlayer.prepare();
+                        break;
+                    } catch (IllegalStateException e) {
+                        e.printStackTrace();
+                    }
                 }
 
 
-                Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
-                context.sendBroadcast(newNotifyIntent);
 
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        taskDone = true;
+                    public void onPrepared(MediaPlayer mp) {
                         //set state
-                        current_state = STATE.PlaybackCompleted;
+                        current_state = STATE.Prepared;
 
 
-                        current_position = 0; //play complete, set position = 0
 
-                        Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
-                        context.sendBroadcast(newNotifyIntent);
-                        switch (current_play_mode) {
-                            case 0: //play all
-                                doNext();
-                                break;
-                            case 1: //play shuffle
-                                doShuffle();
-                                break;
-                            case 2: //single repeat
-                                doSingleRepeat();
-                                break;
-                            case 3: //an loop
-                                doABLoop();
-                                break;
+                        mediaPlayer.seekTo(current_position);
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            Log.e(TAG, "set setPlaybackParams");
+                            mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
+                        }
+                        mediaPlayer.start();
+                        //set state
+                        current_state = STATE.Started;
+
+                        if (taskDone) {
+                            taskDone = false;
+                            goodTask = new playtask();
+                            goodTask.execute(10);
+
                         }
 
+
+                        Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
+                        context.sendBroadcast(newNotifyIntent);
+
+                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mp) {
+                                /*Message msg = new Message();
+                                mHandler.sendMessage(msg);*/
+
+                                taskDone = true;
+                                //set state
+                                current_state = STATE.PlaybackCompleted;
+
+
+                                current_position = 0; //play complete, set position = 0
+
+                                Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+                                context.sendBroadcast(newNotifyIntent);
+                                switch (current_play_mode) {
+                                    case 0: //play all
+                                        doNext();
+                                        break;
+                                    case 1: //play shuffle
+                                        doShuffle();
+                                        break;
+                                    case 2: //single repeat
+                                        doSingleRepeat();
+                                        break;
+                                    case 3: //an loop
+                                        doABLoop();
+                                        break;
+                                }
+
+                            }
+                        });
                     }
                 });
+
+
 
 
 
@@ -612,7 +677,8 @@ public class MediaOperation {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            Log.d(TAG, "onPreExecute set "+mediaPlayer.getDuration());
+            if (current_state == STATE.Started)
+                Log.d(TAG, "=== playtask onPreExecute set "+mediaPlayer.getDuration()+" ===");
 
 
 
@@ -650,7 +716,8 @@ public class MediaOperation {
 
             if (values[0] >= 1000) {
                 seekBar.setProgress(1000);
-                setSongDuration(mediaPlayer.getDuration());
+                if (current_state == STATE.Started)
+                    setSongDuration(mediaPlayer.getDuration());
             } else {
 
                 seekBar.setProgress(values[0]);
@@ -681,6 +748,8 @@ public class MediaOperation {
 
             super.onPostExecute(result);
 
+            Log.d(TAG, "=== onPostExecute ===");
+
 
             if (pause) { //if pause, don't change progress
                 Log.d(TAG, "Pause was pressed while playing");
@@ -702,6 +771,8 @@ public class MediaOperation {
         protected void onCancelled() {
 
             super.onCancelled();
+
+            Log.d(TAG, "=== onCancelled ===");
         }
     }
 }

@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="8"
-            android:text="Add to my favorite"
+            android:text="@string/add_to_list"
             android:layout_margin="3dp"
 
             android:textAppearance="?android:attr/textAppearanceLarge"

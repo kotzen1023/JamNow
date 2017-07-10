@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
     private static boolean is_editMarkB_change = false;
 
     private static int current_position = 0;
+    private static float current_speed = 0;
     private static double current_position_d = 0.0;
     ProgressDialog loadDialog = null;
 
@@ -264,12 +265,59 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                Log.e(TAG, "onStartTrackingTouch Speed >");
 
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+                    mediaOperation.doPause();
+
+                    current_speed = mediaOperation.getSpeed();
+
+                    Log.d(TAG, "original speed = "+current_speed);
+
+                    /*Log.d(TAG, "songPlaying = "+songPlaying+" song_selected = "+song_selected);
+
+                    if (songPlaying == song_selected) {
+                        Log.d(TAG, "seekBar: The same song from pause to play");
+
+                        //mediaOperation.setSeekTo(current_position);
+                    } else {
+                        Log.d(TAG, "seekBar: The song was different from pause to play, stop!");
+                        songPlaying = song_selected;
+                        mediaOperation.doStop();
+                        //current_position = 0;
+                    }*/
+                }
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                Log.e(TAG, "onStopTrackingTouch Speed <");
 
+                if (speedBar.getProgress() == 0) { //min speed 0.5f (50%)
+                    current_speed  = 0.5f;
+                } else if (speedBar.getProgress() > 0 && speedBar.getProgress() < 100) {
+                    current_speed = 0.5f + ((float)speedBar.getProgress()) * 0.005f;
+                } else if (speedBar.getProgress() >= 100 && speedBar.getProgress() < 200) {
+                    current_speed = speedBar.getProgress() * 0.01f;
+                } else { //speed = 2.0f
+                    current_speed = 2.0f;
+                }
+
+                Log.d(TAG, "new speed = "+current_speed);
+
+                mediaOperation.setSpeed(current_speed);
+
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                    //if (audioOperation.isPause()) {
+                    //mediaOperation.setSeekTo((int) duration);
+
+                    mediaOperation.doPlay(songList.get(song_selected).getPath());
+
+                    //audioOperation.setCurrentPosition(duration/1000.0);
+                    //audioOperation.doPlay(songList.get(song_selected).getPath());
+                } else {
+                    Log.e(TAG, "Not Pause state");
+                }
             }
         });
 
@@ -804,6 +852,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         } else {
                             Log.d(TAG, "The song was different from pause to play, stop!");
+                            mediaOperation.doStop();
+
                             songPlaying = song_selected;
 
 
@@ -836,34 +886,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "imgSkipPrev");
 
-                if (!audioOperation.isPause()) { //playing
-                    audioOperation.doPause();
-                    audioOperation.doPrev();
-                } else {
-                    if (song_selected > 0 && song_selected < songList.size() ) { //song_selected must >= 1
-                        song_selected--;
-                    } else {
-                        song_selected = 0;
-                    }
-
-                    //deselect other
-                    for (int i=0; i<songList.size(); i++) {
-
-                        if (i == song_selected) {
-                            songList.get(i).setSelected(true);
-
-                        } else {
-                            songList.get(i).setSelected(false);
-
-                        }
-                    }
-
-                    myListview.invalidateViews();
-
-                    current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                }
-
-                /*if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing
                     mediaOperation.doStop();
                     mediaOperation.doPrev();
                 } else {
@@ -888,7 +911,7 @@ public class MainActivity extends AppCompatActivity {
                     myListview.invalidateViews();
 
                     current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                }*/
+                }
 
                 if (current_song_duration != 0) {
 
@@ -934,35 +957,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "imgSkipNext");
 
-                if (!audioOperation.isPause()) {
-                    audioOperation.doPause();
-                    audioOperation.doNext();
-                } else {
-                    if (song_selected < songList.size()-1 ) { //song_selected must >= 1
-                        song_selected++;
-                    } else {
-                        song_selected = songList.size()-1;
-                    }
-
-                    //deselect other
-                    for (int i=0; i<songList.size(); i++) {
-
-                        if (i == song_selected) {
-                            songList.get(i).setSelected(true);
-
-                        } else {
-                            songList.get(i).setSelected(false);
-
-                        }
-                    }
-
-                    myListview.invalidateViews();
-
-                    current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                }
-
-
-                /*if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing
                     mediaOperation.doStop();
                     mediaOperation.doNext();
                 } else {
@@ -987,7 +982,7 @@ public class MainActivity extends AppCompatActivity {
                     myListview.invalidateViews();
 
                     current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                }*/
+                }
 
                 if (current_song_duration != 0) {
 
@@ -1034,35 +1029,35 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "imgFastRewind");
 
-                Log.d(TAG, "current_position_d = "+audioOperation.getCurrentPosition());
+                Log.d(TAG, "current_position = "+mediaOperation.getCurrentPosition());
 
-                //if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
-                if (!audioOperation.isPause()) {
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause, seek to new position then play
+                //if (!audioOperation.isPause()) {
 
                     mediaOperation.doPause();
 
-                    current_position_d = audioOperation.getCurrentPosition();
-                    if (current_position_d > 10.0) {
-                        current_position_d = current_position_d - 10.0;
+                    current_position = mediaOperation.getCurrentPosition();
+                    if (current_position > 10000) { //10 seconds
+                        current_position = current_position - 10000;
                     } else {
-                        current_position_d = 0.0;
+                        current_position = 0;
                     }
-                    audioOperation.setCurrentPosition(current_position_d);
+                    mediaOperation.setCurrentPosition(current_position);
+                    mediaOperation.setSeekTo(current_position);
+                    mediaOperation.doPlay(songList.get(song_selected).getPath());
+                } else { //
 
-                    audioOperation.doPlay(songList.get(song_selected).getPath());
-                } else {
+                    current_position = mediaOperation.getCurrentPosition();
 
-                    current_position_d = audioOperation.getCurrentPosition();
-
-                    if (current_position_d > 10.0) {
-                        current_position_d = current_position_d - 10.0;
+                    if (current_position > 10000) {
+                        current_position = current_position - 10000;
                     } else {
-                        current_position_d = 0.0;
+                        current_position = 0;
                     }
-                    audioOperation.setCurrentPosition(current_position_d);
+                    mediaOperation.setCurrentPosition(current_position);
 
-                    setSeekBarLocation((int)(current_position_d * 1000.0));
-                    setSongDuration((int)(current_position_d * 1000.0));
+                    setSeekBarLocation(current_position);
+                    setSongDuration(current_position);
                 }
             }
         });
@@ -1073,36 +1068,34 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "imgFastForward");
 
-                Log.d(TAG, "current_position_d = "+audioOperation.getCurrentPosition());
+                Log.d(TAG, "current_position = "+mediaOperation.getCurrentPosition());
 
-                if (!audioOperation.isPause()) { //if playing, pause
+                if (!mediaOperation.isPause()) { //if playing, pause, seek to new position then play
                     mediaOperation.doPause();
                     //current_position = mediaOperation.getCurrentPosition()+10000;
                     //current_position = (int)(audioOperation.getCurrentPosition()*1000.0)+10000;
 
-                    current_position_d = audioOperation.getCurrentPosition()+ 10.0;
+                    current_position = mediaOperation.getCurrentPosition()+ 10000;
 
-                    if ((current_position_d * 1000.0) >= current_song_duration) {
-                        //mediaOperation.setSeekTo(current_song_duration);
-                        current_position_d = ((double) current_song_duration)/1000.0;
+                    if (current_position >= current_song_duration) {
+                        mediaOperation.setSeekTo(current_song_duration);
+                        current_position = current_song_duration;
                     }
-                    audioOperation.setCurrentPosition(current_position_d);
-
-
-
-                    audioOperation.doPlay(songList.get(song_selected).getPath());
+                    mediaOperation.setCurrentPosition(current_position);
+                    mediaOperation.setSeekTo(current_position);
+                    mediaOperation.doPlay(songList.get(song_selected).getPath());
                 } else {
 
-                    current_position_d = audioOperation.getCurrentPosition()+ 10.0;
+                    current_position = mediaOperation.getCurrentPosition() + 10000;
 
-                    if ((current_position_d * 1000.0) >= current_song_duration) {
-                        //mediaOperation.setSeekTo(current_song_duration);
-                        current_position_d = ((double) current_song_duration)/1000.0;
+                    if (current_position >= current_song_duration) {
+                        mediaOperation.setSeekTo(current_song_duration);
+                        current_position = current_song_duration;
                     }
-                    audioOperation.setCurrentPosition(current_position_d);
+                    mediaOperation.setCurrentPosition(current_position);
 
-                    setSeekBarLocation((int)(current_position_d * 1000.0));
-                    setSongDuration((int)(current_position_d * 1000.0));
+                    setSeekBarLocation(current_position);
+                    setSongDuration(current_position);
                 }
             }
         });
@@ -1536,6 +1529,44 @@ public class MainActivity extends AppCompatActivity {
 
                 textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
                 textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
+                break;
+            case R.id.action_remove:
+                Log.e(TAG, "remove song_selected = "+song_selected);
+
+                AlertDialog.Builder confirmdialog = new AlertDialog.Builder(this);
+                confirmdialog.setIcon(R.drawable.ic_warning_black_48dp);
+                confirmdialog.setTitle(getResources().getString(R.string.remove_select));
+                confirmdialog.setMessage(getResources().getString(R.string.remove_file_from_list, songList.get(song_selected).getName()));
+                confirmdialog.setPositiveButton(getResources().getString(R.string.confirm), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        songList.remove(song_selected);
+
+                        songArrayAdapter.notifyDataSetChanged();
+
+                        Intent saveintent = new Intent(MainActivity.this, SaveListToFileService.class);
+                        saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
+                        saveintent.putExtra("FILENAME", "favorite");
+                        context.startService(saveintent);
+
+                        loadDialog = new ProgressDialog(MainActivity.this);
+                        loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        loadDialog.setTitle("Saving...");
+                        loadDialog.setIndeterminate(false);
+                        loadDialog.setCancelable(false);
+
+                        loadDialog.show();
+
+
+                    }
+                });
+                confirmdialog.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                    }
+                });
+                confirmdialog.show();
+
                 break;
 
         }
