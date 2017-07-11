@@ -170,6 +170,12 @@ public class MainActivity extends AppCompatActivity {
 
         mediaOperation.setCurrent_play_mode(current_mode);
         mediaOperation.setCurrent_volume(current_volume);
+
+        if (current_mode == MODE_PLAY_REPEAT) {
+            mediaOperation.setLooping(true);
+        } else {
+            mediaOperation.setLooping(false);
+        }
         //audioOperation.setCurrent_play_mode(current_mode);
 
         //formatter = new SimpleDateFormat("mm:ss");
@@ -867,6 +873,11 @@ public class MainActivity extends AppCompatActivity {
                                     if (current_position >= songList.get(song_selected).getMark_b()) {
                                         current_position = songList.get(song_selected).getMark_a();
                                     }
+                                    mediaOperation.setLooping(false);
+                                } else if (current_mode == MODE_PLAY_REPEAT) {
+                                    mediaOperation.setLooping(true);
+                                } else {
+                                    mediaOperation.setLooping(false);
                                 }
                             } else {
                                 Log.d(TAG, "The song was different from pause to play, stop!");
@@ -1545,6 +1556,10 @@ public class MainActivity extends AppCompatActivity {
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_ALL;
                 mediaOperation.setCurrent_play_mode(current_mode);
+
+                //set loop = false
+                mediaOperation.setLooping(false);
+
                 //clear loop
                 seekBar.setDots(new int[] {});
                 seekBar.setDotsDrawable(R.drawable.dot);
@@ -1562,6 +1577,10 @@ public class MainActivity extends AppCompatActivity {
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_SHUFFLE;
                 mediaOperation.setCurrent_play_mode(current_mode);
+
+                //set loop = false
+                mediaOperation.setLooping(false);
+
                 //clear loop
                 seekBar.setDots(new int[] {});
                 seekBar.setDotsDrawable(R.drawable.dot);
@@ -1580,6 +1599,10 @@ public class MainActivity extends AppCompatActivity {
                 linearLayoutAB.setVisibility(View.GONE);
                 current_mode = MODE_PLAY_REPEAT;
                 mediaOperation.setCurrent_play_mode(current_mode);
+
+                //set loop = true
+                mediaOperation.setLooping(true);
+
                 //clear loop
                 seekBar.setDots(new int[] {});
                 seekBar.setDotsDrawable(R.drawable.dot);
@@ -1601,6 +1624,10 @@ public class MainActivity extends AppCompatActivity {
                 linearLayoutAB.setVisibility(View.VISIBLE);
                 current_mode = MODE_PLAY_AB_LOOP;
                 mediaOperation.setCurrent_play_mode(current_mode);
+
+                //set loop = false
+                mediaOperation.setLooping(false);
+
                 int minutes_a = 0;
                 int seconds_a = 0;
                 int minisec_a = 0;

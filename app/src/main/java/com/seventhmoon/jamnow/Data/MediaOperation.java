@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 
-
-
+import static com.seventhmoon.jamnow.MainActivity.current_mode;
 import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
 import static com.seventhmoon.jamnow.MainActivity.setActionBarTitle;
@@ -67,6 +66,8 @@ public class MediaOperation {
 
     private float current_volume = 0.5f;
     private int current_volume_progress = 50;
+
+    private boolean looping = false;
 
 
     public MediaOperation (Context context){
@@ -197,6 +198,24 @@ public class MediaOperation {
     public void setCurrent_volume(int progress) {
         current_volume_progress = progress;
         current_volume = (float) (1 - (Math.log(MAX_VOLUME - current_volume_progress) / Math.log(MAX_VOLUME)));
+    }
+
+    public boolean isLooping() {
+        return looping;
+    }
+
+    public void setLooping(boolean looping) {
+        this.looping = looping;
+        if (current_state == STATE.Idle ||
+                current_state == STATE.Initialized ||
+                current_state == STATE.Stopped ||
+                current_state == STATE.Prepared ||
+                current_state == STATE.Started ||
+                current_state == STATE.Paused ||
+                current_state == STATE.PlaybackCompleted) {
+
+            mediaPlayer.setLooping(looping);
+        }
     }
 
     public void doStop() {
@@ -459,39 +478,44 @@ public class MediaOperation {
 
             Log.e(TAG, "Handler: play finished!");
 
-            taskDone = true;
-            //set state
-            current_state = STATE.PlaybackCompleted;
+            if (current_mode == 2) { //single repeat
+                Log.e(TAG, "Looping, do nothing!");
+            } else {
+
+                taskDone = true;
+                //set state
+                current_state = STATE.PlaybackCompleted;
 
 
-            current_position = 0; //play complete, set position = 0
+                current_position = 0; //play complete, set position = 0
 
-            //if task is running, cancel it!
-            if (goodTask != null) {
-                Log.e(TAG, "*** cancel task ***");
-                if (!goodTask.isCancelled()) {
-                    goodTask.cancel(true);
-                    goodTask = null;
-                    taskDone = true;
+                //if task is running, cancel it!
+                if (goodTask != null) {
+                    Log.e(TAG, "*** cancel task ***");
+                    if (!goodTask.isCancelled()) {
+                        goodTask.cancel(true);
+                        goodTask = null;
+                        taskDone = true;
+                    }
                 }
-            }
 
-            Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
-            context.sendBroadcast(newNotifyIntent);
+                Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+                context.sendBroadcast(newNotifyIntent);
 
-            switch (current_play_mode) {
-                case 0: //play all
-                    doNext();
-                    break;
-                case 1: //play shuffle
-                    doShuffle();
-                    break;
-                case 2: //single repeat
-                    doSingleRepeat();
-                    break;
-                case 3: //an loop
-                    doABLoop();
-                    break;
+                switch (current_play_mode) {
+                    case 0: //play all
+                        doNext();
+                        break;
+                    case 1: //play shuffle
+                        doShuffle();
+                        break;
+                    case 2: //single repeat
+                        doSingleRepeat();
+                        break;
+                    case 3: //an loop
+                        doABLoop();
+                        break;
+                }
             }
 
 
@@ -513,6 +537,9 @@ public class MediaOperation {
             if (current_state == STATE.Paused) { // if current state is paused,
                 Log.d(TAG, "State: "+STATE.Paused);
 
+                //set looping
+                //mediaPlayer.setLooping(looping);
+
                 //set speed
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     Log.e(TAG, "set setPlaybackParams");
@@ -525,6 +552,8 @@ public class MediaOperation {
                 mediaPlayer.start();
                 //set state
                 current_state = STATE.Started;
+
+
 
                 /*if (taskDone) {
                     taskDone = false;
@@ -577,7 +606,8 @@ public class MediaOperation {
                         //set state
                         current_state = STATE.Prepared;
 
-
+                        //set looping
+                        //mediaPlayer.setLooping(looping);
 
                         mediaPlayer.seekTo(current_position);
 
@@ -592,6 +622,8 @@ public class MediaOperation {
                         mediaPlayer.start();
                         //set state
                         current_state = STATE.Started;
+
+
 
                         if (taskDone) {
                             taskDone = false;
