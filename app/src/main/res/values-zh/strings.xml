@@ -12,4 +12,5 @@
     <string name="confirm">確定</string>
     <string name="cancel">取消</string>
     <string name="remove_file_from_list">將\n %s \n從清單移除?　(不會刪除檔案)</string>
+    <string name="volume_control">音量</string>
 </resources>

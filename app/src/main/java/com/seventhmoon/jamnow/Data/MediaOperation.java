@@ -43,7 +43,7 @@ import static com.seventhmoon.jamnow.Data.Constants.STATE;
 public class MediaOperation {
     private static final String TAG = MediaOperation.class.getName();
 
-
+    private final static int MAX_VOLUME = 100;
 
     private static MediaPlayer mediaPlayer;
     private static int current_play_mode = 0;
@@ -64,6 +64,10 @@ public class MediaOperation {
     private int current_shuffle_index = 0;
 
     private float speed = 1;
+
+    private float current_volume = 0.5f;
+    private int current_volume_progress = 50;
+
 
     public MediaOperation (Context context){
         this.context = context;
@@ -184,6 +188,15 @@ public class MediaOperation {
     public void setCurrentPosition(int position) {
 
         this.current_position = position;
+    }
+
+    public int getCurrent_volume() {
+        return current_volume_progress;
+    }
+
+    public void setCurrent_volume(int progress) {
+        current_volume_progress = progress;
+        current_volume = (float) (1 - (Math.log(MAX_VOLUME - current_volume_progress) / Math.log(MAX_VOLUME)));
     }
 
     public void doStop() {
@@ -446,6 +459,13 @@ public class MediaOperation {
 
             Log.e(TAG, "Handler: play finished!");
 
+            taskDone = true;
+            //set state
+            current_state = STATE.PlaybackCompleted;
+
+
+            current_position = 0; //play complete, set position = 0
+
             //if task is running, cancel it!
             if (goodTask != null) {
                 Log.e(TAG, "*** cancel task ***");
@@ -459,7 +479,6 @@ public class MediaOperation {
             Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
             context.sendBroadcast(newNotifyIntent);
 
-            context.sendBroadcast(newNotifyIntent);
             switch (current_play_mode) {
                 case 0: //play all
                     doNext();
@@ -494,10 +513,14 @@ public class MediaOperation {
             if (current_state == STATE.Paused) { // if current state is paused,
                 Log.d(TAG, "State: "+STATE.Paused);
 
+                //set speed
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     Log.e(TAG, "set setPlaybackParams");
                     mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
                 }
+
+                //set volume
+                mediaPlayer.setVolume(current_volume, current_volume);
 
                 mediaPlayer.start();
                 //set state
@@ -562,6 +585,10 @@ public class MediaOperation {
                             Log.e(TAG, "set setPlaybackParams");
                             mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
                         }
+
+                        //set volume
+                        mediaPlayer.setVolume(current_volume, current_volume);
+
                         mediaPlayer.start();
                         //set state
                         current_state = STATE.Started;
@@ -580,10 +607,10 @@ public class MediaOperation {
                         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
                             public void onCompletion(MediaPlayer mp) {
-                                /*Message msg = new Message();
-                                mHandler.sendMessage(msg);*/
+                                Message msg = new Message();
+                                mHandler.sendMessage(msg);
 
-                                taskDone = true;
+                                /*taskDone = true;
                                 //set state
                                 current_state = STATE.PlaybackCompleted;
 
@@ -605,7 +632,7 @@ public class MediaOperation {
                                     case 3: //an loop
                                         doABLoop();
                                         break;
-                                }
+                                }*/
 
                             }
                         });
@@ -642,7 +669,7 @@ public class MediaOperation {
 
                         if (current_state == STATE.Started) { //pause must in started state
 
-                            Log.d(TAG, "position = " + mediaPlayer.getCurrentPosition() + "ab_loop_start = " + ab_loop_start + " ab_loop_end = " + ab_loop_end);
+                            Log.d(TAG, "position = " + mediaPlayer.getCurrentPosition() + " ab_loop_start = " + ab_loop_start + " ab_loop_end = " + ab_loop_end);
                             mediaPlayer.pause();
                             mediaPlayer.seekTo(ab_loop_start);
                             mediaPlayer.start();
@@ -662,7 +689,7 @@ public class MediaOperation {
                     }
 
 
-                    Thread.sleep(200);
+                    Thread.sleep(100);
 
                 } catch (Exception e) {
                     e.printStackTrace();

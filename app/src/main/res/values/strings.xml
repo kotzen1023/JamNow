@@ -12,4 +12,5 @@
     <string name="confirm">Ok</string>
     <string name="cancel">Cancel</string>
     <string name="remove_file_from_list">Remove \n%s \nfrom this list?　(Would not delete this file)</string>
+    <string name="volume_control">Volume</string>
 </resources>

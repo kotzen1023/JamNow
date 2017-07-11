@@ -58,6 +58,12 @@
                 app:showAsAction="ifRoom|withText" />
 
             <item
+                android:id="@+id/action_volume"
+                android:title="@string/volume_control"
+                android:icon="@drawable/ic_volume_up_black_24dp"
+                app:showAsAction="ifRoom|withText" />
+
+            <item
                 android:id="@+id/action_remove"
                 android:title="@string/remove_select"
                 android:icon="@drawable/ic_remove_black_24dp"

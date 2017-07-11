@@ -14,6 +14,8 @@ import android.content.pm.PackageManager;
 
 import android.os.Build;
 
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -95,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     MenuItem item_search;
     public static ActionBar actionBar;
     LinearLayout linearLayoutAB;
+    LinearLayout linearSpeed;
     public static TextView songDuration;
     public static DottedSeekBar seekBar;
     private static DottedSeekBar speedBar;
@@ -119,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     public static int song_selected = 0;
     public static int current_mode = MODE_PLAY_ALL;
     MediaOperation mediaOperation;
-    AudioOperation audioOperation;
+    //AudioOperation audioOperation;
     public static int current_song_duration = 0;
 
     private static int progress_mark_a = 0;
@@ -143,6 +146,8 @@ public class MainActivity extends AppCompatActivity {
     private static String currentAcitonBarTitle;
     public static boolean isPlayPress = false;
 
+    private static AlertDialog dialog = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,22 +162,30 @@ public class MainActivity extends AppCompatActivity {
 
 
         mediaOperation = new MediaOperation(context);
-        audioOperation = new AudioOperation(context);
+        //audioOperation = new AudioOperation(context);
 
 
         mediaOperation.setCurrent_play_mode(current_mode);
-        audioOperation.setCurrent_play_mode(current_mode);
+        //audioOperation.setCurrent_play_mode(current_mode);
 
         //formatter = new SimpleDateFormat("mm:ss");
 
         songList.clear();
 
         linearLayoutAB = (LinearLayout) findViewById(R.id.layout_ab_loop);
+        linearSpeed = (LinearLayout) findViewById(R.id.linearSpeed);
 
         songDuration = (TextView) findViewById(R.id.textSongDuration);
 
         seekBar = (DottedSeekBar) findViewById(R.id.seekBarTime);
         speedBar = (DottedSeekBar) findViewById(R.id.seekBarSpeed);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            linearSpeed.setVisibility(View.VISIBLE);
+        } else {
+            linearSpeed.setVisibility(View.GONE);
+        }
+
         textA = (EditText) findViewById(R.id.textViewA);
         textB = (EditText) findViewById(R.id.textViewB);
         textSpeed = (TextView) findViewById(R.id.textSpeed);
@@ -785,7 +798,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (songList.size() > 0) { //check if songs exist in list
                     //set click disable
-                    imgPlayOrPause.setClickable(false);
+                    //imgPlayOrPause.setClickable(false);
 
                     if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
 
@@ -811,9 +824,9 @@ public class MainActivity extends AppCompatActivity {
                         } else { //else use first
 
                             if (current_mode == MODE_PLAY_SHUFFLE) {
-                                songPath = songList.get(audioOperation.getShufflePosition()).getPath();
-                                songName = songList.get(audioOperation.getShufflePosition()).getName();
-                                song_selected = audioOperation.getShufflePosition();
+                                songPath = songList.get(mediaOperation.getShufflePosition()).getPath();
+                                songName = songList.get(mediaOperation.getShufflePosition()).getName();
+                                song_selected = mediaOperation.getShufflePosition();
 
                                 //deselect other
                                 for (int i=0; i<songList.size(); i++) {
@@ -842,29 +855,62 @@ public class MainActivity extends AppCompatActivity {
 
                         myListview.invalidateViews();
 
-                        if (songPlaying == song_selected) {
-                            Log.d(TAG, "The same song from pause to play");
+                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                            if (songPlaying == song_selected) {
+                                Log.d(TAG, "The same song from pause to play");
 
-                            if (current_mode == MODE_PLAY_AB_LOOP) {
-                                if (current_position >= songList.get(song_selected).getMark_b()) {
+                                if (current_mode == MODE_PLAY_AB_LOOP) {
+                                    if (current_position >= songList.get(song_selected).getMark_b()) {
+                                        current_position = songList.get(song_selected).getMark_a();
+                                    }
+                                }
+                            } else {
+                                Log.d(TAG, "The song was different from pause to play, stop!");
+                                mediaOperation.doStop();
+
+                                songPlaying = song_selected;
+
+
+                                if (current_mode == MODE_PLAY_AB_LOOP) {
                                     current_position = songList.get(song_selected).getMark_a();
+                                    mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                    mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                } else {
+                                    current_position = 0;
                                 }
                             }
-                        } else {
-                            Log.d(TAG, "The song was different from pause to play, stop!");
-                            mediaOperation.doStop();
-
-                            songPlaying = song_selected;
-
+                        } else { //not pause, maybe stop
+                            Log.d(TAG, "not pause, maybe stop");
 
                             if (current_mode == MODE_PLAY_AB_LOOP) {
+                                NumberFormat f = new DecimalFormat("00");
+                                NumberFormat f2 = new DecimalFormat("000");
+
+                                progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
+                                progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
+
+                                int minutes_a = songList.get(song_selected).getMark_a() / 60000;
+                                int seconds_a = (songList.get(song_selected).getMark_a() / 1000) % 60;
+                                int minisec_a = songList.get(song_selected).getMark_a() % 1000;
+
+                                int minutes_b = songList.get(song_selected).getMark_b() / 60000;
+                                int seconds_b = (songList.get(song_selected).getMark_b() / 1000) % 60;
+                                int minisec_b = songList.get(song_selected).getMark_b() % 1000;
+
+                                seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                                seekBar.setDotsDrawable(R.drawable.dot);
+                                seekBar.setmLine(R.drawable.line);
+
+                                textA.setText(f.format(minutes_a) + ":" + f.format(seconds_a) + "." + f2.format(minisec_a));
+                                textB.setText(f.format(minutes_b) + ":" + f.format(seconds_b) + "." + f2.format(minisec_b));
+
                                 current_position = songList.get(song_selected).getMark_a();
-                                audioOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
-                                audioOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
-                            } else {
-                                current_position = 0;
+                                mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
                             }
                         }
+
+
 
 
 
@@ -1106,12 +1152,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "select "+position);
 
-
-
-
-
-
-
                 song_selected = position;
 
                 //deselect other
@@ -1187,6 +1227,64 @@ public class MainActivity extends AppCompatActivity {
                     //set shuffle list
                     mediaOperation.shuffleReset();
 
+                    NumberFormat f = new DecimalFormat("00");
+                    NumberFormat f2 = new DecimalFormat("000");
+
+                    switch (current_mode) {
+                        case MODE_PLAY_ALL:
+                            song_selected = 0;
+                            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+                            break;
+                        case MODE_PLAY_SHUFFLE:
+                            song_selected = mediaOperation.getShufflePosition();
+                            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+                            break;
+                        case MODE_PLAY_REPEAT:
+                            song_selected = 0;
+                            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+                            break;
+                        case MODE_PLAY_AB_LOOP:
+                            song_selected = 0;
+                            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+
+                            progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
+                            progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
+
+                            int minutes_a = songList.get(song_selected).getMark_a()/60000;
+                            int seconds_a = (songList.get(song_selected).getMark_a()/1000) % 60;
+                            int minisec_a = songList.get(song_selected).getMark_a()%1000;
+
+                            int minutes_b = songList.get(song_selected).getMark_b()/60000;
+                            int seconds_b = (songList.get(song_selected).getMark_b()/1000) % 60;
+                            int minisec_b = songList.get(song_selected).getMark_b()%1000;
+
+                            seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                            seekBar.setDotsDrawable(R.drawable.dot);
+                            seekBar.setmLine(R.drawable.line);
+
+                            textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
+                            textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
+                            break;
+                    }
+
+
+
+
+
+                    //deselect other
+                    for (int i=0; i<songList.size(); i++) {
+
+                        if (i == song_selected) {
+                            songList.get(i).setSelected(true);
+
+                        } else {
+                            songList.get(i).setSelected(false);
+
+                        }
+                    }
+
+
+
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
                     Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
 
@@ -1238,7 +1336,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED)) {
                     Log.d(TAG, "receive MEDIAPLAYER_STATE_STARTED !("+song_selected+")");
                     //set click true
-                    imgPlayOrPause.setClickable(true);
+                    //imgPlayOrPause.setClickable(true);
 
                     imgPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
 
@@ -1274,7 +1372,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED)) {
                     Log.d(TAG, "receive MEDIAPLAYER_STATE_PAUSED !");
-                    imgPlayOrPause.setClickable(true);
+                    //imgPlayOrPause.setClickable(true);
                     imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_SONGLIST_TO_FILE_COMPLETE)) {
                     loadDialog.dismiss();
@@ -1530,6 +1628,10 @@ public class MainActivity extends AppCompatActivity {
                 textA.setText(f.format(minutes_a)+":"+f.format(seconds_a)+"."+f2.format(minisec_a));
                 textB.setText(f.format(minutes_b)+":"+f.format(seconds_b)+"."+f2.format(minisec_b));
                 break;
+
+            case R.id.action_volume:
+                showVolumeDialog();
+                break;
             case R.id.action_remove:
                 Log.e(TAG, "remove song_selected = "+song_selected);
 
@@ -1576,6 +1678,159 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
 
         return true;
+    }
+
+    private Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            Log.e(TAG, "receive close");
+            dialog.dismiss();
+
+        }
+    };
+
+    protected void showVolumeDialog() {
+
+        // get prompts.xml view
+        /*LayoutInflater layoutInflater = LayoutInflater.from(Nfc_read_app.this);
+        View promptView = layoutInflater.inflate(R.layout.input_dialog, null);*/
+        View promptView = View.inflate(MainActivity.this, R.layout.volume_dialog, null);
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        //AlertDialog dialog = null;
+
+        alertDialogBuilder.setView(promptView);
+
+        final TextView textVolume = (TextView) promptView.findViewById(R.id.textVolume);
+        final SeekBar seekbarVolume = (SeekBar) promptView.findViewById(R.id.seekBarVolume);
+
+        seekbarVolume.setProgress(mediaOperation.getCurrent_volume());
+        String vol = mediaOperation.getCurrent_volume()+"%";
+        textVolume.setText(vol);
+
+        seekbarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                String volume = String.valueOf(progress) + "%";
+                textVolume.setText(volume);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //playing, doPause
+                    mediaOperation.doPause();
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+                Log.d(TAG, "new volume = "+seekBar.getProgress());
+
+                mediaOperation.setCurrent_volume(seekBar.getProgress());
+
+                if (isPlayPress) {
+
+                    if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                        //if (audioOperation.isPause()) {
+                        //mediaOperation.setSeekTo((int) duration);
+
+                        mediaOperation.doPlay(songList.get(song_selected).getPath());
+
+                        //audioOperation.setCurrentPosition(duration/1000.0);
+                        //audioOperation.doPlay(songList.get(song_selected).getPath());
+                    } else {
+                        Log.e(TAG, "Not Pause state");
+                    }
+                }
+
+
+                Message msg = new Message();
+                mHandler.sendMessage(msg);
+            }
+        });
+
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false);
+
+
+        /*alertDialogBuilder.setPositiveButton(getResources().getString(R.string.dialog_confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //resultText.setText("Hello, " + editText.getText());
+                //Log.e(TAG, "input password = " + editText.getText());
+
+                if (editFileName.getText().toString().equals("")) {
+                    toast("file name empty");
+
+                } else {
+                    //check same file name
+                    if (check_file_exist(editFileName.getText().toString()))
+                    {
+                        AlertDialog.Builder confirmdialog = new AlertDialog.Builder(PlayMainActivity.this);
+                        confirmdialog.setTitle("File "+"\""+editFileName.getText().toString()+"\" is exist, want to overwrite it?");
+                        confirmdialog.setIcon(R.drawable.ball_icon);
+
+                        confirmdialog.setCancelable(false);
+                        confirmdialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //overwrite
+                                //clear
+                                clear_record(editFileName.getText().toString());
+
+                                //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
+                                //append_record(msg, editFileName.getText().toString());
+
+                                Intent intent = new Intent(PlayMainActivity.this, SetupMain.class);
+                                intent.putExtra("FILE_NAME", editFileName.getText().toString());
+                                if (!editPlayerUp.getText().toString().equals(""))
+                                    intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
+                                else
+                                    intent.putExtra("PLAYER_UP", "");
+                                if (!editPlayerDown.getText().toString().equals(""))
+                                    intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
+                                else
+                                    intent.putExtra("PLAYER_DOWN", "");
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+                        confirmdialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+
+                            }
+                        });
+                        confirmdialog.show();
+                    } else {
+
+                        //add new file
+                        //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
+                        //append_record(msg, editFileName.getText().toString());
+
+
+                        Intent intent = new Intent(PlayMainActivity.this, SetupMain.class);
+                        intent.putExtra("FILE_NAME", editFileName.getText().toString());
+                        if (!editPlayerUp.getText().toString().equals(""))
+                            intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
+                        else
+                            intent.putExtra("PLAYER_UP", "Player1");
+                        if (!editPlayerDown.getText().toString().equals(""))
+                            intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
+                        else
+                            intent.putExtra("PLAYER_DOWN", "Player2");
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            }
+        });
+        alertDialogBuilder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });*/
+        dialog = alertDialogBuilder.show();
     }
 
     final private android.support.v7.widget.SearchView.OnQueryTextListener queryListener = new android.support.v7.widget.SearchView.OnQueryTextListener() {
