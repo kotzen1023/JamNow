@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
     private static boolean isRegister = false;
     public static int song_selected = 0;
     public static int current_mode = MODE_PLAY_ALL;
+    public static int current_volume = 50;
     MediaOperation mediaOperation;
     //AudioOperation audioOperation;
     public static int current_song_duration = 0;
@@ -159,6 +160,8 @@ public class MainActivity extends AppCompatActivity {
 
         pref = getSharedPreferences(FILE_NAME, MODE_PRIVATE);
         current_mode = pref.getInt("PLAY_MODE", 0);
+        current_volume = pref.getInt("PLAY_VOLUME", 50);
+
 
 
         mediaOperation = new MediaOperation(context);
@@ -166,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         mediaOperation.setCurrent_play_mode(current_mode);
+        mediaOperation.setCurrent_volume(current_volume);
         //audioOperation.setCurrent_play_mode(current_mode);
 
         //formatter = new SimpleDateFormat("mm:ss");
@@ -1705,7 +1709,9 @@ public class MainActivity extends AppCompatActivity {
         final TextView textVolume = (TextView) promptView.findViewById(R.id.textVolume);
         final SeekBar seekbarVolume = (SeekBar) promptView.findViewById(R.id.seekBarVolume);
 
-        seekbarVolume.setProgress(mediaOperation.getCurrent_volume());
+        current_volume = mediaOperation.getCurrent_volume();
+
+        seekbarVolume.setProgress(current_volume);
         String vol = mediaOperation.getCurrent_volume()+"%";
         textVolume.setText(vol);
 
@@ -1728,7 +1734,9 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "new volume = "+seekBar.getProgress());
 
-                mediaOperation.setCurrent_volume(seekBar.getProgress());
+                current_volume = seekBar.getProgress();
+
+                mediaOperation.setCurrent_volume(current_volume);
 
                 if (isPlayPress) {
 
@@ -1745,6 +1753,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
+                editor = pref.edit();
+                editor.putInt("PLAY_VOLUME", current_volume);
+                editor.apply();
 
                 Message msg = new Message();
                 mHandler.sendMessage(msg);
