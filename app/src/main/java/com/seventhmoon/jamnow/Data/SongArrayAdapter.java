@@ -4,26 +4,26 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.util.Log;
-import android.util.SparseBooleanArray;
+//import android.util.Log;
+//import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
+//import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.seventhmoon.jamnow.R;
 
-import java.io.File;
+//import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
-import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
-import static com.seventhmoon.jamnow.MainActivity.songDuration;
-import static com.seventhmoon.jamnow.MainActivity.song_selected;
+//import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
+//import static com.seventhmoon.jamnow.MainActivity.songDuration;
+//import static com.seventhmoon.jamnow.MainActivity.song_selected;
 
 
 public class SongArrayAdapter extends ArrayAdapter<Song> {

@@ -13,4 +13,12 @@
     <string name="cancel">Cancel</string>
     <string name="remove_file_from_list">Remove \n%s \nfrom this list?　(Would not delete this file)</string>
     <string name="volume_control">Volume</string>
+    <string name="clear_all">Clear all</string>
+    <string name="clear_list_all">Clear all of this list? (Would not delete these file)</string>
+    <string name="invalid_input">Invalid input!</string>
+    <string name="range_invalid">Range is invalid</string>
+    <string name="mark_a">Mark A</string>
+    <string name="mark_b">Mark B</string>
+    <string name="must_be_less_than_song_duration">must be less than song duration</string>
+    <string name="song_list_empty">Song list is empty</string>
 </resources>

@@ -5,17 +5,16 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
-import android.util.Log;
+
 
 
 import com.seventhmoon.jamnow.R;
 
 
 public class DottedSeekBar extends AppCompatSeekBar {
-    private static final String TAG = DottedSeekBar.class.getName();
+    //private static final String TAG = DottedSeekBar.class.getName();
     /** Int values which corresponds to dots */
     private int[] mDotsPositions = null;
     /** Drawable for dot */
@@ -56,6 +55,8 @@ public class DottedSeekBar extends AppCompatSeekBar {
         if (0 != dotDrawableId) {
             mDotBitmap = BitmapFactory.decodeResource(getResources(), dotDrawableId);
         }
+
+        attrsArray.recycle();
     }
 
     /**

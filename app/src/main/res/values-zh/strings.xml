@@ -13,4 +13,12 @@
     <string name="cancel">取消</string>
     <string name="remove_file_from_list">將\n %s \n從清單移除?　(不會刪除檔案)</string>
     <string name="volume_control">音量</string>
+    <string name="clear_all">清除全部</string>
+    <string name="clear_list_all">清除此播放清單? (不會刪除檔案)</string>
+    <string name="invalid_input">輸入錯誤!</string>
+    <string name="range_invalid">範圍錯誤</string>
+    <string name="mark_a">標記A</string>
+    <string name="mark_b">標記B</string>
+    <string name="must_be_less_than_song_duration">必須小於歌曲時間</string>
+    <string name="song_list_empty">播放清單為空</string>
 </resources>

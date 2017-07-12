@@ -3,11 +3,7 @@ package com.seventhmoon.jamnow.Data;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
-import android.media.MediaExtractor;
-import android.media.MediaFormat;
+
 import android.media.MediaPlayer;
 
 import android.os.AsyncTask;
@@ -17,22 +13,18 @@ import android.os.Message;
 import android.util.Log;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
 
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
 import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
+import static com.seventhmoon.jamnow.MainActivity.isPlayPress;
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
-import static com.seventhmoon.jamnow.MainActivity.setActionBarTitle;
 import static com.seventhmoon.jamnow.MainActivity.setSongDuration;
-import static com.seventhmoon.jamnow.MainActivity.songDuration;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 import static com.seventhmoon.jamnow.MainActivity.songPlaying;
 import static com.seventhmoon.jamnow.MainActivity.song_selected;
@@ -45,7 +37,7 @@ public class MediaOperation {
     private final static int MAX_VOLUME = 100;
 
     private static MediaPlayer mediaPlayer;
-    private static int current_play_mode = 0;
+    private int current_play_mode = 0;
     private boolean pause = true;
     private Context context;
 
@@ -74,9 +66,9 @@ public class MediaOperation {
         this.context = context;
     }
 
-    public int getCurrent_play_mode() {
-        return current_play_mode;
-    }
+    //public int getCurrent_play_mode() {
+    //    return current_play_mode;
+    //}
 
     public void setCurrent_play_mode(int current_play_mode) {
         this.current_play_mode = current_play_mode;
@@ -96,21 +88,17 @@ public class MediaOperation {
         }
         Collections.shuffle(shuffleList);
 
-        for (int i=0 ;i<shuffleList.size(); i++) {
+        /*for (int i=0 ;i<shuffleList.size(); i++) {
             Log.e(TAG, "shuffleList["+i+"] = "+shuffleList.get(i));
-        }
-    }
-
-    public int getCurrent_shuffle_index() {
-        return current_shuffle_index;
-    }
-
-    public void setCurrent_shuffle_index(int current_shuffle_index) {
-        this.current_shuffle_index = current_shuffle_index;
+        }*/
     }
 
     public int getShufflePosition() {
         return shuffleList.get(current_shuffle_index);
+    }
+
+    public void setShufflePosition(int current_shuffle_index) {
+        this.current_shuffle_index = current_shuffle_index;
     }
 
     public void setAb_loop_start(int ab_loop_start) {
@@ -145,7 +133,7 @@ public class MediaOperation {
         return pause;
     }
 
-    public int getSongDuration(String songPath) {
+    /*public int getSongDuration(String songPath) {
         Log.d(TAG, "<getSongDuration>");
 
         int duration = 0;
@@ -170,7 +158,7 @@ public class MediaOperation {
         Log.d(TAG, "</getSongDuration>");
 
         return duration;
-    }
+    }*/
 
     public int getCurrentPosition() {
         Log.d(TAG, "<getCurrentPosition>");
@@ -200,9 +188,9 @@ public class MediaOperation {
         current_volume = (float) (1 - (Math.log(MAX_VOLUME - current_volume_progress) / Math.log(MAX_VOLUME)));
     }
 
-    public boolean isLooping() {
-        return looping;
-    }
+    //public boolean isLooping() {
+    //    return looping;
+    //}
 
     public void setLooping(boolean looping) {
         this.looping = looping;
@@ -242,6 +230,9 @@ public class MediaOperation {
         }
 
         taskDone = true;
+
+        Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
+        context.sendBroadcast(newNotifyIntent);
 
         Log.d(TAG, "</doStop>");
     }
@@ -376,7 +367,7 @@ public class MediaOperation {
         Log.d(TAG, "</doNext>");
     }
 
-    public void doShuffle() {
+    private void doShuffle() {
         Log.d(TAG, "<doShuffle>");
 
         if (songList == null || songList.size() == 0) {
@@ -408,7 +399,7 @@ public class MediaOperation {
         Log.d(TAG, "</doShuffle>");
     }
 
-    public void doSingleRepeat() {
+    private void doSingleRepeat() {
         Log.d(TAG, "<doSingleRepeat>");
 
         if (songList == null || songList.size() == 0) {
@@ -439,7 +430,7 @@ public class MediaOperation {
         Log.d(TAG, "</doSingleRepeat>");
     }
 
-    public void doABLoop() {
+    private void doABLoop() {
         Log.d(TAG, "<doABLoop>");
 
         if (songList == null || songList.size() == 0) {
@@ -472,16 +463,54 @@ public class MediaOperation {
         Log.d(TAG, "</doABLoop>");
     }
 
-    private Handler mHandler = new Handler() {
+    /*private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
 
             Log.e(TAG, "Handler: play finished!");
 
-            if (current_mode == 2) { //single repeat
-                Log.e(TAG, "Looping, do nothing!");
-            } else {
+            if (isPlayPress) { //if still play, do next step
 
+                if (current_mode == 2) { //single repeat
+                    Log.e(TAG, "Looping, do nothing!");
+                } else {
+
+                    taskDone = true;
+                    //set state
+                    current_state = STATE.PlaybackCompleted;
+
+
+                    current_position = 0; //play complete, set position = 0
+
+                    //if task is running, cancel it!
+                    if (goodTask != null) {
+                        Log.e(TAG, "*** cancel task ***");
+                        if (!goodTask.isCancelled()) {
+                            goodTask.cancel(true);
+                            goodTask = null;
+                            taskDone = true;
+                        }
+                    }
+
+                    Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+                    context.sendBroadcast(newNotifyIntent);
+
+                    switch (current_play_mode) {
+                        case 0: //play all
+                            doNext();
+                            break;
+                        case 1: //play shuffle
+                            doShuffle();
+                            break;
+                        case 2: //single repeat
+                            doSingleRepeat();
+                            break;
+                        case 3: //an loop
+                            doABLoop();
+                            break;
+                    }
+                }
+            } else { //isPlayPress is set as false, stop proceed
                 taskDone = true;
                 //set state
                 current_state = STATE.PlaybackCompleted;
@@ -502,26 +531,87 @@ public class MediaOperation {
                 Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
                 context.sendBroadcast(newNotifyIntent);
 
-                switch (current_play_mode) {
-                    case 0: //play all
-                        doNext();
-                        break;
-                    case 1: //play shuffle
-                        doShuffle();
-                        break;
-                    case 2: //single repeat
-                        doSingleRepeat();
-                        break;
-                    case 3: //an loop
-                        doABLoop();
-                        break;
-                }
             }
 
 
 
         }
-    };
+    };*/
+
+    private Handler mIncomingHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            Log.e(TAG, "mIncomingHandler: play finished!");
+
+            if (isPlayPress) { //if still play, do next step
+
+                if (current_mode == 2) { //single repeat
+                    Log.e(TAG, "Looping, do nothing!");
+
+
+                } else {
+
+                    taskDone = true;
+                    //set state
+                    current_state = STATE.PlaybackCompleted;
+
+
+                    current_position = 0; //play complete, set position = 0
+
+                    //if task is running, cancel it!
+                    if (goodTask != null) {
+                        Log.e(TAG, "*** cancel task ***");
+                        if (!goodTask.isCancelled()) {
+                            goodTask.cancel(true);
+                            goodTask = null;
+                            taskDone = true;
+                        }
+                    }
+
+                    Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+                    context.sendBroadcast(newNotifyIntent);
+
+                    switch (current_play_mode) {
+                        case 0: //play all
+                            doNext();
+                            break;
+                        case 1: //play shuffle
+                            doShuffle();
+                            break;
+                        case 2: //single repeat
+                            doSingleRepeat();
+                            break;
+                        case 3: //an loop
+                            doABLoop();
+                            break;
+                    }
+                }
+            } else { //isPlayPress is set as false, stop proceed
+                taskDone = true;
+                //set state
+                current_state = STATE.PlaybackCompleted;
+
+
+                current_position = 0; //play complete, set position = 0
+
+                //if task is running, cancel it!
+                if (goodTask != null) {
+                    Log.e(TAG, "*** cancel task ***");
+                    if (!goodTask.isCancelled()) {
+                        goodTask.cancel(true);
+                        goodTask = null;
+                        taskDone = true;
+                    }
+                }
+
+                Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+                context.sendBroadcast(newNotifyIntent);
+
+            }
+
+            return true;
+        }
+    });
 
     private void playing(String songPath){
         Log.d(TAG, "<playing "+songPath+">");
@@ -538,7 +628,7 @@ public class MediaOperation {
                 Log.d(TAG, "State: "+STATE.Paused);
 
                 //set looping
-                //mediaPlayer.setLooping(looping);
+                mediaPlayer.setLooping(looping);
 
                 //set speed
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -555,12 +645,12 @@ public class MediaOperation {
 
 
 
-                /*if (taskDone) {
+                if (taskDone) {
                     taskDone = false;
                     goodTask = new playtask();
                     goodTask.execute(10);
 
-                }*/
+                }
 
                 Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
                 context.sendBroadcast(newNotifyIntent);
@@ -607,7 +697,7 @@ public class MediaOperation {
                         current_state = STATE.Prepared;
 
                         //set looping
-                        //mediaPlayer.setLooping(looping);
+                        mediaPlayer.setLooping(looping);
 
                         mediaPlayer.seekTo(current_position);
 
@@ -640,7 +730,8 @@ public class MediaOperation {
                             @Override
                             public void onCompletion(MediaPlayer mp) {
                                 Message msg = new Message();
-                                mHandler.sendMessage(msg);
+                                //mHandler.sendMessage(msg);
+                                mIncomingHandler.sendMessage(msg);
 
                                 /*taskDone = true;
                                 //set state
@@ -686,7 +777,7 @@ public class MediaOperation {
         Log.d(TAG, "</playing>");
     }
 
-    class playtask extends AsyncTask <Integer, Integer, String>
+    private class playtask extends AsyncTask <Integer, Integer, String>
     {
         @Override
         protected String doInBackground(Integer... countTo) {

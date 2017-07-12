@@ -21,13 +21,13 @@ import java.util.ArrayList;
 
 import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
 import static com.seventhmoon.jamnow.FileChooseActivity.confirm;
-import static com.seventhmoon.jamnow.FileChooseActivity.fileChooseArrayAdapter;
+
 
 
 public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
     private static final String TAG = FileChooseArrayAdapter.class.getName();
 
-    LayoutInflater inflater = null;
+    private LayoutInflater inflater = null;
     public SparseBooleanArray mSparseBooleanArray;
     private int layoutResourceId;
     private ArrayList<FileChooseItem> items = new ArrayList<>();
@@ -156,7 +156,7 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
         return view;
     }
 
-    CompoundButton.OnCheckedChangeListener mCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+    private CompoundButton.OnCheckedChangeListener mCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
 
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -201,13 +201,13 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
         }
     };
 
-    class ViewHolder {
+    private class ViewHolder {
         ImageView fileicon;
         TextView filename;
         CheckBox checkbox;
 
 
-        public ViewHolder(View view) {
+        private ViewHolder(View view) {
             this.fileicon = (ImageView) view.findViewById(R.id.fd_Icon1);
             this.filename = (TextView) view.findViewById(R.id.fileChooseFileName);
             this.checkbox = (CheckBox) view.findViewById(R.id.checkBoxInRow);
