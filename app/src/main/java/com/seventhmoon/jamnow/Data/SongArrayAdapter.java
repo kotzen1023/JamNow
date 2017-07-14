@@ -27,9 +27,9 @@ import java.util.ArrayList;
 
 
 public class SongArrayAdapter extends ArrayAdapter<Song> {
-    private static final String TAG = SongArrayAdapter.class.getName();
+    //private static final String TAG = SongArrayAdapter.class.getName();
 
-    LayoutInflater inflater = null;
+    private LayoutInflater inflater = null;
 
     private int layoutResourceId;
     private ArrayList<Song> items = new ArrayList<>();
@@ -105,7 +105,13 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
             holder.songicon.setImageBitmap(bitmap);
             holder.songname.setText(songItem.getName());
             //holder.songtime.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
-            holder.songtime.setText(f.format(minutes)+":"+f.format(seconds));
+            if (seconds > 1) {
+                holder.songtime.setText(minutes+":"+f.format(seconds));
+            } else {
+                holder.songtime.setText(seconds+"."+f2.format(minisec));
+            }
+
+
 
             if (songItem.isSelected()) {
                 //Log.e(TAG, ""+position+" is selected.");
@@ -128,13 +134,13 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
         return view;
     }
 
-    class ViewHolder {
+    private class ViewHolder {
         ImageView songicon;
         TextView songname;
         TextView songtime;
 
 
-        public ViewHolder(View view) {
+        private ViewHolder(View view) {
             this.songicon = (ImageView) view.findViewById(R.id.songIcon);
             this.songname = (TextView) view.findViewById(R.id.songName);
             this.songtime = (TextView) view.findViewById(R.id.songTime);

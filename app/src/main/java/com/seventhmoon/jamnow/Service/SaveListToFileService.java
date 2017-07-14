@@ -6,12 +6,7 @@ import android.util.Log;
 
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.FileOperation;
-import com.seventhmoon.jamnow.Data.Song;
 
-import java.io.File;
-
-import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
-import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
 import static com.seventhmoon.jamnow.Data.FileOperation.clear_record;
 import static com.seventhmoon.jamnow.Data.FileOperation.read_record;
 import static com.seventhmoon.jamnow.MainActivity.songList;

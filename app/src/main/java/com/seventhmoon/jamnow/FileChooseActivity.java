@@ -23,6 +23,8 @@ import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
 import com.seventhmoon.jamnow.Data.FileChooseItem;
 
 import com.seventhmoon.jamnow.Media.AudioOperation;
+import com.seventhmoon.jamnow.Service.SaveListToFileService;
+import com.seventhmoon.jamnow.Service.SearchFileService;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -30,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
-
+import static com.seventhmoon.jamnow.MainActivity.searchList;
 
 
 public class FileChooseActivity extends AppCompatActivity {
@@ -48,7 +50,7 @@ public class FileChooseActivity extends AppCompatActivity {
     private File currentDir;
     private Menu actionmenu;
 
-    private ArrayList<String> searchList = new ArrayList<>();
+    //private ArrayList<String> searchList = new ArrayList<>();
 
     AudioOperation audioOperation;
 
@@ -82,7 +84,12 @@ public class FileChooseActivity extends AppCompatActivity {
 
                 }
 
-                searchFiles();
+
+                Intent saveintent = new Intent(FileChooseActivity.this, SearchFileService.class);
+                saveintent.setAction(Constants.ACTION.GET_SEARCHLIST_ACTION);
+                startService(saveintent);
+
+                //searchFiles();
                 finish();
             }
         });

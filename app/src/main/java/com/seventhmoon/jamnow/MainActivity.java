@@ -110,6 +110,9 @@ public class MainActivity extends AppCompatActivity {
 
     //private MediaPlayer mediaPlayer;
     public static ArrayList<Song> songList = new ArrayList<>();
+    //for add songs to list
+    public static ArrayList<String> searchList = new ArrayList<>();
+    public static ArrayList<Song> addSongList = new ArrayList<>();
 
 
     private static BroadcastReceiver mReceiver = null;
@@ -411,8 +414,8 @@ public class MainActivity extends AppCompatActivity {
 
                     if (current_song_duration != 0) {
 
-                        NumberFormat f = new DecimalFormat("00");
-                        NumberFormat f2 = new DecimalFormat("000");
+                        //NumberFormat f = new DecimalFormat("00");
+                        //NumberFormat f2 = new DecimalFormat("000");
 
                         double per_unit = (double) current_song_duration / 1000.0;
 
@@ -853,6 +856,9 @@ public class MainActivity extends AppCompatActivity {
                     if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
 
                         Log.d(TAG, "[imgPlayOrPause] isPlaying, songPlaying = "+songPlaying);
+
+                        mediaOperation.setTaskStop();
+
                         isPlayPress = false;
 
                         mediaOperation.doPause();
@@ -861,6 +867,9 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
                         Log.d(TAG, "[imgPlayOrPause] state is paused, stopped...");
+
+                        mediaOperation.setTaskStart();
+
                         String songPath, songName;
                         isPlayPress = true;
 
@@ -1372,19 +1381,24 @@ public class MainActivity extends AppCompatActivity {
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_COMPLETE)) {
                     Log.d(TAG, "receive ADD_SONG_LIST_COMPLETE !");
 
-                    /*for(int i=0; i<songList.size(); i++) {
 
-                        int duration = mediaOperation.getSongDuration(songList.get(i).getPath());
-                        songList.get(i).setDuration(duration);
-                        songList.get(i).setMark_a(0);
-                        songList.get(i).setMark_b(duration);
-                    }*/
+                    for (int i=0; i<addSongList.size(); i++) {
+                        songList.add(addSongList.get(i));
+                        Log.d(TAG, "add "+addSongList.get(i).getName()+" to songList");
+                    }
+
                     mediaOperation.shuffleReset();
                     mediaOperation.setShufflePosition(0);
 
+                    if (songArrayAdapter == null) {
+                        songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
+                        myListview.setAdapter(songArrayAdapter);
+                    } else {
+                        Log.e(TAG, "notifyDataSetChanged");
+                        songArrayAdapter.notifyDataSetChanged();
+                    }
 
-                    songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
-                    myListview.setAdapter(songArrayAdapter);
+
 
                     Intent saveintent = new Intent(MainActivity.this, SaveListToFileService.class);
                     saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
@@ -1424,6 +1438,10 @@ public class MainActivity extends AppCompatActivity {
                     }
 
 
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_SONG_LIST_CHANGE)) {
+                    if (songArrayAdapter != null) {
+                        songArrayAdapter.notifyDataSetChanged();
+                    }
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_PLAY_COMPLETE)) {
                     Log.d(TAG, "receive GET_PLAY_COMPLETE !");
                     imgPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);

@@ -221,15 +221,15 @@ public class MediaOperation {
             }
         }
 
-        if (goodTask != null) {
+        /*if (goodTask != null) {
             Log.e(TAG, "cancel task");
             if (!goodTask.isCancelled()) {
                 goodTask.cancel(true);
                 goodTask = null;
             }
-        }
+        }*/
 
-        taskDone = true;
+        //taskDone = true;
 
         Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
         context.sendBroadcast(newNotifyIntent);
@@ -463,81 +463,6 @@ public class MediaOperation {
         Log.d(TAG, "</doABLoop>");
     }
 
-    /*private Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
-            Log.e(TAG, "Handler: play finished!");
-
-            if (isPlayPress) { //if still play, do next step
-
-                if (current_mode == 2) { //single repeat
-                    Log.e(TAG, "Looping, do nothing!");
-                } else {
-
-                    taskDone = true;
-                    //set state
-                    current_state = STATE.PlaybackCompleted;
-
-
-                    current_position = 0; //play complete, set position = 0
-
-                    //if task is running, cancel it!
-                    if (goodTask != null) {
-                        Log.e(TAG, "*** cancel task ***");
-                        if (!goodTask.isCancelled()) {
-                            goodTask.cancel(true);
-                            goodTask = null;
-                            taskDone = true;
-                        }
-                    }
-
-                    Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
-                    context.sendBroadcast(newNotifyIntent);
-
-                    switch (current_play_mode) {
-                        case 0: //play all
-                            doNext();
-                            break;
-                        case 1: //play shuffle
-                            doShuffle();
-                            break;
-                        case 2: //single repeat
-                            doSingleRepeat();
-                            break;
-                        case 3: //an loop
-                            doABLoop();
-                            break;
-                    }
-                }
-            } else { //isPlayPress is set as false, stop proceed
-                taskDone = true;
-                //set state
-                current_state = STATE.PlaybackCompleted;
-
-
-                current_position = 0; //play complete, set position = 0
-
-                //if task is running, cancel it!
-                if (goodTask != null) {
-                    Log.e(TAG, "*** cancel task ***");
-                    if (!goodTask.isCancelled()) {
-                        goodTask.cancel(true);
-                        goodTask = null;
-                        taskDone = true;
-                    }
-                }
-
-                Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
-                context.sendBroadcast(newNotifyIntent);
-
-            }
-
-
-
-        }
-    };*/
-
     private Handler mIncomingHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -551,22 +476,13 @@ public class MediaOperation {
 
                 } else {
 
-                    taskDone = true;
+                    //taskDone = true;
                     //set state
                     current_state = STATE.PlaybackCompleted;
 
 
                     current_position = 0; //play complete, set position = 0
 
-                    //if task is running, cancel it!
-                    if (goodTask != null) {
-                        Log.e(TAG, "*** cancel task ***");
-                        if (!goodTask.isCancelled()) {
-                            goodTask.cancel(true);
-                            goodTask = null;
-                            taskDone = true;
-                        }
-                    }
 
                     Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
                     context.sendBroadcast(newNotifyIntent);
@@ -585,24 +501,26 @@ public class MediaOperation {
                             doABLoop();
                             break;
                     }
+
                 }
             } else { //isPlayPress is set as false, stop proceed
-                taskDone = true;
+                //taskDone = true;
                 //set state
+
                 current_state = STATE.PlaybackCompleted;
 
 
                 current_position = 0; //play complete, set position = 0
 
                 //if task is running, cancel it!
-                if (goodTask != null) {
+                /*if (goodTask != null) {
                     Log.e(TAG, "*** cancel task ***");
                     if (!goodTask.isCancelled()) {
                         goodTask.cancel(true);
                         goodTask = null;
                         taskDone = true;
                     }
-                }
+                }*/
 
                 Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
                 context.sendBroadcast(newNotifyIntent);
@@ -645,12 +563,12 @@ public class MediaOperation {
 
 
 
-                if (taskDone) {
+                /*if (taskDone) {
                     taskDone = false;
                     goodTask = new playtask();
                     goodTask.execute(10);
 
-                }
+                }*/
 
                 Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
                 context.sendBroadcast(newNotifyIntent);
@@ -715,55 +633,34 @@ public class MediaOperation {
 
 
 
-                        if (taskDone) {
+                        /*if (taskDone) {
                             taskDone = false;
                             goodTask = new playtask();
                             goodTask.execute(10);
 
-                        }
+                        }*/
 
 
                         Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
                         context.sendBroadcast(newNotifyIntent);
 
-                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                            @Override
-                            public void onCompletion(MediaPlayer mp) {
-                                Message msg = new Message();
-                                //mHandler.sendMessage(msg);
-                                mIncomingHandler.sendMessage(msg);
 
-                                /*taskDone = true;
-                                //set state
-                                current_state = STATE.PlaybackCompleted;
-
-
-                                current_position = 0; //play complete, set position = 0
-
-                                Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
-                                context.sendBroadcast(newNotifyIntent);
-                                switch (current_play_mode) {
-                                    case 0: //play all
-                                        doNext();
-                                        break;
-                                    case 1: //play shuffle
-                                        doShuffle();
-                                        break;
-                                    case 2: //single repeat
-                                        doSingleRepeat();
-                                        break;
-                                    case 3: //an loop
-                                        doABLoop();
-                                        break;
-                                }*/
-
-                            }
-                        });
                     }
                 });
 
 
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        Log.d(TAG, "setOnCompletionListener");
+                        Message msg = new Message();
 
+                        mIncomingHandler.sendMessage(msg);
+
+
+
+                    }
+                });
 
 
 
@@ -777,6 +674,16 @@ public class MediaOperation {
         Log.d(TAG, "</playing>");
     }
 
+    public void setTaskStart() {
+        goodTask = new playtask();
+        goodTask.execute(10);
+    }
+
+    public void setTaskStop() {
+        if (!goodTask.isCancelled())
+            goodTask.cancel(true);
+    }
+
     private class playtask extends AsyncTask <Integer, Integer, String>
     {
         @Override
@@ -784,19 +691,25 @@ public class MediaOperation {
 
 
             //while(current_state == STATE.Started) {
-            while(!taskDone) {
+            while(isPlayPress) {
 
                 if (current_play_mode == 3) {//ab loop, check if current position is bigger than mark_b
 
-                    if (mediaPlayer.getCurrentPosition() < ab_loop_start || mediaPlayer.getCurrentPosition() > ab_loop_end) {
+                    if (current_state == STATE.Started)  { //pause must in started state
 
-                        if (current_state == STATE.Started) { //pause must in started state
+
+                        if (mediaPlayer.getCurrentPosition() < ab_loop_start || mediaPlayer.getCurrentPosition() > ab_loop_end) {
 
                             Log.d(TAG, "position = " + mediaPlayer.getCurrentPosition() + " ab_loop_start = " + ab_loop_start + " ab_loop_end = " + ab_loop_end);
                             mediaPlayer.pause();
+                            Log.e(TAG, "==>0");
                             mediaPlayer.seekTo(ab_loop_start);
+                            Log.e(TAG, "==>1");
                             mediaPlayer.start();
+                            Log.e(TAG, "==>2");
                         }
+                    } else {
+                        Log.d(TAG, "other state...");
                     }
                 }
 
@@ -809,6 +722,8 @@ public class MediaOperation {
                     if (current_state == STATE.Started) {
                         int position = ((mediaPlayer.getCurrentPosition() * 1000) / mediaPlayer.getDuration());
                         publishProgress(position);
+                    } else {
+                        Log.d(TAG, "other state...");
                     }
 
 
