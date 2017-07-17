@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //is playing
                     //Log.e(TAG, "song was playing, don't change");
                 } else {
-
+                    //if (mediaOperation.getCurrent_state() != Constants.STATE.Started) {
                     if (current_song_duration != 0) {
 
                         //NumberFormat f = new DecimalFormat("00");
@@ -1941,15 +1941,16 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        public boolean handleMessage(Message msg) {
+            //super.handleMessage(msg);
 
             Log.e(TAG, "receive close");
             dialog.dismiss();
 
+            return true;
         }
-    };
+    });
 
     protected void showVolumeDialog() {
 

@@ -3,7 +3,7 @@ package com.seventhmoon.jamnow.Data;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
+
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;

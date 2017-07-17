@@ -1,8 +1,6 @@
 package com.seventhmoon.jamnow;
 
 
-import android.content.Context;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -57,7 +55,7 @@ public class FileChooseActivity extends AppCompatActivity {
 
         setContentView(R.layout.file_choose_list);
 
-        Context context = getBaseContext();
+        //Context context = getBaseContext();
 
         //audioOperation = new AudioOperation(context);
 
