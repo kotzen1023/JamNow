@@ -263,6 +263,14 @@ public class MediaOperation {
             context.sendBroadcast(newNotifyIntent);
         }
 
+        /*if (goodTask != null) {
+            Log.e(TAG, "cancel task");
+            if (!goodTask.isCancelled()) {
+                goodTask.cancel(true);
+                goodTask = null;
+            }
+        }*/
+
         Log.d(TAG, "</doPause>");
 
     }
@@ -573,36 +581,53 @@ public class MediaOperation {
                 Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
                 context.sendBroadcast(newNotifyIntent);
             } else {
-                mediaPlayer.release();
+                /*mediaPlayer.release();
                 //set state
                 current_state = STATE.End;
-                mediaPlayer = null;
+                mediaPlayer = null;*/
+
+                mediaPlayer.reset();
+                //set state
+                current_state = STATE.Idle;
+                Log.d(TAG, "===>Idle");
             }
         }
 
         if (mediaPlayer == null) {
-            Log.e(TAG, "mediaPlayer == null");
+            Log.e(TAG, "*** mediaPlayer == null (start)****");
 
             mediaPlayer = new MediaPlayer();
             //set state
             current_state = STATE.Created;
+            Log.d(TAG, "===>Created");
 
             mediaPlayer.reset();
             //set state
             current_state = STATE.Idle;
+            Log.d(TAG, "===>Idle");
+
+            Log.e(TAG, "*** mediaPlayer == null (end)****");
+        }
+
+
+        if (current_state == STATE.Idle) {
             try {
 
                 mediaPlayer.setDataSource(songPath);
 
                 //set state
                 current_state = STATE.Initialized;
+                Log.d(TAG, "===>Initialized");
 
                 while (true) {
                     try {
+                        Log.d(TAG, "--->set Prepare");
                         mediaPlayer.prepare();
                         break;
                     } catch (IllegalStateException e) {
+                        Log.e(TAG, "==== IllegalStateException start ====");
                         e.printStackTrace();
+                        Log.e(TAG, "==== IllegalStateException end====");
                     }
                 }
 
@@ -611,6 +636,9 @@ public class MediaOperation {
                 mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
+
+                        Log.e(TAG, "===>onPrepared");
+
                         //set state
                         current_state = STATE.Prepared;
 
@@ -630,15 +658,6 @@ public class MediaOperation {
                         mediaPlayer.start();
                         //set state
                         current_state = STATE.Started;
-
-
-
-                        /*if (taskDone) {
-                            taskDone = false;
-                            goodTask = new playtask();
-                            goodTask.execute(10);
-
-                        }*/
 
 
                         Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
@@ -670,18 +689,114 @@ public class MediaOperation {
                 context.sendBroadcast(newNotifyIntent);
             }
         }
+        /*if (mediaPlayer == null) {
+            Log.e(TAG, "*** mediaPlayer == null (start)****");
+
+            mediaPlayer = new MediaPlayer();
+            //set state
+            current_state = STATE.Created;
+            Log.d(TAG, "===>Created");
+
+            mediaPlayer.reset();
+            //set state
+            current_state = STATE.Idle;
+            Log.d(TAG, "===>Idle");
+            try {
+
+                mediaPlayer.setDataSource(songPath);
+
+                //set state
+                current_state = STATE.Initialized;
+                Log.d(TAG, "===>Initialized");
+
+                while (true) {
+                    try {
+                        Log.d(TAG, "--->set Prepare");
+                        mediaPlayer.prepare();
+                        break;
+                    } catch (IllegalStateException e) {
+                        Log.e(TAG, "==== IllegalStateException start ====");
+                        e.printStackTrace();
+                        Log.e(TAG, "==== IllegalStateException end====");
+                    }
+                }
+
+
+
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+
+                        Log.e(TAG, "===>onPrepared");
+
+                        //set state
+                        current_state = STATE.Prepared;
+
+                        //set looping
+                        mediaPlayer.setLooping(looping);
+
+                        mediaPlayer.seekTo(current_position);
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            Log.e(TAG, "set setPlaybackParams");
+                            mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(speed));
+                        }
+
+                        //set volume
+                        mediaPlayer.setVolume(current_volume, current_volume);
+
+                        mediaPlayer.start();
+                        //set state
+                        current_state = STATE.Started;
+
+
+                        Intent newNotifyIntent = new Intent(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
+                        context.sendBroadcast(newNotifyIntent);
+
+
+                    }
+                });
+
+
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        Log.d(TAG, "setOnCompletionListener");
+                        Message msg = new Message();
+
+                        mIncomingHandler.sendMessage(msg);
+
+
+
+                    }
+                });
+
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
+                context.sendBroadcast(newNotifyIntent);
+            }
+
+            Log.e(TAG, "*** mediaPlayer == null (end)****");
+        }*/
 
         Log.d(TAG, "</playing>");
     }
 
     public void setTaskStart() {
-        goodTask = new playtask();
-        goodTask.execute(10);
+        if (goodTask == null) {
+            goodTask = new playtask();
+            goodTask.execute(10);
+        }
     }
 
     public void setTaskStop() {
-        if (!goodTask.isCancelled())
+        if (!goodTask.isCancelled()) {
             goodTask.cancel(true);
+            goodTask = null;
+        }
     }
 
     private class playtask extends AsyncTask <Integer, Integer, String>
@@ -701,12 +816,18 @@ public class MediaOperation {
                         if (mediaPlayer.getCurrentPosition() < ab_loop_start || mediaPlayer.getCurrentPosition() > ab_loop_end) {
 
                             Log.d(TAG, "position = " + mediaPlayer.getCurrentPosition() + " ab_loop_start = " + ab_loop_start + " ab_loop_end = " + ab_loop_end);
-                            mediaPlayer.pause();
-                            Log.e(TAG, "==>0");
-                            mediaPlayer.seekTo(ab_loop_start);
-                            Log.e(TAG, "==>1");
-                            mediaPlayer.start();
-                            Log.e(TAG, "==>2");
+                            //mediaPlayer.pause();
+                            //current_state = Constants.STATE.Paused;
+                            //Log.e(TAG, "==>0");
+                            if (mediaPlayer != null && current_state == STATE.Started) {
+                                mediaPlayer.seekTo(ab_loop_start);
+                            }
+                            //Log.e(TAG, "==>1");
+
+
+
+                            //mediaPlayer.start();
+                            //Log.e(TAG, "==>2");
                         }
                     } else {
                         Log.d(TAG, "other state...");
@@ -719,11 +840,9 @@ public class MediaOperation {
                     //long percent = 0;
                     //if (Data.current_file_size > 0)
                     //    percent = (Data.complete_file_size * 100)/Data.current_file_size;
-                    if (current_state == STATE.Started) {
+                    if (mediaPlayer != null && current_state == STATE.Started) {
                         int position = ((mediaPlayer.getCurrentPosition() * 1000) / mediaPlayer.getDuration());
                         publishProgress(position);
-                    } else {
-                        Log.d(TAG, "other state...");
                     }
 
 
@@ -742,7 +861,7 @@ public class MediaOperation {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            if (current_state == STATE.Started)
+            if (mediaPlayer != null && current_state == STATE.Started)
                 Log.d(TAG, "=== playtask onPreExecute set "+mediaPlayer.getDuration()+" ===");
 
 
@@ -781,12 +900,13 @@ public class MediaOperation {
 
             if (values[0] >= 1000) {
                 seekBar.setProgress(1000);
-                if (current_state == STATE.Started)
+                if (mediaPlayer != null && current_state == STATE.Started)
                     setSongDuration(mediaPlayer.getDuration());
             } else {
 
                 seekBar.setProgress(values[0]);
-                setSongDuration(mediaPlayer.getCurrentPosition());
+                if (mediaPlayer != null && current_state == STATE.Started)
+                    setSongDuration(mediaPlayer.getCurrentPosition());
             }
 
             // 背景工作處理"中"更新的事
