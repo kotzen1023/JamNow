@@ -22,8 +22,6 @@ import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.FileChooseArrayAdapter;
 import com.seventhmoon.jamnow.Data.FileChooseItem;
 
-import com.seventhmoon.jamnow.Media.AudioOperation;
-import com.seventhmoon.jamnow.Service.SaveListToFileService;
 import com.seventhmoon.jamnow.Service.SearchFileService;
 
 import java.io.File;
@@ -52,7 +50,7 @@ public class FileChooseActivity extends AppCompatActivity {
 
     //private ArrayList<String> searchList = new ArrayList<>();
 
-    AudioOperation audioOperation;
+    //AudioOperation audioOperation;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +59,7 @@ public class FileChooseActivity extends AppCompatActivity {
 
         Context context = getBaseContext();
 
-        audioOperation = new AudioOperation(context);
+        //audioOperation = new AudioOperation(context);
 
         listView = (ListView) findViewById(R.id.listViewFileChoose);
         confirm = (Button) findViewById(R.id.btnFileChooseListConfirm);
@@ -462,85 +460,5 @@ public class FileChooseActivity extends AppCompatActivity {
         });
     }
 
-    public void checkFileAndDuration(File file) {
 
-        //String filenameArray[] = file.getName().split("\\.");
-        //String extension = filenameArray[filenameArray.length - 1];
-
-
-        audioOperation.getAudioInfo(file.getAbsolutePath());
-
-        /*
-            switch (extension.toLowerCase()) {
-                case "m4a":
-                case "aac":
-                case "mid":
-                case "mp3":
-                case "wav":
-                case "ogg":
-                    Log.d(TAG, "add file : " + file.getName() + " to list");
-                    Song song = new Song();
-                    song.setName(file.getName());
-                    song.setPath(file.getAbsolutePath());
-                    songList.add(song);
-                    break;
-                default:
-                    Log.e(TAG, "Unknown Type");
-                    break;
-
-
-            }
-         */
-    }
-
-    private void search(File file) {
-
-
-        if (file.exists() && file.isDirectory())
-        {
-            Log.e(TAG, " <Dir>");
-            Log.d(TAG, ""+file.getName()+" is a directory");
-
-            //String[] children = file.list();
-            File[] dirs = file.listFiles();
-
-            for (File children : dirs)
-            {
-                Log.d(TAG, "["+children.getAbsolutePath()+"]");
-                File chk = new File(children.getAbsolutePath());
-                if (chk.exists() && chk.isDirectory()) {
-                    Log.e(TAG, "Enter "+chk.getName()+" :");
-                    search(chk);
-                } else if (chk.isFile()){
-                    Log.e(TAG, " <File>");
-                    checkFileAndDuration(chk);
-                } else {
-                    Log.e(TAG, "Unknown error(1)");
-                }
-            }
-        } else if (file.isFile()) {
-            Log.e(TAG, " <File>");
-            checkFileAndDuration(file);
-        } else {
-            Log.e(TAG, "Unknown error(2)");
-        }
-
-
-        Log.e(TAG, " <search>");
-    }
-
-
-    public void searchFiles() {
-        Log.e(TAG, "<searchFiles>");
-
-        for (int i=0; i<searchList.size(); i++) {
-            File file = new File(searchList.get(i));
-            search(file);
-        }
-
-        Intent newNotifyIntent = new Intent(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
-        sendBroadcast(newNotifyIntent);
-
-        Log.e(TAG, "<searchFiles>");
-    }
 }
