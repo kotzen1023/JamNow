@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">JamNow</string>
+    <string name="app_name">Jam Now</string>
     <string name="play_mode_all">All</string>
     <string name="play_mode_shuffle">Shuffle</string>
     <string name="play_mode_repeat">Single Repeat</string>

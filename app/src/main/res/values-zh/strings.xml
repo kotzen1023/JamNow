@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">JamNow</string>
+    <string name="app_name">即興演奏</string>
     <string name="play_mode_all">全部撥放</string>
     <string name="play_mode_shuffle">隨機撥放</string>
     <string name="play_mode_repeat">單一重複</string>

@@ -334,16 +334,18 @@ public class MainActivity extends AppCompatActivity {
 
                     mediaOperation.setSpeed(current_speed);
 
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                    //if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                    if (isPlayPress) {
                         //if (audioOperation.isPause()) {
                         //mediaOperation.setSeekTo((int) duration);
-
-                        mediaOperation.doPlay(songList.get(song_selected).getPath());
+                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                            mediaOperation.doPlay(songList.get(song_selected).getPath());
+                        } else {
+                            Log.e(TAG, "Not Pause state");
+                        }
 
                         //audioOperation.setCurrentPosition(duration/1000.0);
                         //audioOperation.doPlay(songList.get(song_selected).getPath());
-                    } else {
-                        Log.e(TAG, "Not Pause state");
                     }
                 }
             }
