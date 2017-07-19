@@ -1376,6 +1376,8 @@ public class MainActivity extends AppCompatActivity {
                         if (item_clear != null) {
                             item_clear.setVisible(false);
                         }
+
+                        toast(getResources().getString(R.string.list_empty));
                     }
 
 
