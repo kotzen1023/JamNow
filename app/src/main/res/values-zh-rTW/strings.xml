@@ -22,4 +22,5 @@
     <string name="must_be_less_than_song_duration">必須小於歌曲時間</string>
     <string name="song_list_empty">播放清單為空</string>
     <string name="list_empty">播放清單為空. 試著按下\"新增\"按鈕來增加歌曲到你的播放清單!</string>
+    <string name="play_mode_video">影片</string>
 </resources>

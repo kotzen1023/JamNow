@@ -24,7 +24,7 @@ import static com.seventhmoon.jamnow.MainActivity.current_mode;
 import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
 import static com.seventhmoon.jamnow.MainActivity.isPlayPress;
 import static com.seventhmoon.jamnow.MainActivity.seekBar;
-import static com.seventhmoon.jamnow.MainActivity.setSongDuration;
+import static com.seventhmoon.jamnow.AudioFragment.setSongDuration;
 import static com.seventhmoon.jamnow.MainActivity.songList;
 import static com.seventhmoon.jamnow.MainActivity.songPlaying;
 import static com.seventhmoon.jamnow.MainActivity.song_selected;
@@ -694,6 +694,7 @@ public class MediaOperation {
     }
 
     public void setTaskStart() {
+        Log.d(TAG, "setTaskStart");
         if (goodTask == null) {
             goodTask = new playtask();
             goodTask.execute(10);
@@ -701,6 +702,7 @@ public class MediaOperation {
     }
 
     public void setTaskStop() {
+        Log.d(TAG, "setTaskStop");
         if (!goodTask.isCancelled()) {
             goodTask.cancel(true);
             goodTask = null;

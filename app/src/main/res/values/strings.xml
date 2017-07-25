@@ -22,4 +22,5 @@
     <string name="must_be_less_than_song_duration">must be less than song duration</string>
     <string name="song_list_empty">Song list is empty</string>
     <string name="list_empty">Play list is empty. Try to use \"add\" button to add songs to your list!</string>
+    <string name="play_mode_video">Video</string>
 </resources>
