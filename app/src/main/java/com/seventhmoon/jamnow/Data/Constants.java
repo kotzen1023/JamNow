@@ -18,6 +18,14 @@ public class Constants {
 
         String MEDIAPLAYER_STATE_PLAYED = "com.seventhmoon.JamNow.MediaPlayerStatePlayed";
         String MEDIAPLAYER_STATE_PAUSED = "com.seventhmoon.JamNow.MediaPlayerStatePaused";
+
+        //video
+        String ADD_VIDEO_LIST_COMPLETE = "com.seventhmoon.JamNow.AddVideoListComplete";
+        String GET_VIDEOLIST_ACTION = "com.seventhmoon.JamNow.GetVideoListAction";
+        String GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE = "com.seventhmoon.JamNow.GetVideoListFromRecordFileComplete";
+
+        String GET_THUMB_IMAGE_ACTION = "com.seventhmoon.JamNow.GetThumbImageAction";
+        String GET_THUMB_IMAGE_COMPLETE = "com.seventhmoon.JamNow.GetThumbImageComplete";
     }
 
     public enum STATE {

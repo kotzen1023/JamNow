@@ -1,30 +1,27 @@
 package com.seventhmoon.jamnow.Service;
 
 import android.app.IntentService;
-
 import android.content.Intent;
-
 import android.util.Log;
 
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.Song;
-
+import com.seventhmoon.jamnow.Data.VideoItem;
 
 import java.io.File;
 
 import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
-
 import static com.seventhmoon.jamnow.Data.FileOperation.read_record;
-
 import static com.seventhmoon.jamnow.MainActivity.songList;
+import static com.seventhmoon.jamnow.MainActivity.videoList;
 
 
-public class GetSongListFromRecordService extends IntentService {
-    private static final String TAG = GetSongListFromRecordService.class.getName();
+public class GetVideoListFromRecordService extends IntentService {
+    private static final String TAG = GetVideoListFromRecordService.class.getName();
 
-    public GetSongListFromRecordService() {
-        super("GetSongListFromRecordService");
+    public GetVideoListFromRecordService() {
+        super("GetVideoListFromRecordService");
     }
 
     @Override
@@ -44,11 +41,11 @@ public class GetSongListFromRecordService extends IntentService {
         String filename = intent.getStringExtra("FILENAME");
 
 
-        if (intent.getAction().equals(Constants.ACTION.GET_SONGLIST_ACTION)) {
-            Log.i(TAG, "GET_SONGLIST_ACTION");
+        if (intent.getAction().equals(Constants.ACTION.GET_VIDEOLIST_ACTION)) {
+            Log.i(TAG, "GET_VIDEOLIST_ACTION");
         }
 
-        if (check_record_exist("favorite")) {
+        if (check_record_exist("video_favorite")) {
             Log.d(TAG, "load file success!");
 
 
@@ -68,7 +65,7 @@ public class GetSongListFromRecordService extends IntentService {
 
 
 
-                Song new_song = new Song();
+                VideoItem new_video = new VideoItem();
                 File file = new File(info[0]); //path
 
 
@@ -77,13 +74,13 @@ public class GetSongListFromRecordService extends IntentService {
 
 
 
-                    new_song.setName(file.getName());
-                    new_song.setPath(info[0]);
-                    new_song.setDuration_u(Long.valueOf(info[1]));
-                    new_song.setMark_a(Integer.valueOf(info[2]));
-                    new_song.setMark_b(Integer.valueOf(info[3]));
+                    new_video.setName(file.getName());
+                    new_video.setPath(info[0]);
+                    new_video.setDuration_u(Long.valueOf(info[1]));
+                    new_video.setMark_a(Integer.valueOf(info[2]));
+                    new_video.setMark_b(Integer.valueOf(info[3]));
 
-                    songList.add(new_song);
+                    videoList.add(new_video);
                 }
             }
 
@@ -94,7 +91,7 @@ public class GetSongListFromRecordService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy()");
-        Intent intent = new Intent(Constants.ACTION.GET_SONGLIST_FROM_RECORD_FILE_COMPLETE);
+        Intent intent = new Intent(Constants.ACTION.GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE);
         sendBroadcast(intent);
     }
 }

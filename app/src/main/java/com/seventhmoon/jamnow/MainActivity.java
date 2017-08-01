@@ -57,6 +57,8 @@ import com.seventhmoon.jamnow.Data.MediaOperation;
 import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 
+import com.seventhmoon.jamnow.Data.VideoItem;
+import com.seventhmoon.jamnow.Data.VideoItemArrayAdapter;
 import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
 import com.seventhmoon.jamnow.Service.SaveListToFileService;
 
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     //private ListView myListview;
     public static SongArrayAdapter songArrayAdapter;
+    public static VideoItemArrayAdapter videoItemArrayAdapter;
 
     MenuItem item_search;
     public static ActionBar actionBar;
@@ -124,7 +127,9 @@ public class MainActivity extends AppCompatActivity {
     //for add songs to list
     public static ArrayList<String> searchList = new ArrayList<>();
     public static ArrayList<Song> addSongList = new ArrayList<>();
-
+    //Video
+    public static ArrayList<VideoItem> videoList = new ArrayList<>();
+    public static ArrayList<VideoItem> addVideoList = new ArrayList<>();
 
     private static BroadcastReceiver mReceiver = null;
     private static boolean isRegister = false;
@@ -146,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
     //private static int current_position = 0;
     private static float current_speed = 0;
     //private static double current_position_d = 0.0;
-    ProgressDialog loadDialog = null;
+    public static ProgressDialog loadDialog = null;
 
     //public static int currentSongPlay = 0;
 
@@ -556,77 +561,152 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_clear:
                 Log.e(TAG, "clear all");
 
-                if (songList.size() > 0) {
+                if (current_mode == MODE_PLAY_VIDEO) { // video mode
+                    if (videoList.size() > 0) {
+                        AlertDialog.Builder cleardialog = new AlertDialog.Builder(this);
+                        cleardialog.setIcon(R.drawable.ic_warning_black_48dp);
+                        cleardialog.setTitle(getResources().getString(R.string.clear_all));
+                        cleardialog.setMessage(getResources().getString(R.string.clear_list_all));
+                        cleardialog.setPositiveButton(getResources().getString(R.string.confirm), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
 
-                    AlertDialog.Builder cleardialog = new AlertDialog.Builder(this);
-                    cleardialog.setIcon(R.drawable.ic_warning_black_48dp);
-                    cleardialog.setTitle(getResources().getString(R.string.clear_all));
-                    cleardialog.setMessage(getResources().getString(R.string.clear_list_all));
-                    cleardialog.setPositiveButton(getResources().getString(R.string.confirm), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
+                                //if (mediaOperation.getCurrent_state() == Constants.STATE.Started) {
+                                //    mediaOperation.doStop();
+                                //}
 
-                            if (mediaOperation.getCurrent_state() == Constants.STATE.Started) {
-                                mediaOperation.doStop();
-                            }
+                                videoList.clear();
 
-                            songList.clear();
+                                videoItemArrayAdapter.notifyDataSetChanged();
 
-                            songArrayAdapter.notifyDataSetChanged();
+                                Intent saveintent = new Intent(MainActivity.this, SaveListToFileService.class);
+                                saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
+                                saveintent.putExtra("FILENAME", "video_favorite");
+                                context.startService(saveintent);
 
-                            Intent saveintent = new Intent(MainActivity.this, SaveListToFileService.class);
-                            saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
-                            saveintent.putExtra("FILENAME", "favorite");
-                            context.startService(saveintent);
+                                loadDialog = new ProgressDialog(MainActivity.this);
+                                loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                                loadDialog.setTitle("Saving...");
+                                loadDialog.setIndeterminate(false);
+                                loadDialog.setCancelable(false);
 
-                            loadDialog = new ProgressDialog(MainActivity.this);
-                            loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                            loadDialog.setTitle("Saving...");
-                            loadDialog.setIndeterminate(false);
-                            loadDialog.setCancelable(false);
+                                loadDialog.show();
 
-                            loadDialog.show();
+                                /*if (songList.size() == 0) {
+                                    //show item
+                                    if (item_remove != null) {
+                                        item_remove.setVisible(false);
+                                    }
+                                    if (item_clear != null) {
+                                        item_clear.setVisible(false);
+                                    }
 
-                            if (songList.size() == 0) {
-                                //show item
-                                if (item_remove != null) {
-                                    item_remove.setVisible(false);
+                                    //clear loop
+                                    seekBar.setDots(new int[]{});
+                                    seekBar.setDotsDrawable(R.drawable.dot);
+
+                                    String zero = "00:00.000";
+                                    progress_mark_a = 0;
+
+                                    textA.setText(zero);
+
+                                    progress_mark_b = 1000;
+
+                                    textB.setText(zero);
+
+                                    songDuration.setText(zero);
+
+                                    current_song_duration = 0;
+
+                                    song_selected = 0;
                                 }
-                                if (item_clear != null) {
-                                    item_clear.setVisible(false);
-                                }
 
-                                //clear loop
-                                seekBar.setDots(new int[] {});
-                                seekBar.setDotsDrawable(R.drawable.dot);
-
-                                String zero = "00:00.000";
-                                progress_mark_a = 0;
-
-                                textA.setText(zero);
-
-                                progress_mark_b = 1000;
-
-                                textB.setText(zero);
-
-                                songDuration.setText(zero);
-
-                                current_song_duration = 0;
-
+                                //reset song_selected
                                 song_selected = 0;
+                                mediaOperation.setShufflePosition(0);*/
                             }
-
-                            //reset song_selected
-                            song_selected = 0;
-                            mediaOperation.setShufflePosition(0);
-                        }
-                    });
-                    cleardialog.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
+                        });
+                        cleardialog.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
 
 
-                        }
-                    });
-                    cleardialog.show();
+                            }
+                        });
+                        cleardialog.show();
+                    }
+                } else { //audio
+
+                    if (songList.size() > 0) {
+
+                        AlertDialog.Builder cleardialog = new AlertDialog.Builder(this);
+                        cleardialog.setIcon(R.drawable.ic_warning_black_48dp);
+                        cleardialog.setTitle(getResources().getString(R.string.clear_all));
+                        cleardialog.setMessage(getResources().getString(R.string.clear_list_all));
+                        cleardialog.setPositiveButton(getResources().getString(R.string.confirm), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                if (mediaOperation.getCurrent_state() == Constants.STATE.Started) {
+                                    mediaOperation.doStop();
+                                }
+
+                                songList.clear();
+
+                                songArrayAdapter.notifyDataSetChanged();
+
+                                Intent saveintent = new Intent(MainActivity.this, SaveListToFileService.class);
+                                saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
+                                saveintent.putExtra("FILENAME", "favorite");
+                                context.startService(saveintent);
+
+                                loadDialog = new ProgressDialog(MainActivity.this);
+                                loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                                loadDialog.setTitle("Saving...");
+                                loadDialog.setIndeterminate(false);
+                                loadDialog.setCancelable(false);
+
+                                loadDialog.show();
+
+                                if (songList.size() == 0) {
+                                    //show item
+                                    if (item_remove != null) {
+                                        item_remove.setVisible(false);
+                                    }
+                                    if (item_clear != null) {
+                                        item_clear.setVisible(false);
+                                    }
+
+                                    //clear loop
+                                    seekBar.setDots(new int[]{});
+                                    seekBar.setDotsDrawable(R.drawable.dot);
+
+                                    String zero = "00:00.000";
+                                    progress_mark_a = 0;
+
+                                    textA.setText(zero);
+
+                                    progress_mark_b = 1000;
+
+                                    textB.setText(zero);
+
+                                    songDuration.setText(zero);
+
+                                    current_song_duration = 0;
+
+                                    song_selected = 0;
+                                }
+
+                                //reset song_selected
+                                song_selected = 0;
+                                mediaOperation.setShufflePosition(0);
+                            }
+                        });
+                        cleardialog.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+
+                            }
+                        });
+                        cleardialog.show();
+                    }
                 }
                 break;
 

@@ -43,6 +43,7 @@ import static com.seventhmoon.jamnow.MainActivity.item_clear;
 import static com.seventhmoon.jamnow.MainActivity.item_remove;
 import static com.seventhmoon.jamnow.MainActivity.linearSpeed;
 import static com.seventhmoon.jamnow.MainActivity.linearLayoutAB;
+import static com.seventhmoon.jamnow.MainActivity.loadDialog;
 import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
 import static com.seventhmoon.jamnow.MainActivity.songArrayAdapter;
 import static com.seventhmoon.jamnow.MainActivity.songList;
@@ -79,7 +80,7 @@ public class AudioFragment extends Fragment {
 
     //LinearLayout linearLayoutAB;
     //LinearLayout linearSpeed;
-    private static TextView songDuration;
+    //private static TextView songDuration;
     //public static DottedSeekBar seekBar;
     private static DottedSeekBar speedBar;
     ImageView markButtonA, markButtonB;
@@ -112,7 +113,7 @@ public class AudioFragment extends Fragment {
     private static int current_position = 0;
     private static float current_speed = 0;
     //private static double current_position_d = 0.0;
-    ProgressDialog loadDialog = null;
+    //ProgressDialog loadDialog = null;
 
     //public static int currentSongPlay = 0;
 

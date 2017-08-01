@@ -15,10 +15,11 @@ import java.io.IOException;
 
 import static com.seventhmoon.jamnow.MainActivity.addSongList;
 import static com.seventhmoon.jamnow.MainActivity.searchList;
+import static com.seventhmoon.jamnow.MainActivity.videoList;
 
 
 import com.seventhmoon.jamnow.Data.Song;
-
+import com.seventhmoon.jamnow.Data.VideoItem;
 
 
 public class SearchFileService extends IntentService {
@@ -62,11 +63,15 @@ public class SearchFileService extends IntentService {
 
         Intent intent = new Intent(Constants.ACTION.ADD_SONG_LIST_COMPLETE);
         sendBroadcast(intent);
+
+        Intent videointent = new Intent(Constants.ACTION.ADD_VIDEO_LIST_COMPLETE);
+        sendBroadcast(videointent);
     }
 
     public String getAudioInfo(String filePath) {
         Log.e(TAG, "<getAudioInfo>");
         String infoMsg = null;
+        boolean hasFrameRate = false;
 
         MediaExtractor mex = new MediaExtractor();
         try {
@@ -89,29 +94,72 @@ public class SearchFileService extends IntentService {
                 infoMsg = mf.getString(MediaFormat.KEY_MIME);
                 Log.d(TAG, "type: "+infoMsg);
 
-                Log.d(TAG, "duration(us): "+mf.getLong(MediaFormat.KEY_DURATION));
-                Log.d(TAG, "channel: "+mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
-                if (mf.toString().contains("channel-mask")) {
-                    Log.d(TAG, "channel mask: "+mf.getInteger(MediaFormat.KEY_CHANNEL_MASK));
-                }
-                if (mf.toString().contains("aac-profile")) {
-                    Log.d(TAG, "aac profile: "+mf.getInteger(MediaFormat.KEY_AAC_PROFILE));
-                }
+                if (infoMsg.contains("audio")) {
 
-                Log.d(TAG, "sample rate: "+mf.getInteger(MediaFormat.KEY_SAMPLE_RATE));
+                    Log.d(TAG, "duration(us): " + mf.getLong(MediaFormat.KEY_DURATION));
+                    Log.d(TAG, "channel: " + mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
+                    if (mf.toString().contains("channel-mask")) {
+                        Log.d(TAG, "channel mask: " + mf.getInteger(MediaFormat.KEY_CHANNEL_MASK));
+                    }
+                    if (mf.toString().contains("aac-profile")) {
+                        Log.d(TAG, "aac profile: " + mf.getInteger(MediaFormat.KEY_AAC_PROFILE));
+                    }
 
-                if (infoMsg != null) {
-                    Song song = new Song();
-                    song.setName(file.getName());
-                    song.setPath(file.getAbsolutePath());
-                    //song.setDuration((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
-                    song.setDuration_u(mf.getLong(MediaFormat.KEY_DURATION));
-                    song.setChannel((byte)mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
-                    song.setSample_rate(mf.getInteger(MediaFormat.KEY_SAMPLE_RATE));
-                    song.setMark_a(0);
-                    song.setMark_b((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
-                    addSongList.add(song);
+                    Log.d(TAG, "sample rate: " + mf.getInteger(MediaFormat.KEY_SAMPLE_RATE));
 
+                    if (infoMsg != null) {
+                        Song song = new Song();
+                        song.setName(file.getName());
+                        song.setPath(file.getAbsolutePath());
+                        //song.setDuration((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
+                        song.setDuration_u(mf.getLong(MediaFormat.KEY_DURATION));
+                        song.setChannel((byte) mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
+                        song.setSample_rate(mf.getInteger(MediaFormat.KEY_SAMPLE_RATE));
+                        song.setMark_a(0);
+                        song.setMark_b((int) (mf.getLong(MediaFormat.KEY_DURATION) / 1000));
+                        addSongList.add(song);
+
+                    }
+                } else if (infoMsg.contains("video")) { //video
+                    try {
+                        Log.d(TAG, "frame rate : " + mf.getInteger(MediaFormat.KEY_FRAME_RATE));
+                        hasFrameRate = true;
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.d(TAG, "height : " + mf.getInteger(MediaFormat.KEY_HEIGHT));
+                    Log.d(TAG, "width : " + mf.getInteger(MediaFormat.KEY_WIDTH));
+                    Log.d(TAG, "duration(us): " + mf.getLong(MediaFormat.KEY_DURATION));
+
+                    if (infoMsg != null) {
+                        VideoItem video = new VideoItem();
+                        video.setName(file.getName());
+                        video.setPath(file.getAbsolutePath());
+                        if (hasFrameRate)
+                            video.setFrame_rate(mf.getInteger(MediaFormat.KEY_FRAME_RATE));
+
+                        video.setHeight(mf.getInteger(MediaFormat.KEY_HEIGHT));
+                        video.setWidth(mf.getInteger(MediaFormat.KEY_WIDTH));
+                        video.setDuration_u( mf.getLong(MediaFormat.KEY_DURATION));
+                        video.setMark_a(0);
+                        video.setMark_b((int) (mf.getLong(MediaFormat.KEY_DURATION) / 1000));
+                        videoList.add(video);
+                        /*Song song = new Song();
+                        song.setName(file.getName());
+                        song.setPath(file.getAbsolutePath());
+                        //song.setDuration((int)(mf.getLong(MediaFormat.KEY_DURATION)/1000));
+                        song.setDuration_u(mf.getLong(MediaFormat.KEY_DURATION));
+                        song.setChannel((byte) mf.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
+                        song.setSample_rate(mf.getInteger(MediaFormat.KEY_SAMPLE_RATE));
+                        song.setMark_a(0);
+                        song.setMark_b((int) (mf.getLong(MediaFormat.KEY_DURATION) / 1000));
+                        addSongList.add(song);*/
+
+                    }
+
+                } else {
+                    Log.e(TAG, "Unknown type");
                 }
 
             } catch (IllegalArgumentException e) {
