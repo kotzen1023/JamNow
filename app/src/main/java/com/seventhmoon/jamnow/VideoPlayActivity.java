@@ -126,7 +126,7 @@ public class VideoPlayActivity extends AppCompatActivity {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 if (videoList.size() > 0) {
-                    if (videoView.isPlaying()) {
+                    if (isVideoPlayPress) {
                         videoView.pause();
                     }
                 }
@@ -156,9 +156,21 @@ public class VideoPlayActivity extends AppCompatActivity {
                         //setActionBarTitle((int)duration);
 
                         videoView.seekTo((int) duration);
-                        videoView.start();
 
+                        //videoView.start();
 
+                        if (isVideoPlayPress) { //play is pressed, state: pause -> start
+                            if (!videoView.isPlaying()) {
+                                //if (audioOperation.isPause()) {
+                                //videoView.seekTo((int) duration);
+                                videoView.start();
+
+                                //audioOperation.setCurrentPosition(duration/1000.0);
+                                //audioOperation.doPlay(songList.get(song_selected).getPath());
+                            }
+                        } else {
+                            Log.e(TAG, "isVideoPlayPress not press");
+                        }
                     } else {
                         Log.e(TAG, "current_song_duration = 0");
                     }
