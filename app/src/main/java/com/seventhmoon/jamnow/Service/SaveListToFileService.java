@@ -43,8 +43,6 @@ public class SaveListToFileService extends IntentService {
 
         //clear list
         clear_record("favorite");
-        //video
-        clear_record("video_favorite");
 
         //write list file
         for (int i=0; i<songList.size(); i++) {
@@ -58,20 +56,6 @@ public class SaveListToFileService extends IntentService {
             }
 
             FileOperation.append_record(msg, "favorite");
-        }
-
-        //video
-        for (int i=0; i<videoList.size(); i++) {
-            String msg;
-            if (i== 0) {
-                msg = videoList.get(i).getPath()+";"+
-                        videoList.get(i).getDuration_u()+";"+videoList.get(i).getMark_a()+";"+videoList.get(i).getMark_b();
-            } else {
-                msg = "|"+videoList.get(i).getPath()+";"+
-                        videoList.get(i).getDuration_u()+";"+videoList.get(i).getMark_a()+";"+videoList.get(i).getMark_b();
-            }
-
-            FileOperation.append_record(msg, "video_favorite");
         }
     }
 

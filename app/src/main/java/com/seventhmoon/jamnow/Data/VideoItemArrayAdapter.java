@@ -142,6 +142,12 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
             }*/
             if (item.getBitmap() != null) {
                 holder.videoicon.setImageBitmap(item.getBitmap());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Drawable f = context.getResources().getDrawable(R.drawable.ic_play_circle_outline_white_48dp, context.getTheme());
+
+                    holder.videoicon.setForeground(f);
+                    holder.videoicon.setForegroundGravity(Gravity.CENTER);
+                }
             } else {
                 Bitmap bitmap = BitmapFactory.decodeResource(view.getResources(), R.drawable.ic_music_video_black_48dp);
                 holder.videoicon.setImageBitmap(bitmap);

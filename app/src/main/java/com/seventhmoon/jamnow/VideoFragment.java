@@ -29,6 +29,7 @@ import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
 import com.seventhmoon.jamnow.Service.GetThumbImageService;
 import com.seventhmoon.jamnow.Service.GetVideoListFromRecordService;
 import com.seventhmoon.jamnow.Service.SaveListToFileService;
+import com.seventhmoon.jamnow.Service.SaveVideoListToFileService;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -57,6 +58,8 @@ import static com.seventhmoon.jamnow.MainActivity.textA;
 import static com.seventhmoon.jamnow.MainActivity.textB;
 import static com.seventhmoon.jamnow.MainActivity.videoItemArrayAdapter;
 import static com.seventhmoon.jamnow.MainActivity.videoList;
+import static com.seventhmoon.jamnow.MainActivity.video_selected;
+import static com.seventhmoon.jamnow.MainActivity.current_video_duration;
 
 
 public class VideoFragment extends Fragment {
@@ -68,6 +71,7 @@ public class VideoFragment extends Fragment {
 
     private static BroadcastReceiver mReceiver = null;
     private static boolean isRegister = false;
+    private int previous_selected = -1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,7 +81,7 @@ public class VideoFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         Log.d(TAG, "onCreateView");
@@ -121,7 +125,19 @@ public class VideoFragment extends Fragment {
                     }
                 }
 
+                video_selected = position;
+                current_video_duration = (int)(videoList.get(video_selected).getDuration_u()/1000);
+
+
                 myGridview.invalidateViews();
+
+                if (previous_selected == video_selected) {
+
+                    Intent intent = new Intent(context, VideoPlayActivity.class);
+                    startActivity(intent);
+                } else {
+                    previous_selected = video_selected;
+                }
             }
         });
 
@@ -199,7 +215,7 @@ public class VideoFragment extends Fragment {
                                 songList.get(i).setSelected(false);
 
                             }
-                        }
+                        }*/
 
                         //show item
                         if (item_remove != null) {
@@ -207,11 +223,11 @@ public class VideoFragment extends Fragment {
                         }
                         if (item_clear != null) {
                             item_clear.setVisible(true);
-                        }*/
+                        }
 
+                        //get video thumb
                         Intent myintent = new Intent(context, GetThumbImageService.class);
                         myintent.setAction(Constants.ACTION.GET_THUMB_IMAGE_ACTION);
-                        //myintent.putExtra("FILENAME", "video_favorite");
                         context.startService(myintent);
 
                     } else {
@@ -234,7 +250,7 @@ public class VideoFragment extends Fragment {
                     Log.d(TAG, "receive ADD_VIDEO_LIST_COMPLETE !");
 
 
-                    for (int i=0; i<videoList.size(); i++) {
+                    for (int i=0; i<addVideoList.size(); i++) {
                         videoList.add(addVideoList.get(i));
                         Log.d(TAG, "add "+addVideoList.get(i).getName()+" to videoList");
                     }
@@ -252,9 +268,9 @@ public class VideoFragment extends Fragment {
 
 
 
-                    /*Intent saveintent = new Intent(context, SaveListToFileService.class);
+                    Intent saveintent = new Intent(context, SaveVideoListToFileService.class);
                     saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
-                    saveintent.putExtra("FILENAME", "favorite");
+                    saveintent.putExtra("FILENAME", "video_favorite");
                     context.startService(saveintent);
 
                     loadDialog = new ProgressDialog(context);
@@ -273,11 +289,18 @@ public class VideoFragment extends Fragment {
                     }
                     if (item_clear != null) {
                         item_clear.setVisible(true);
-                    }*/
+                    }
 
+                    //get video thumb
+                    Intent myintent = new Intent(context, GetThumbImageService.class);
+                    myintent.setAction(Constants.ACTION.GET_THUMB_IMAGE_ACTION);
+                    context.startService(myintent);
 
                 } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_THUMB_IMAGE_COMPLETE)) {
                     videoItemArrayAdapter.notifyDataSetChanged();
+                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_VIDEOLIST_TO_FILE_COMPLETE)) {
+                    if (loadDialog != null)
+                        loadDialog.dismiss();
                 }
             }
         };
@@ -287,6 +310,14 @@ public class VideoFragment extends Fragment {
         } else {
             videoItemArrayAdapter = new VideoItemArrayAdapter(context, R.layout.video_choose_item, videoList);
             myGridview.setAdapter(videoItemArrayAdapter);
+
+            //show item
+            if (item_remove != null) {
+                item_remove.setVisible(true);
+            }
+            if (item_clear != null) {
+                item_clear.setVisible(true);
+            }
         }
 
         if (!isRegister) {
@@ -294,6 +325,7 @@ public class VideoFragment extends Fragment {
             filter.addAction(Constants.ACTION.ADD_VIDEO_LIST_COMPLETE);
             filter.addAction(Constants.ACTION.GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE);
             filter.addAction(Constants.ACTION.GET_THUMB_IMAGE_COMPLETE);
+            filter.addAction(Constants.ACTION.SAVE_VIDEOLIST_TO_FILE_COMPLETE);
 
             context.registerReceiver(mReceiver, filter);
             isRegister = true;

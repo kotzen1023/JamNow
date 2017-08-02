@@ -14,6 +14,7 @@ import java.io.IOException;
 
 
 import static com.seventhmoon.jamnow.MainActivity.addSongList;
+import static com.seventhmoon.jamnow.MainActivity.addVideoList;
 import static com.seventhmoon.jamnow.MainActivity.searchList;
 import static com.seventhmoon.jamnow.MainActivity.videoList;
 
@@ -52,6 +53,8 @@ public class SearchFileService extends IntentService {
 
         //clear add list
         addSongList.clear();
+        //clear video add list
+        addVideoList.clear();
 
         searchFiles();
     }
@@ -144,7 +147,7 @@ public class SearchFileService extends IntentService {
                         video.setDuration_u( mf.getLong(MediaFormat.KEY_DURATION));
                         video.setMark_a(0);
                         video.setMark_b((int) (mf.getLong(MediaFormat.KEY_DURATION) / 1000));
-                        videoList.add(video);
+                        addVideoList.add(video);
                         /*Song song = new Song();
                         song.setName(file.getName());
                         song.setPath(file.getAbsolutePath());

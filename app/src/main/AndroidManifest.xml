@@ -22,11 +22,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".FileChooseActivity"></activity>
+        <activity android:name=".VideoPlayActivity"></activity>
 
 
         <service android:name=".Service.GetSongListFromRecordService" />
         <service android:name=".Service.GetVideoListFromRecordService" />
         <service android:name=".Service.SaveListToFileService" />
+        <service android:name=".Service.SaveVideoListToFileService" />
         <service android:name=".Service.SearchFileService" />
         <service android:name=".Service.GetThumbImageService" />
     </application>

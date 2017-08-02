@@ -24,6 +24,9 @@ public class Constants {
         String GET_VIDEOLIST_ACTION = "com.seventhmoon.JamNow.GetVideoListAction";
         String GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE = "com.seventhmoon.JamNow.GetVideoListFromRecordFileComplete";
 
+        String SAVE_VIDEOLIST_ACTION = "com.seventhmoon.JamNow.SaveVideoListAction";
+        String SAVE_VIDEOLIST_TO_FILE_COMPLETE = "com.seventhmoon.JamNow.SaveVideoListToFileComplete";
+
         String GET_THUMB_IMAGE_ACTION = "com.seventhmoon.JamNow.GetThumbImageAction";
         String GET_THUMB_IMAGE_COMPLETE = "com.seventhmoon.JamNow.GetThumbImageComplete";
     }
