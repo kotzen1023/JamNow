@@ -52,6 +52,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     private static float current_video_speed = 0;
     public static boolean isVideoPlayPress = false;
     private static videoplaytask goodTask;
+    private int current_video_position;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +90,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Log.d(TAG, "onPrepared");
+                Log.d(TAG, "onCompletion");
                 videoPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                 setTaskStop();
                 seekBar.setProgress(0);
@@ -114,8 +115,9 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                         double duration = seekBar.getProgress() * per_unit;
 
+                        current_video_position = (int) duration;
                         //Log.e(TAG, "=> onProgressChanged unit = "+String.valueOf(per_unit)+" duration = "+String.valueOf(duration));
-                        videoView.seekTo((int) duration);
+                        videoView.seekTo(current_video_position);
 
                         setVideoDuration((int) duration);
                         //setActionBarTitle((int) duration);
@@ -154,8 +156,9 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                         setVideoDuration((int) duration);
                         //setActionBarTitle((int)duration);
+                        current_video_position = (int) duration;
 
-                        videoView.seekTo((int) duration);
+                        videoView.seekTo(current_video_position);
 
                         //videoView.start();
 
@@ -234,6 +237,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                     videoPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
                 } else {
                     isVideoPlayPress = true;
+                    videoView.seekTo(current_video_position);
                     videoView.start();
                     setTaskStart();
                     videoPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
