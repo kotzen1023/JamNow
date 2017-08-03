@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -43,6 +44,7 @@ import static com.seventhmoon.jamnow.MainActivity.item_clear;
 import static com.seventhmoon.jamnow.MainActivity.item_remove;
 import static com.seventhmoon.jamnow.MainActivity.linearSpeed;
 import static com.seventhmoon.jamnow.MainActivity.linearLayoutAB;
+import static com.seventhmoon.jamnow.MainActivity.layout_seekbar_time;
 import static com.seventhmoon.jamnow.MainActivity.loadDialog;
 import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
 import static com.seventhmoon.jamnow.MainActivity.songArrayAdapter;
@@ -58,6 +60,7 @@ import static com.seventhmoon.jamnow.MainActivity.song_selected;
 import static com.seventhmoon.jamnow.MainActivity.songPlaying;
 import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
+import static com.seventhmoon.jamnow.MainActivity.current_position;
 import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_ALL;
 import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_SHUFFLE;
 import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_REPEAT;
@@ -110,7 +113,7 @@ public class AudioFragment extends Fragment {
     private static boolean is_editMarkA_change = false;
     private static boolean is_editMarkB_change = false;
 
-    private static int current_position = 0;
+    //private static int current_position = 0;
     private static float current_speed = 0;
     //private static double current_position_d = 0.0;
     //ProgressDialog loadDialog = null;
@@ -148,6 +151,7 @@ public class AudioFragment extends Fragment {
 
         //songList.clear();
 
+        layout_seekbar_time = (LinearLayout) view.findViewById(R.id.layout_seekbar_time);
         linearLayoutAB = (LinearLayout) view.findViewById(R.id.layout_ab_loop);
         linearSpeed = (LinearLayout) view.findViewById(R.id.linearSpeed);
 
@@ -1575,4 +1579,6 @@ public class AudioFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
     }
+
+
 }

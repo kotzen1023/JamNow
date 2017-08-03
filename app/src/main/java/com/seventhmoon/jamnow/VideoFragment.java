@@ -44,6 +44,7 @@ import static com.seventhmoon.jamnow.MainActivity.addSongList;
 import static com.seventhmoon.jamnow.MainActivity.addVideoList;
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
 import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
+import static com.seventhmoon.jamnow.MainActivity.current_video_position;
 import static com.seventhmoon.jamnow.MainActivity.item_clear;
 import static com.seventhmoon.jamnow.MainActivity.item_remove;
 import static com.seventhmoon.jamnow.MainActivity.loadDialog;
@@ -132,7 +133,7 @@ public class VideoFragment extends Fragment {
                 myGridview.invalidateViews();
 
                 if (previous_selected == video_selected) {
-
+                    current_video_position = 0;
                     Intent intent = new Intent(context, VideoPlayActivity.class);
                     startActivity(intent);
                 } else {

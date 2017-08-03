@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
+import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
     MenuItem item_search;
     public static ActionBar actionBar;
     public static LinearLayout linearLayoutAB;
+    public static LinearLayout layout_seekbar_time;
     public static LinearLayout linearSpeed;
     public static TextView songDuration;
     public static DottedSeekBar seekBar;
@@ -151,9 +153,10 @@ public class MainActivity extends AppCompatActivity {
     //private static boolean is_editMarkA_change = false;
     //private static boolean is_editMarkB_change = false;
 
-    //private static int current_position = 0;
+    public static int current_position = 0;
+    public static int current_video_position = 0;
     private static float current_speed = 0;
-    //private static double current_position_d = 0.0;
+
     public static ProgressDialog loadDialog = null;
 
     //public static int currentSongPlay = 0;
@@ -247,10 +250,13 @@ public class MainActivity extends AppCompatActivity {
                         linearLayoutAB.setVisibility(View.VISIBLE);
                     break;
 
-                case MODE_PLAY_VIDEO:
-                    actionBar.setHomeAsUpIndicator(R.drawable.ic_music_video_white_48dp);
-                    currentAcitonBarTitle = getResources().getString(R.string.play_mode_video);
+                default:
+                    current_mode = MODE_PLAY_ALL;
+                    actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
+                    currentAcitonBarTitle = getResources().getString(R.string.play_mode_all);
                     actionBar.setTitle(currentAcitonBarTitle);
+                    if (linearLayoutAB != null)
+                        linearLayoutAB.setVisibility(View.GONE);
                     break;
 
             }
@@ -893,82 +899,6 @@ public class MainActivity extends AppCompatActivity {
         // setup a dialog window
         alertDialogBuilder.setCancelable(false);
 
-
-        /*alertDialogBuilder.setPositiveButton(getResources().getString(R.string.dialog_confirm), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                //resultText.setText("Hello, " + editText.getText());
-                //Log.e(TAG, "input password = " + editText.getText());
-
-                if (editFileName.getText().toString().equals("")) {
-                    toast("file name empty");
-
-                } else {
-                    //check same file name
-                    if (check_file_exist(editFileName.getText().toString()))
-                    {
-                        AlertDialog.Builder confirmdialog = new AlertDialog.Builder(PlayMainActivity.this);
-                        confirmdialog.setTitle("File "+"\""+editFileName.getText().toString()+"\" is exist, want to overwrite it?");
-                        confirmdialog.setIcon(R.drawable.ball_icon);
-
-                        confirmdialog.setCancelable(false);
-                        confirmdialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                //overwrite
-                                //clear
-                                clear_record(editFileName.getText().toString());
-
-                                //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
-                                //append_record(msg, editFileName.getText().toString());
-
-                                Intent intent = new Intent(PlayMainActivity.this, SetupMain.class);
-                                intent.putExtra("FILE_NAME", editFileName.getText().toString());
-                                if (!editPlayerUp.getText().toString().equals(""))
-                                    intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
-                                else
-                                    intent.putExtra("PLAYER_UP", "");
-                                if (!editPlayerDown.getText().toString().equals(""))
-                                    intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
-                                else
-                                    intent.putExtra("PLAYER_DOWN", "");
-                                startActivity(intent);
-                                finish();
-                            }
-                        });
-                        confirmdialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-
-
-                            }
-                        });
-                        confirmdialog.show();
-                    } else {
-
-                        //add new file
-                        //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
-                        //append_record(msg, editFileName.getText().toString());
-
-
-                        Intent intent = new Intent(PlayMainActivity.this, SetupMain.class);
-                        intent.putExtra("FILE_NAME", editFileName.getText().toString());
-                        if (!editPlayerUp.getText().toString().equals(""))
-                            intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
-                        else
-                            intent.putExtra("PLAYER_UP", "Player1");
-                        if (!editPlayerDown.getText().toString().equals(""))
-                            intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
-                        else
-                            intent.putExtra("PLAYER_DOWN", "Player2");
-                        startActivity(intent);
-                        finish();
-                    }
-                }
-            }
-        });
-        alertDialogBuilder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        });*/
         dialog = alertDialogBuilder.show();
     }
 
@@ -1315,8 +1245,21 @@ public class MainActivity extends AppCompatActivity {
 
                         break;
                     case "tab_2":
-                        //if (item_clear != null)
-                        //    item_clear.setVisible(false);
+                        //if audio is playing, must stop
+                        if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
+
+                            Log.d(TAG, "tab_2: audio isPlaying, songPlaying = "+songPlaying);
+
+                            mediaOperation.setTaskStop();
+
+                            isPlayPress = false;
+
+                            mediaOperation.doPause();
+                            current_position = mediaOperation.getCurrentPosition();
+                            Log.e(TAG, "===> current_position = "+current_position);
+
+                        }
+
                         previos_mode = current_mode;
                         current_mode = MODE_PLAY_VIDEO;
                         if (item_search != null)
@@ -1332,5 +1275,20 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.e(TAG, "landscape");
+            layout_seekbar_time.setOrientation(LinearLayout.HORIZONTAL);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            Log.e(TAG, "portrait");
+            layout_seekbar_time.setOrientation(LinearLayout.VERTICAL);
+
+        }
     }
 }
