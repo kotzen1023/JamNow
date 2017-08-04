@@ -2,6 +2,7 @@ package com.seventhmoon.jamnow;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -31,7 +32,8 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.MediaController;
+
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,28 +42,21 @@ import android.widget.VideoView;
 
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.DottedSeekBar;
-import com.seventhmoon.jamnow.Data.MediaOperation;
+
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 
-import static com.seventhmoon.jamnow.AudioFragment.setSongDuration;
-import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_AB_LOOP;
-import static com.seventhmoon.jamnow.MainActivity.current_mode;
-import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
 import static com.seventhmoon.jamnow.MainActivity.current_video_duration;
 
 import static com.seventhmoon.jamnow.MainActivity.current_volume;
-import static com.seventhmoon.jamnow.MainActivity.isPlayPress;
-import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
-//import static com.seventhmoon.jamnow.MainActivity.progress_mark_a;
-//import static com.seventhmoon.jamnow.MainActivity.progress_mark_b;
-import static com.seventhmoon.jamnow.MainActivity.seekBar;
-import static com.seventhmoon.jamnow.MainActivity.songList;
-import static com.seventhmoon.jamnow.MainActivity.songPlaying;
-import static com.seventhmoon.jamnow.MainActivity.song_selected;
 
+import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
+
+
+import static com.seventhmoon.jamnow.MainActivity.progress_mark_b;
+import static com.seventhmoon.jamnow.MainActivity.seekBar;
 import static com.seventhmoon.jamnow.MainActivity.videoList;
 import static com.seventhmoon.jamnow.MainActivity.video_selected;
 import static com.seventhmoon.jamnow.MainActivity.current_video_position;
@@ -88,6 +83,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     private LinearLayout linearSeekBar;
     private LinearLayout linear_ab_loop;
     private LinearLayout linearLayoutDown;
+    private LinearLayout screenOfVideoView;
     private VideoView videoView;
     private boolean is_playing = false;
     private boolean is_fullscreen = false;
@@ -113,11 +109,38 @@ public class VideoPlayActivity extends AppCompatActivity {
     private int ab_loop_video_end = 0;
 
     private static int videoPlaying = 0;
+    private static double secs_per_progress_unit = 0.0;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.video_play_activity);
+
+        secs_per_progress_unit = (double) current_video_duration / 1000.0;
+
+        if (videoList.get(video_selected).getMark_a() == 0) {
+            progress_video_mark_a = 0;
+            ab_loop_video_start = 0;
+        } else {
+            progress_video_mark_a = (int) ((double) videoList.get(video_selected).getMark_a() / secs_per_progress_unit);
+            ab_loop_video_start = videoList.get(video_selected).getMark_a();
+        }
+
+        if (videoList.get(video_selected).getDuration_u()/1000 == videoList.get(video_selected).getMark_b()) {
+            progress_video_mark_b = 1000;
+            ab_loop_video_end = current_video_duration;
+        } else {
+            progress_video_mark_b = (int) ((double) videoList.get(video_selected).getMark_b() / secs_per_progress_unit);
+            ab_loop_video_end = videoList.get(video_selected).getMark_b();
+        }
+
+
+        Intent intent = getIntent();
+
+        ab_loop_video_start = Integer.valueOf(intent.getStringExtra("AB_LOOP_START"));
+        ab_loop_video_end = Integer.valueOf(intent.getStringExtra("AB_LOOP_END"));
+
+        Log.d(TAG, "ab_loop_video_start = "+ab_loop_video_start+", ab_loop_video_end = "+ab_loop_video_end);
 
         context = getBaseContext();
 
@@ -143,6 +166,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         linearSeekBar = (LinearLayout) findViewById(R.id.linearSeekBar);
         linear_ab_loop = (LinearLayout) findViewById(R.id.linear_ab_loop);
         linearLayoutDown = (LinearLayout) findViewById(R.id.linearDown);
+        screenOfVideoView = (LinearLayout) findViewById(R.id.screenOfVideoView);
 
         btnVideoMarkA = (ImageView) findViewById(R.id.btnVideoMarkA);
         btnVideoMarkB = (ImageView) findViewById(R.id.btnVideoMarkB);
@@ -150,9 +174,68 @@ public class VideoPlayActivity extends AppCompatActivity {
         textVideoA = (EditText) findViewById(R.id.textViewVideoA);
         textVideoB = (EditText) findViewById(R.id.textViewVideoB);
 
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+        //set videoview center
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            linearSeekBar.setOrientation(LinearLayout.HORIZONTAL);
 
-        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+
+        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+
+        }
+
+
+        //init ab loop
+        seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
+        seekBar.setDotsDrawable(R.drawable.dot);
+        seekBar.setmLine(R.drawable.line);
+
+        if (progress_video_mark_a > 0) {
+            current_video_position = videoList.get(video_selected).getMark_a();
+            seekBar.setProgress(progress_video_mark_a);
+        }
+
+        //init text
+        if (videoList.get(video_selected).getMark_a() > 0) {
+            NumberFormat f = new DecimalFormat("00");
+            NumberFormat f2 = new DecimalFormat("000");
+
+            //double per_unit = (double) current_video_duration / 1000.0;
+
+            int minutes = (videoList.get(video_selected).getMark_a()) / 60000;
+
+            int seconds = ((videoList.get(video_selected).getMark_a()) / 1000) % 60;
+
+            int minisec = (videoList.get(video_selected).getMark_a()) % 1000;
+
+
+            textVideoA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+            setVideoDuration(videoList.get(video_selected).getMark_a());
+        } else {
+            textVideoA.setText("00:00.000");
+            setVideoDuration(0);
+        }
+
+        if (videoList.get(video_selected).getMark_b() > 0) {
+            NumberFormat f = new DecimalFormat("00");
+            NumberFormat f2 = new DecimalFormat("000");
+
+            //double per_unit = (double) current_video_duration / 1000.0;
+
+            int minutes = (videoList.get(video_selected).getMark_b()) / 60000;
+
+            int seconds = ((videoList.get(video_selected).getMark_b()) / 1000) % 60;
+
+            int minisec = (videoList.get(video_selected).getMark_b()) % 1000;
+
+
+            textVideoB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+        } else {
+            textVideoB.setText("00:00.000");
+        }
+
+
+
+
 
         //mediacontroller = new MediaController(this);
         //mediacontroller.setAnchorView(videoView);
@@ -174,6 +257,8 @@ public class VideoPlayActivity extends AppCompatActivity {
             videoView.setForegroundGravity(Gravity.CENTER);
         }
 
+
+
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
@@ -188,19 +273,13 @@ public class VideoPlayActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.d(TAG, "onCompletion");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    Drawable f = getResources().getDrawable(R.drawable.ic_play_circle_outline_white_48dp, getTheme());
 
-                    videoView.setForeground(f);
-                    videoView.setForegroundGravity(Gravity.CENTER);
-                }
+                Message msg = new Message();
 
-                videoPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
-                setTaskStop();
-                seekBar.setProgress(0);
-                isVideoPlayPress = false;
+                mIncomingHandler.sendMessage(msg);
             }
         });
+
 
         videoView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -337,7 +416,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                Log.d(TAG, "text A beforeTextChanged");
+                Log.d(TAG, "text A afterTextChanged");
                 is_editMarkA_video_change = true;
                 //is_seekBarTouch = false;
             }
@@ -417,8 +496,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                             }
                             is_editMarkA_video_change = false;
                         } else { //get current seekbar position
-                            NumberFormat f = new DecimalFormat("00");
-                            NumberFormat f2 = new DecimalFormat("000");
+
 
                             double per_unit = (double) current_video_duration / 1000.0;
 
@@ -427,14 +505,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                             Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                            int minutes = ((int) duration) / 60000;
-
-                            int seconds = ((int) duration / 1000) % 60;
-
-                            int minisec = (int) duration % 1000;
-
-
-                            textVideoA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            setTextVideoA(duration);
 
                             progress_video_mark_a = seekBar.getProgress();
                             seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
@@ -471,35 +542,31 @@ public class VideoPlayActivity extends AppCompatActivity {
                             ab_loop_video_start = videoList.get(video_selected).getMark_a();
                             ab_loop_video_end = videoList.get(video_selected).getMark_b();
                             //}
-                            if (videoPlaying != video_selected) {
-                                NumberFormat f = new DecimalFormat("00");
-                                NumberFormat f2 = new DecimalFormat("000");
 
-                                double per_unit = (double) current_video_duration / 1000.0;
+                            double per_unit = (double) current_video_duration / 1000.0;
 
 
-                                double duration = seekBar.getProgress() * per_unit;
+                            double duration = seekBar.getProgress() * per_unit;
 
-                                Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
+                            Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                                int minutes = ((int) duration) / 60000;
+                            setTextVideoA(duration);
 
-                                int seconds = ((int) duration / 1000) % 60;
+                            progress_video_mark_a = seekBar.getProgress();
 
-                                int minisec = (int) duration % 1000;
-
-
-                                textVideoA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
-
-                                progress_video_mark_a = seekBar.getProgress();
-                                seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
-                                seekBar.setDotsDrawable(R.drawable.dot);
-                                seekBar.setmLine(R.drawable.line);
-
-                                //if (current_mode == MODE_PLAY_AB_LOOP) {
-                                    videoList.get(video_selected).setMark_a((int) duration);
-                                //}
+                            if (progress_video_mark_b == 1000) {
+                                Log.e(TAG, "progress_video_mark_b = 1000");
+                                setTextVideoB(current_video_duration);
                             }
+
+                            seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
+                            seekBar.setDotsDrawable(R.drawable.dot);
+                            seekBar.setmLine(R.drawable.line);
+
+                            ab_loop_video_start = (int) duration;
+                            //if (current_mode == MODE_PLAY_AB_LOOP) {
+                            videoList.get(video_selected).setMark_a((int) duration);
+                            //}
                         }
                     }
                 }
@@ -519,7 +586,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                Log.d(TAG, "text B beforeTextChanged");
+                Log.d(TAG, "text B afterTextChanged");
                 is_editMarkB_video_change = true;
                 //is_seekBarTouch = false;
             }
@@ -528,7 +595,7 @@ public class VideoPlayActivity extends AppCompatActivity {
         btnVideoMarkB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (songList.size() > 0) {
+                if (videoList.size() > 0) {
                     if (current_video_duration != 0) {
 
                         if (is_editMarkB_video_change) {
@@ -577,7 +644,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                                                 seekBar.setmLine(R.drawable.line);
                                             } else {
-                                                toast("Mark B value must less than song duration or equal to it");
+                                                toast("Mark B value must less than video duration or equal to it");
                                             }
                                         }
                                     }
@@ -587,8 +654,6 @@ public class VideoPlayActivity extends AppCompatActivity {
                             }
                             is_editMarkB_video_change = false;
                         } else {
-                            NumberFormat f = new DecimalFormat("00");
-                            NumberFormat f2 = new DecimalFormat("000");
 
                             double per_unit = (double) current_video_duration / 1000.0;
 
@@ -597,14 +662,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                             Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                            int minutes = ((int) duration) / 60000;
-
-                            int seconds = ((int) duration / 1000) % 60;
-
-                            int minisec = (int) duration % 1000;
-
-
-                            textVideoB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            setTextVideoB(duration);
 
                             progress_video_mark_b = seekBar.getProgress();
                             seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
@@ -641,42 +699,58 @@ public class VideoPlayActivity extends AppCompatActivity {
                             ab_loop_video_start = videoList.get(video_selected).getMark_a();
                             ab_loop_video_end = videoList.get(video_selected).getMark_b();
                             //}
-                            if (videoPlaying != video_selected) {
-                                NumberFormat f = new DecimalFormat("00");
-                                NumberFormat f2 = new DecimalFormat("000");
-
-                                double per_unit = (double) current_video_duration / 1000.0;
 
 
-                                double duration = seekBar.getProgress() * per_unit;
-
-                                Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
-
-                                int minutes = ((int) duration) / 60000;
-
-                                int seconds = ((int) duration / 1000) % 60;
-
-                                int minisec = (int) duration % 1000;
+                            double per_unit = (double) current_video_duration / 1000.0;
 
 
-                                textVideoB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            double duration = seekBar.getProgress() * per_unit;
 
-                                progress_video_mark_b = seekBar.getProgress();
-                                seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
-                                seekBar.setDotsDrawable(R.drawable.dot);
-                                seekBar.setmLine(R.drawable.line);
+                            Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                                //if (current_mode == MODE_PLAY_AB_LOOP) {
-                                    videoList.get(video_selected).setMark_b((int) duration);
-                                //}
-                            }
+                            setTextVideoB(duration);
+
+                            progress_video_mark_b = seekBar.getProgress();
+                            seekBar.setDots(new int[]{progress_video_mark_a, progress_video_mark_b});
+                            seekBar.setDotsDrawable(R.drawable.dot);
+                            seekBar.setmLine(R.drawable.line);
+
+                            ab_loop_video_end = (int) duration;
+                            //if (current_mode == MODE_PLAY_AB_LOOP) {
+                            videoList.get(video_selected).setMark_b((int) duration);
+                            //}
                         }
                     }
                 }
             }
         });
 
+        btnVideoClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (videoList.size() > 0) {
 
+                    seekBar.setDots(new int[]{});
+                    seekBar.setDotsDrawable(R.drawable.dot);
+
+                    progress_video_mark_a = 0;
+                    String ta = "00:00.000";
+                    textVideoA.setText(ta);
+
+                    progress_video_mark_b = 1000;
+                    String tb = "00:00.000";
+                    textVideoB.setText(tb);
+
+                    videoList.get(video_selected).setMark_a(0);
+                    videoList.get(video_selected).setMark_b(current_video_duration);
+
+                    //mediaOperation.setAb_loop_start(0);
+                    //mediaOperation.setAb_loop_end(current_song_duration);
+                    ab_loop_video_start = 0;
+                    ab_loop_video_end = videoList.get(video_selected).getMark_b();
+                }
+            }
+        });
 
         seekSpeedBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -763,7 +837,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                     setTaskStart();
                     videoPlayOrPause.setImageResource(R.drawable.ic_pause_circle_outline_black_48dp);
 
-                    videoPlaying = song_selected;
+                    videoPlaying = video_selected;
                 }
             }
         });
@@ -820,8 +894,52 @@ public class VideoPlayActivity extends AppCompatActivity {
         });
     }
 
+    private Handler mIncomingHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            Log.e(TAG, "mIncomingHandler: play finished! textVideoB = "+textVideoB);
+
+            if (textVideoB.getText().toString().equals("00:00.000")) { //clear, no loop
+                Log.e(TAG, "No Loop");
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Drawable f = getResources().getDrawable(R.drawable.ic_play_circle_outline_white_48dp, getTheme());
+
+                    videoView.setForeground(f);
+                    videoView.setForegroundGravity(Gravity.CENTER);
+                }
+
+                videoPlayOrPause.setImageResource(R.drawable.ic_play_circle_outline_black_48dp);
+                setTaskStop();
+                seekBar.setProgress(0);
+                isVideoPlayPress = false;
+
+            } else {
+                Log.e(TAG, "Loop condition");
+                videoView.seekTo(ab_loop_video_start);
+                videoView.start();
+                setTaskStart();
+            }
+
+
+
+            return true;
+        }
+    });
+
     @Override
     protected void onDestroy() {
+        Log.i(TAG, "onDestroy");
+
+        if (videoView != null) {
+            videoView.stopPlayback();
+            videoView.destroyDrawingCache();
+            videoView = null;
+        }
+
+        isVideoPlayPress = false;
+        setTaskStop();
+
         super.onDestroy();
     }
 
@@ -882,6 +1000,34 @@ public class VideoPlayActivity extends AppCompatActivity {
         videoDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
     }
 
+    private void setTextVideoA(double duration) {
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
+        int minutes = ((int) duration) / 60000;
+
+        int seconds = ((int) duration / 1000) % 60;
+
+        int minisec = (int) duration % 1000;
+
+
+        textVideoA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+    }
+
+    private void setTextVideoB(double duration) {
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
+        int minutes = ((int) duration) / 60000;
+
+        int seconds = ((int) duration / 1000) % 60;
+
+        int minisec = (int) duration % 1000;
+
+
+        textVideoB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+    }
+
     private class videoplaytask extends AsyncTask<Integer, Integer, String>
     {
         @Override
@@ -916,7 +1062,7 @@ public class VideoPlayActivity extends AppCompatActivity {
                         Log.d(TAG, "other state...");
                     }
                 }*/
-                if (getPosition() < ab_loop_video_start || getPosition() > ab_loop_video_end) {
+                if (getPosition() > ab_loop_video_end) {
                     Log.d(TAG, "position = " + getPosition() + " ab_loop_video_start = " + ab_loop_video_start + " ab_loop_end = " + ab_loop_video_end);
                     //mediaPlayer.pause();
                     //current_state = Constants.STATE.Paused;
@@ -1133,20 +1279,6 @@ public class VideoPlayActivity extends AppCompatActivity {
 
                 mediaOperation.setCurrent_volume(current_volume);
 
-                if (isPlayPress) {
-
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
-                        //if (audioOperation.isPause()) {
-                        //mediaOperation.setSeekTo((int) duration);
-
-                        mediaOperation.doPlay(songList.get(song_selected).getPath());
-
-                        //audioOperation.setCurrentPosition(duration/1000.0);
-                        //audioOperation.doPlay(songList.get(song_selected).getPath());
-                    } else {
-                        Log.e(TAG, "Not Pause state");
-                    }
-                }
 
                 editor = pref.edit();
                 editor.putInt("PLAY_VOLUME", current_volume);

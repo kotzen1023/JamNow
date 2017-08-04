@@ -40,6 +40,7 @@ import java.text.NumberFormat;
 import static android.content.Context.MODE_PRIVATE;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
 import static com.seventhmoon.jamnow.MainActivity.addSongList;
+import static com.seventhmoon.jamnow.MainActivity.current_video_duration;
 import static com.seventhmoon.jamnow.MainActivity.item_clear;
 import static com.seventhmoon.jamnow.MainActivity.item_remove;
 import static com.seventhmoon.jamnow.MainActivity.linearSpeed;
@@ -182,7 +183,14 @@ public class AudioFragment extends Fragment {
         imgFastRewind = (ImageView) view.findViewById(R.id.imgFastRewind);
         imgFastForward = (ImageView) view.findViewById(R.id.imgFastForward);
 
+        //set videoview center
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            layout_seekbar_time.setOrientation(LinearLayout.HORIZONTAL);
 
+
+        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+
+        }
 
 
         /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -473,8 +481,8 @@ public class AudioFragment extends Fragment {
                             }
                             is_editMarkA_change = false;
                         } else { //get current seekbar position
-                            NumberFormat f = new DecimalFormat("00");
-                            NumberFormat f2 = new DecimalFormat("000");
+                            //NumberFormat f = new DecimalFormat("00");
+                            //NumberFormat f2 = new DecimalFormat("000");
 
                             double per_unit = (double) current_song_duration / 1000.0;
 
@@ -483,14 +491,16 @@ public class AudioFragment extends Fragment {
 
                             Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                            int minutes = ((int) duration) / 60000;
+                            //int minutes = ((int) duration) / 60000;
 
-                            int seconds = ((int) duration / 1000) % 60;
+                            //int seconds = ((int) duration / 1000) % 60;
 
-                            int minisec = (int) duration % 1000;
+                            //int minisec = (int) duration % 1000;
 
 
-                            textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            //textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            setTextAudioA(duration);
+
 
                             progress_mark_a = seekBar.getProgress();
                             seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
@@ -525,8 +535,8 @@ public class AudioFragment extends Fragment {
                             mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
                             //}
                             if (songPlaying != song_selected) {
-                                NumberFormat f = new DecimalFormat("00");
-                                NumberFormat f2 = new DecimalFormat("000");
+                                //NumberFormat f = new DecimalFormat("00");
+                                //NumberFormat f2 = new DecimalFormat("000");
 
                                 double per_unit = (double) current_song_duration / 1000.0;
 
@@ -535,16 +545,23 @@ public class AudioFragment extends Fragment {
 
                                 Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                                int minutes = ((int) duration) / 60000;
+                                //int minutes = ((int) duration) / 60000;
 
-                                int seconds = ((int) duration / 1000) % 60;
+                                //int seconds = ((int) duration / 1000) % 60;
 
-                                int minisec = (int) duration % 1000;
+                                //int minisec = (int) duration % 1000;
 
 
-                                textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                                //textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                                setTextAudioA(duration);
 
                                 progress_mark_a = seekBar.getProgress();
+
+                                if (progress_mark_b == 1000) {
+                                    Log.e(TAG, "progress_mark_b = 1000");
+                                    setTextAudioB(current_song_duration);
+                                }
+
                                 seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
                                 seekBar.setDotsDrawable(R.drawable.dot);
                                 seekBar.setmLine(R.drawable.line);
@@ -647,8 +664,8 @@ public class AudioFragment extends Fragment {
                             }
                             is_editMarkB_change = false;
                         } else {
-                            NumberFormat f = new DecimalFormat("00");
-                            NumberFormat f2 = new DecimalFormat("000");
+                            //NumberFormat f = new DecimalFormat("00");
+                            //NumberFormat f2 = new DecimalFormat("000");
 
                             double per_unit = (double) current_song_duration / 1000.0;
 
@@ -657,14 +674,15 @@ public class AudioFragment extends Fragment {
 
                             Log.e(TAG, "unit = " + String.valueOf(per_unit) + " duration = " + String.valueOf(duration));
 
-                            int minutes = ((int) duration) / 60000;
+                            //int minutes = ((int) duration) / 60000;
 
-                            int seconds = ((int) duration / 1000) % 60;
+                            //int seconds = ((int) duration / 1000) % 60;
 
-                            int minisec = (int) duration % 1000;
+                            //int minisec = (int) duration % 1000;
 
 
-                            textB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            //textB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+                            setTextAudioB(duration);
 
                             progress_mark_b = seekBar.getProgress();
                             seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
@@ -1539,6 +1557,34 @@ public class AudioFragment extends Fragment {
         }
 
 
+    }
+
+    private void setTextAudioA(double duration) {
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
+        int minutes = ((int) duration) / 60000;
+
+        int seconds = ((int) duration / 1000) % 60;
+
+        int minisec = (int) duration % 1000;
+
+
+        textA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+    }
+
+    private void setTextAudioB(double duration) {
+        NumberFormat f = new DecimalFormat("00");
+        NumberFormat f2 = new DecimalFormat("000");
+
+        int minutes = ((int) duration) / 60000;
+
+        int seconds = ((int) duration / 1000) % 60;
+
+        int minisec = (int) duration % 1000;
+
+
+        textB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
     }
 
     @Override

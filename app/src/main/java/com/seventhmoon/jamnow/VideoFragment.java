@@ -135,6 +135,8 @@ public class VideoFragment extends Fragment {
                 if (previous_selected == video_selected) {
                     current_video_position = 0;
                     Intent intent = new Intent(context, VideoPlayActivity.class);
+                    intent.putExtra("AB_LOOP_START", String.valueOf(videoList.get(video_selected).getMark_a()));
+                    intent.putExtra("AB_LOOP_END", String.valueOf(videoList.get(video_selected).getMark_b()));
                     startActivity(intent);
                 } else {
                     previous_selected = video_selected;
