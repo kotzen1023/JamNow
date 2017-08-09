@@ -47,8 +47,8 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
     private int layoutResourceId;
     private ArrayList<VideoItem> items = new ArrayList<>();
     private Context context;
-    private Display display;
-    private android.widget.MediaController mediaController;
+    //private Display display;
+    //private android.widget.MediaController mediaController;
 
     public VideoItemArrayAdapter(Context context, int textViewResourceId,
                             ArrayList<VideoItem> objects) {
@@ -60,12 +60,10 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
 
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        display = wm.getDefaultDisplay();
+        //WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        //display = wm.getDefaultDisplay();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mediaController = new android.widget.MediaController(context);
-        }
+
     }
 
     @Override
