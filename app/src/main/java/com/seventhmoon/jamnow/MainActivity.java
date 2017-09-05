@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     public static SongArrayAdapter songArrayAdapter;
     public static VideoItemArrayAdapter videoItemArrayAdapter;
 
-    MenuItem item_search;
+    MenuItem item_search, item_play_all, item_shuffle, item_single_repeat, item_ab_loop;
     public static ActionBar actionBar;
     public static LinearLayout linearLayoutAB;
     public static LinearLayout layout_seekbar_time;
@@ -333,6 +333,11 @@ public class MainActivity extends AppCompatActivity {
         item_search = menu.findItem(R.id.action_search);
         item_remove = menu.findItem(R.id.action_remove);
         item_clear = menu.findItem(R.id.action_clear);
+
+        item_play_all = menu.findItem(R.id.action_play_all);
+        item_shuffle = menu.findItem(R.id.action_shuffle);
+        item_single_repeat = menu.findItem(R.id.action_repeat);
+        item_ab_loop = menu.findItem(R.id.action_loop);
 
         //item_clear = menu.findItem(R.id.action_clear);
 
@@ -1243,6 +1248,11 @@ public class MainActivity extends AppCompatActivity {
 
                         }
 
+                        item_play_all.setVisible(true);
+                        item_shuffle.setVisible(true);
+                        item_single_repeat.setVisible(true);
+                        item_ab_loop.setVisible(true);
+
                         break;
                     case "tab_2":
                         //if audio is playing, must stop
@@ -1267,6 +1277,11 @@ public class MainActivity extends AppCompatActivity {
                         actionBar.setHomeAsUpIndicator(R.drawable.ic_music_video_white_48dp);
                         currentAcitonBarTitle = getResources().getString(R.string.play_mode_video);
                         actionBar.setTitle(currentAcitonBarTitle);
+
+                        item_play_all.setVisible(false);
+                        item_shuffle.setVisible(false);
+                        item_single_repeat.setVisible(false);
+                        item_ab_loop.setVisible(false);
                         break;
 
                     default:
