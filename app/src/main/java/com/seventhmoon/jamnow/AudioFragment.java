@@ -1316,8 +1316,21 @@ public class AudioFragment extends Fragment {
 
 
                     for (int i=0; i<addSongList.size(); i++) {
-                        songList.add(addSongList.get(i));
-                        Log.d(TAG, "add "+addSongList.get(i).getName()+" to songList");
+
+                        boolean found = false;
+                        for (int j=0; j<songList.size(); j++) {
+                            if (songList.get(j).getPath().equals(addSongList.get(i).getPath())) {
+                                found = true;
+                            }
+                        }
+
+                        if (!found) {
+                            songList.add(addSongList.get(i));
+                            Log.d(TAG, "add "+addSongList.get(i).getName()+" to songList");
+                        }
+
+                        //songList.add(addSongList.get(i));
+                        //Log.d(TAG, "add "+addSongList.get(i).getName()+" to songList");
                     }
 
                     mediaOperation.shuffleReset();
