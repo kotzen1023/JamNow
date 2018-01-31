@@ -8,43 +8,39 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
+
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
 import android.content.res.Configuration;
-import android.graphics.drawable.ColorDrawable;
+
 import android.os.Build;
 
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
+
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.text.Editable;
 
-import android.text.TextWatcher;
 import android.util.Log;
 
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
+
 
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+
 import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -60,7 +56,7 @@ import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 
 import com.seventhmoon.jamnow.Data.VideoItem;
 import com.seventhmoon.jamnow.Data.VideoItemArrayAdapter;
-import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
+
 import com.seventhmoon.jamnow.Service.SaveListToFileService;
 import com.seventhmoon.jamnow.Service.SaveVideoListToFileService;
 
@@ -77,8 +73,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
-import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
 
 import static com.seventhmoon.jamnow.Data.FileOperation.init_folder_and_files;
 
@@ -155,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static int current_position = 0;
     public static int current_video_position = 0;
-    private static float current_speed = 0;
+    //private static float current_speed = 0;
 
     public static ProgressDialog loadDialog = null;
 
@@ -327,28 +321,34 @@ public class MainActivity extends AppCompatActivity {
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         MenuItem searchMenuItem = menu.findItem(R.id.action_search);
         //SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        //SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
+        SearchView searchView = (SearchView) searchMenuItem.getActionView();
 
-        item_search = menu.findItem(R.id.action_search);
-        item_remove = menu.findItem(R.id.action_remove);
-        item_clear = menu.findItem(R.id.action_clear);
+        if (searchManager != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-        item_play_all = menu.findItem(R.id.action_play_all);
-        item_shuffle = menu.findItem(R.id.action_shuffle);
-        item_single_repeat = menu.findItem(R.id.action_repeat);
-        item_ab_loop = menu.findItem(R.id.action_loop);
+            item_search = menu.findItem(R.id.action_search);
+            item_remove = menu.findItem(R.id.action_remove);
+            item_clear = menu.findItem(R.id.action_clear);
 
-        //item_clear = menu.findItem(R.id.action_clear);
+            item_play_all = menu.findItem(R.id.action_play_all);
+            item_shuffle = menu.findItem(R.id.action_shuffle);
+            item_single_repeat = menu.findItem(R.id.action_repeat);
+            item_ab_loop = menu.findItem(R.id.action_loop);
 
-        item_search.setVisible(false);
+            //item_clear = menu.findItem(R.id.action_clear);
 
-        try {
-            //SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search_keeper));
-            searchView.setOnQueryTextListener(queryListener);
-        }catch(Exception e){
-            e.printStackTrace();
+            item_search.setVisible(false);
+
+            try {
+                //SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search_keeper));
+                searchView.setOnQueryTextListener(queryListener);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
+
+
 
         return true;
     }
@@ -482,9 +482,11 @@ public class MainActivity extends AppCompatActivity {
                         seekBar.setDotsDrawable(R.drawable.dot);
                         seekBar.setmLine(R.drawable.line);
                     }
+                    String msg_a = f.format(minutes_a) + ":" + f.format(seconds_a) + "." + f2.format(minisec_a);
+                    String msg_b = f.format(minutes_b) + ":" + f.format(seconds_b) + "." + f2.format(minisec_b);
 
-                    textA.setText(f.format(minutes_a) + ":" + f.format(seconds_a) + "." + f2.format(minisec_a));
-                    textB.setText(f.format(minutes_b) + ":" + f.format(seconds_b) + "." + f2.format(minisec_b));
+                    textA.setText(msg_a);
+                    textB.setText(msg_b);
                 }
                 break;
 
@@ -845,8 +847,8 @@ public class MainActivity extends AppCompatActivity {
 
         alertDialogBuilder.setView(promptView);
 
-        final TextView textVolume = (TextView) promptView.findViewById(R.id.textVolume);
-        final SeekBar seekbarVolume = (SeekBar) promptView.findViewById(R.id.seekBarVolume);
+        final TextView textVolume = promptView.findViewById(R.id.textVolume);
+        final SeekBar seekbarVolume = promptView.findViewById(R.id.seekBarVolume);
 
         current_volume = mediaOperation.getCurrent_volume();
 
@@ -992,7 +994,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         //Log.e(TAG, "result size = "+grantResults.length+ "result[0] = "+grantResults[0]+", result[1] = "+grantResults[1]);
 
 
@@ -1165,11 +1167,11 @@ public class MainActivity extends AppCompatActivity {
     }*/
 
     private TabHost.TabSpec setIndicator(Context ctx, TabHost.TabSpec spec,
-                                         int resid, String string, int genresIcon) {
+                                         int resid, int genresIcon) {
         View v = LayoutInflater.from(ctx).inflate(R.layout.tab_item, null);
         v.setBackgroundResource(resid);
         //TextView tv = (TextView)v.findViewById(R.id.txt_tabtxt);
-        ImageView img = (ImageView)v.findViewById(R.id.img_tabtxt);
+        ImageView img = v.findViewById(R.id.img_tabtxt);
 
         //tv.setText(string);
         img.setBackgroundResource(genresIcon);
@@ -1179,13 +1181,13 @@ public class MainActivity extends AppCompatActivity {
     private void InitView() {
         FragmentTabHost mTabHost;
 
-        mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+        mTabHost = findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
 
         //mTabHost.addTab(setIndicator(MainMenu.this, mTabHost.newTabSpec(TAB_1_TAG),
         //        R.drawable.tab_indicator_gen, getResources().getString(R.string.scm_history_tab), R.drawable.ic_history_white_48dp), HistoryFragment.class, null);
         mTabHost.addTab(setIndicator(MainActivity.this, mTabHost.newTabSpec(TAB_1_TAG),
-                R.drawable.tab_indicator_gen, "", R.drawable.ic_audiotrack_white_48dp), AudioFragment.class, null);
+                R.drawable.tab_indicator_gen, R.drawable.ic_audiotrack_white_48dp), AudioFragment.class, null);
 
 
 
@@ -1193,7 +1195,7 @@ public class MainActivity extends AppCompatActivity {
         //mTabHost.addTab(setIndicator(MainMenu.this, mTabHost.newTabSpec(TAB_2_TAG),
         //        R.drawable.tab_indicator_gen, getResources().getString(R.string.scm_setting), R.drawable.ic_settings_white_48dp), SettingsFragment.class, null);
         mTabHost.addTab(setIndicator(MainActivity.this, mTabHost.newTabSpec(TAB_2_TAG),
-                R.drawable.tab_indicator_gen, "", R.drawable.ic_music_video_white_48dp), VideoFragment.class, null);
+                R.drawable.tab_indicator_gen, R.drawable.ic_music_video_white_48dp), VideoFragment.class, null);
 
 
 

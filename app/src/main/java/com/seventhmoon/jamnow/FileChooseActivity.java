@@ -1,7 +1,10 @@
 package com.seventhmoon.jamnow;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
@@ -46,6 +49,9 @@ public class FileChooseActivity extends AppCompatActivity {
     private File currentDir;
     private Menu actionmenu;
 
+    private static BroadcastReceiver mReceiver = null;
+    private static boolean isRegister = false;
+
     //private ArrayList<String> searchList = new ArrayList<>();
 
     //AudioOperation audioOperation;
@@ -59,8 +65,8 @@ public class FileChooseActivity extends AppCompatActivity {
 
         //audioOperation = new AudioOperation(context);
 
-        listView = (ListView) findViewById(R.id.listViewFileChoose);
-        confirm = (Button) findViewById(R.id.btnFileChooseListConfirm);
+        listView = findViewById(R.id.listViewFileChoose);
+        confirm = findViewById(R.id.btnFileChooseListConfirm);
 
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,12 +100,53 @@ public class FileChooseActivity extends AppCompatActivity {
         Log.e(TAG, "currentDir = "+Environment.getExternalStorageDirectory().getPath());
         //fileChooseArrayAdapter = new FileChooseArrayAdapter(this, R.layout.file_choose_in_row, );
         fill(currentDir);
+
+        IntentFilter filter;
+
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if (intent.getAction() != null) {
+
+                    if (intent.getAction().equalsIgnoreCase(Constants.ACTION.FILE_CHOOSE_CONFIRM_BUTTON_SHOW)) {
+                        //Log.d(TAG, "receive FILE_CHOOSE_CONFIRM_BUTTON_SHOW !");
+                        confirm.setVisibility(View.VISIBLE);
+
+
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.FILE_CHOOSE_CONFIRM_BUTTON_HIDE)) {
+                        //Log.d(TAG, "receive FILE_CHOOSE_CONFIRM_BUTTON_SHOW !");
+                        confirm.setVisibility(View.GONE);
+                    }
+                }
+            }
+        };
+
+        if (!isRegister) {
+            filter = new IntentFilter();
+            filter.addAction(Constants.ACTION.FILE_CHOOSE_CONFIRM_BUTTON_SHOW);
+            filter.addAction(Constants.ACTION.FILE_CHOOSE_CONFIRM_BUTTON_HIDE);
+            registerReceiver(mReceiver, filter);
+            isRegister = true;
+            Log.d(TAG, "registerReceiver mReceiver");
+        }
     }
 
     @Override
     protected void onDestroy() {
         FileChooseLongClick = false;
         FileChooseSelectAll = false;
+
+        if (isRegister && mReceiver != null) {
+            try {
+                unregisterReceiver(mReceiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            isRegister = false;
+            mReceiver = null;
+        }
+
         super.onDestroy();
     }
 

@@ -1,62 +1,46 @@
 package com.seventhmoon.jamnow;
 
-import android.app.AlertDialog;
+
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
+
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.TextView;
+
 import android.widget.Toast;
 
 import com.seventhmoon.jamnow.Data.Constants;
-import com.seventhmoon.jamnow.Data.SongArrayAdapter;
+
 import com.seventhmoon.jamnow.Data.VideoItem;
 import com.seventhmoon.jamnow.Data.VideoItemArrayAdapter;
-import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
+
 import com.seventhmoon.jamnow.Service.GetThumbImageService;
 import com.seventhmoon.jamnow.Service.GetVideoListFromRecordService;
-import com.seventhmoon.jamnow.Service.SaveListToFileService;
+
 import com.seventhmoon.jamnow.Service.SaveVideoListToFileService;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
-import static android.content.Context.MODE_PRIVATE;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
-import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_AB_LOOP;
-import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_ALL;
-import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_REPEAT;
-import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_SHUFFLE;
-import static com.seventhmoon.jamnow.MainActivity.addSongList;
+
 import static com.seventhmoon.jamnow.MainActivity.addVideoList;
-import static com.seventhmoon.jamnow.MainActivity.current_mode;
-import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
+
 import static com.seventhmoon.jamnow.MainActivity.current_video_position;
 import static com.seventhmoon.jamnow.MainActivity.item_clear;
 import static com.seventhmoon.jamnow.MainActivity.item_remove;
 import static com.seventhmoon.jamnow.MainActivity.loadDialog;
-import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
-import static com.seventhmoon.jamnow.MainActivity.progress_mark_a;
-import static com.seventhmoon.jamnow.MainActivity.progress_mark_b;
-import static com.seventhmoon.jamnow.MainActivity.seekBar;
-import static com.seventhmoon.jamnow.MainActivity.songArrayAdapter;
-import static com.seventhmoon.jamnow.MainActivity.songList;
-import static com.seventhmoon.jamnow.MainActivity.song_selected;
-import static com.seventhmoon.jamnow.MainActivity.textA;
-import static com.seventhmoon.jamnow.MainActivity.textB;
+
 import static com.seventhmoon.jamnow.MainActivity.videoItemArrayAdapter;
 import static com.seventhmoon.jamnow.MainActivity.videoList;
 import static com.seventhmoon.jamnow.MainActivity.video_selected;
@@ -82,7 +66,7 @@ public class VideoFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         Log.d(TAG, "onCreateView");
@@ -91,7 +75,7 @@ public class VideoFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.video_fragment, container, false);
 
-        myGridview = (GridView) view.findViewById(R.id.gridViewMyFavorite);
+        myGridview = view.findViewById(R.id.gridViewMyFavorite);
 
         myGridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -149,15 +133,17 @@ public class VideoFragment extends Fragment {
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE)) {
 
-                    if (videoList.size() > 0) {
+                if (intent.getAction() != null) {
+                    if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE)) {
 
-                        videoItemArrayAdapter = new VideoItemArrayAdapter(context, R.layout.video_choose_item, videoList);
-                        myGridview.setAdapter(videoItemArrayAdapter);
+                        if (videoList.size() > 0) {
 
-                        if (loadDialog != null)
-                            loadDialog.dismiss();
+                            videoItemArrayAdapter = new VideoItemArrayAdapter(context, R.layout.video_choose_item, videoList);
+                            myGridview.setAdapter(videoItemArrayAdapter);
+
+                            if (loadDialog != null)
+                                loadDialog.dismiss();
 
                         /*songArrayAdapter = new SongArrayAdapter(context, R.layout.music_list_item, songList);
                         myListview.setAdapter(songArrayAdapter);
@@ -220,6 +206,72 @@ public class VideoFragment extends Fragment {
                             }
                         }*/
 
+                            //show item
+                            if (item_remove != null) {
+                                item_remove.setVisible(true);
+                            }
+                            if (item_clear != null) {
+                                item_clear.setVisible(true);
+                            }
+
+                            //get video thumb
+                            Intent myintent = new Intent(context, GetThumbImageService.class);
+                            myintent.setAction(Constants.ACTION.GET_THUMB_IMAGE_ACTION);
+                            context.startService(myintent);
+
+                        } else {
+                            if (loadDialog != null)
+                                loadDialog.dismiss();
+
+                            if (item_remove != null) {
+                                item_remove.setVisible(false);
+                            }
+                            if (item_clear != null) {
+                                item_clear.setVisible(false);
+                            }
+
+                            toast(getResources().getString(R.string.list_empty));
+                        }
+
+
+
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_VIDEO_LIST_COMPLETE)) {
+                        Log.d(TAG, "receive ADD_VIDEO_LIST_COMPLETE !");
+
+
+                        for (int i=0; i<addVideoList.size(); i++) {
+                            videoList.add(addVideoList.get(i));
+                            Log.d(TAG, "add "+addVideoList.get(i).getName()+" to videoList");
+                        }
+
+                        //mediaOperation.shuffleReset();
+                        //mediaOperation.setShufflePosition(0);
+
+                        if (videoItemArrayAdapter == null) {
+                            videoItemArrayAdapter = new VideoItemArrayAdapter(context, R.layout.video_choose_item, videoList);
+                            myGridview.setAdapter(videoItemArrayAdapter);
+                        } else {
+                            Log.e(TAG, "notifyDataSetChanged");
+                            videoItemArrayAdapter.notifyDataSetChanged();
+                        }
+
+
+
+                        Intent saveintent = new Intent(context, SaveVideoListToFileService.class);
+                        saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
+                        saveintent.putExtra("FILENAME", "video_favorite");
+                        context.startService(saveintent);
+
+                        loadDialog = new ProgressDialog(context);
+                        loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        loadDialog.setTitle("Saving...");
+                        loadDialog.setIndeterminate(false);
+                        loadDialog.setCancelable(false);
+
+                        loadDialog.show();
+
+                        //clear list
+
                         //show item
                         if (item_remove != null) {
                             item_remove.setVisible(true);
@@ -233,78 +285,15 @@ public class VideoFragment extends Fragment {
                         myintent.setAction(Constants.ACTION.GET_THUMB_IMAGE_ACTION);
                         context.startService(myintent);
 
-                    } else {
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_THUMB_IMAGE_COMPLETE)) {
+                        videoItemArrayAdapter.notifyDataSetChanged();
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_VIDEOLIST_TO_FILE_COMPLETE)) {
                         if (loadDialog != null)
                             loadDialog.dismiss();
-
-                        if (item_remove != null) {
-                            item_remove.setVisible(false);
-                        }
-                        if (item_clear != null) {
-                            item_clear.setVisible(false);
-                        }
-
-                        toast(getResources().getString(R.string.list_empty));
                     }
-
-
-
-                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.ADD_VIDEO_LIST_COMPLETE)) {
-                    Log.d(TAG, "receive ADD_VIDEO_LIST_COMPLETE !");
-
-
-                    for (int i=0; i<addVideoList.size(); i++) {
-                        videoList.add(addVideoList.get(i));
-                        Log.d(TAG, "add "+addVideoList.get(i).getName()+" to videoList");
-                    }
-
-                    //mediaOperation.shuffleReset();
-                    //mediaOperation.setShufflePosition(0);
-
-                    if (videoItemArrayAdapter == null) {
-                        videoItemArrayAdapter = new VideoItemArrayAdapter(context, R.layout.video_choose_item, videoList);
-                        myGridview.setAdapter(videoItemArrayAdapter);
-                    } else {
-                        Log.e(TAG, "notifyDataSetChanged");
-                        videoItemArrayAdapter.notifyDataSetChanged();
-                    }
-
-
-
-                    Intent saveintent = new Intent(context, SaveVideoListToFileService.class);
-                    saveintent.setAction(Constants.ACTION.SAVE_SONGLIST_ACTION);
-                    saveintent.putExtra("FILENAME", "video_favorite");
-                    context.startService(saveintent);
-
-                    loadDialog = new ProgressDialog(context);
-                    loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                    loadDialog.setTitle("Saving...");
-                    loadDialog.setIndeterminate(false);
-                    loadDialog.setCancelable(false);
-
-                    loadDialog.show();
-
-                    //clear list
-
-                    //show item
-                    if (item_remove != null) {
-                        item_remove.setVisible(true);
-                    }
-                    if (item_clear != null) {
-                        item_clear.setVisible(true);
-                    }
-
-                    //get video thumb
-                    Intent myintent = new Intent(context, GetThumbImageService.class);
-                    myintent.setAction(Constants.ACTION.GET_THUMB_IMAGE_ACTION);
-                    context.startService(myintent);
-
-                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_THUMB_IMAGE_COMPLETE)) {
-                    videoItemArrayAdapter.notifyDataSetChanged();
-                } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_VIDEOLIST_TO_FILE_COMPLETE)) {
-                    if (loadDialog != null)
-                        loadDialog.dismiss();
                 }
+
+
             }
         };
 

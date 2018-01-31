@@ -5,38 +5,27 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
+
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
-import android.media.ThumbnailUtils;
-import android.media.session.MediaController;
+
 import android.os.Build;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.Display;
-import android.view.GestureDetector;
+
+import android.support.annotation.NonNull;
+
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.VideoView;
+
 
 
 import com.seventhmoon.jamnow.R;
-import com.seventhmoon.jamnow.VideoFragment;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 
 
@@ -77,7 +66,7 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
         return items.get(position);
     }
     @Override
-    public View getView(int position, View convertView, final ViewGroup parent) {
+    public @NonNull View getView(int position, View convertView, @NonNull final ViewGroup parent) {
 
         //Log.e(TAG, "getView = "+ position);
         View view;
@@ -219,9 +208,9 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
 
 
         private ViewHolder(View view) {
-            this.videoicon = (ImageView) view.findViewById(R.id.imageView);
+            this.videoicon = view.findViewById(R.id.imageView);
             //this.videoView = (VideoView) view.findViewById(R.id.videoView);
-            this.videoname = (TextView) view.findViewById(R.id.itemText);
+            this.videoname = view.findViewById(R.id.itemText);
             //this.videotime = (TextView) view.findViewById(R.id.songTime);
         }
     }

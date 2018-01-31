@@ -1,6 +1,6 @@
 package com.seventhmoon.jamnow.Data;
 
-import android.graphics.Bitmap;
+
 
 public class Song {
 	private String name;

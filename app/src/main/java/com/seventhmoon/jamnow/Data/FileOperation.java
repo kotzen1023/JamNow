@@ -19,7 +19,7 @@ public class FileOperation {
 
     private static final String TAG = FileOperation.class.getName();
 
-    public static File RootDirectory = new File("/");
+    private static File RootDirectory = new File("/");
 
 
     public static boolean init_folder_and_files() {

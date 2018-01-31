@@ -1,9 +1,11 @@
 package com.seventhmoon.jamnow.Data;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -21,7 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import static com.seventhmoon.jamnow.FileChooseActivity.FileChooseLongClick;
-import static com.seventhmoon.jamnow.FileChooseActivity.confirm;
+
 
 
 
@@ -33,12 +35,14 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
     private int layoutResourceId;
     private ArrayList<FileChooseItem> items = new ArrayList<>();
     private int count = 0;
+    private Context context;
 
     public FileChooseArrayAdapter(Context context, int textViewResourceId,
                                   ArrayList<FileChooseItem> objects) {
         super(context, textViewResourceId, objects);
         this.layoutResourceId = textViewResourceId;
         this.items = objects;
+        this.context = context;
 
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mSparseBooleanArray = new SparseBooleanArray();
@@ -56,7 +60,7 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
     }
     @Override
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public @NonNull View getView(int position, View convertView,@NonNull ViewGroup parent) {
 
         //Log.e(TAG, "getView = "+ position);
         View view;
@@ -88,8 +92,8 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
             holder.filename.setText(fileChooseItem.getName());
             holder.checkbox.setTag(position);
 
-            TextView t1 = (TextView) view.findViewById(R.id.fileChooseFileName);
-            CheckBox ck = (CheckBox) view.findViewById(R.id.checkBoxInRow);
+            TextView t1 = view.findViewById(R.id.fileChooseFileName);
+            CheckBox ck = view.findViewById(R.id.checkBoxInRow);
             //TextView t2 = (TextView) v.findViewById(R.id.TextView02);
             //TextView t3 = (TextView) v.findViewById(R.id.TextViewDate);
                        /* Take the ImageView from layout and set the city's image */
@@ -144,7 +148,7 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
                     bitmap = BitmapFactory.decodeResource(view.getResources(), R.drawable.folder);
                 }
                 bm = Bitmap.createScaledBitmap(bitmap, 50, 50, true);
-                ImageView imageCity = (ImageView) view.findViewById(R.id.fd_Icon1);
+                ImageView imageCity =  view.findViewById(R.id.fd_Icon1);
                 //String uri = "drawable/" + o.getImage();
                 //int imageResource = c.getResources().getIdentifier(uri, null, c.getPackageName());
                 //Drawable image = c.getResources().getDrawable(imageResource);
@@ -195,11 +199,19 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
 
             //Log.e(TAG, "Count = "+count);
 
+            Intent newNotifyIntent = new Intent();
+
             if (count > 0) {
-                confirm.setVisibility(View.VISIBLE);
+                newNotifyIntent.setAction(Constants.ACTION.FILE_CHOOSE_CONFIRM_BUTTON_SHOW);
+
+                //confirm.setVisibility(View.VISIBLE);
             } else  {
-                confirm.setVisibility(View.GONE);
+
+                newNotifyIntent.setAction(Constants.ACTION.FILE_CHOOSE_CONFIRM_BUTTON_HIDE);
+
+                //confirm.setVisibility(View.GONE);
             }
+            context.sendBroadcast(newNotifyIntent);
         }
     };
 
@@ -210,9 +222,9 @@ public class FileChooseArrayAdapter extends ArrayAdapter<FileChooseItem> {
 
 
         private ViewHolder(View view) {
-            this.fileicon = (ImageView) view.findViewById(R.id.fd_Icon1);
-            this.filename = (TextView) view.findViewById(R.id.fileChooseFileName);
-            this.checkbox = (CheckBox) view.findViewById(R.id.checkBoxInRow);
+            this.fileicon = view.findViewById(R.id.fd_Icon1);
+            this.filename = view.findViewById(R.id.fileChooseFileName);
+            this.checkbox = view.findViewById(R.id.checkBoxInRow);
         }
     }
 }

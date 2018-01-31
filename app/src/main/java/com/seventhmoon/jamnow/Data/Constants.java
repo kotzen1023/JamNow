@@ -29,6 +29,9 @@ public class Constants {
 
         String GET_THUMB_IMAGE_ACTION = "com.seventhmoon.JamNow.GetThumbImageAction";
         String GET_THUMB_IMAGE_COMPLETE = "com.seventhmoon.JamNow.GetThumbImageComplete";
+
+        String FILE_CHOOSE_CONFIRM_BUTTON_SHOW = "com.seventhmoon.JamNow.FileChooseConfirmButtonShow";
+        String FILE_CHOOSE_CONFIRM_BUTTON_HIDE = "com.seventhmoon.JamNow.FileChooseConfirmButtonHide";
     }
 
     public enum STATE {

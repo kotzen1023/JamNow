@@ -15,7 +15,7 @@ import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -33,7 +33,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import android.widget.RelativeLayout;
+
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,8 +55,6 @@ import static com.seventhmoon.jamnow.MainActivity.current_volume;
 import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
 
 
-import static com.seventhmoon.jamnow.MainActivity.progress_mark_b;
-import static com.seventhmoon.jamnow.MainActivity.seekBar;
 import static com.seventhmoon.jamnow.MainActivity.videoList;
 import static com.seventhmoon.jamnow.MainActivity.video_selected;
 import static com.seventhmoon.jamnow.MainActivity.current_video_position;
@@ -71,23 +69,23 @@ public class VideoPlayActivity extends AppCompatActivity {
     private static final String FILE_NAME = "Preference";
     //private MediaController mediacontroller;
     private ImageView videoPlayOrPause;
-    private ImageView imgVolumeChange;
-    private ImageView imgFullScreen;
-    private ImageView btnVideoMarkA;
-    private ImageView btnVideoMarkB;
-    private ImageView btnVideoClear;
+    //private ImageView imgVolumeChange;
+    //private ImageView imgFullScreen;
+    //private ImageView btnVideoMarkA;
+    //private ImageView btnVideoMarkB;
+    //private ImageView btnVideoClear;
     private EditText textVideoA;
     private EditText textVideoB;
     private LinearLayout linearLayoutMain;
     private LinearLayout linearLayoutTop;
     private LinearLayout linearSeekBar;
-    private LinearLayout linear_ab_loop;
+    //private LinearLayout linear_ab_loop;
     private LinearLayout linearLayoutDown;
-    private LinearLayout screenOfVideoView;
+    //private LinearLayout screenOfVideoView;
     private VideoView videoView;
     private boolean is_playing = false;
     private boolean is_fullscreen = false;
-    private ActionBar actionBar;
+    //private ActionBar actionBar;
     private DottedSeekBar seekBar;
     private SeekBar seekSpeedBar;
     private TextView textViewSpeed;
@@ -146,33 +144,33 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         pref = getSharedPreferences(FILE_NAME, MODE_PRIVATE);
 
-        actionBar = getSupportActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
             actionBar.hide();
 
 
         //videoPlayOrPause = (ImageView) findViewById(R.id.imgVideoPlayOrPause);
-        videoDuration = (TextView) findViewById(R.id.textVideoDuration);
-        videoView = (VideoView) findViewById(R.id.videoView);
-        seekBar = (DottedSeekBar) findViewById(R.id.seekBarVideoTime);
-        textViewSpeed = (TextView) findViewById(R.id.textSpeedVideo);
-        seekSpeedBar = (SeekBar) findViewById(R.id.seekBarVideoSpeed);
-        videoPlayOrPause = (ImageView) findViewById(R.id.imgVideoPlayOrPause);
-        imgVolumeChange = (ImageView) findViewById(R.id.imgVolume);
-        imgFullScreen = (ImageView) findViewById(R.id.imgFullScreen);
+        videoDuration = findViewById(R.id.textVideoDuration);
+        videoView = findViewById(R.id.videoView);
+        seekBar = findViewById(R.id.seekBarVideoTime);
+        textViewSpeed = findViewById(R.id.textSpeedVideo);
+        seekSpeedBar = findViewById(R.id.seekBarVideoSpeed);
+        videoPlayOrPause = findViewById(R.id.imgVideoPlayOrPause);
+        ImageView imgVolumeChange = findViewById(R.id.imgVolume);
+        ImageView imgFullScreen = findViewById(R.id.imgFullScreen);
 
-        linearLayoutMain = (LinearLayout) findViewById(R.id.layout_video_play);
-        linearLayoutTop = (LinearLayout) findViewById(R.id.linearTop);
-        linearSeekBar = (LinearLayout) findViewById(R.id.linearSeekBar);
-        linear_ab_loop = (LinearLayout) findViewById(R.id.linear_ab_loop);
-        linearLayoutDown = (LinearLayout) findViewById(R.id.linearDown);
-        screenOfVideoView = (LinearLayout) findViewById(R.id.screenOfVideoView);
+        linearLayoutMain = findViewById(R.id.layout_video_play);
+        linearLayoutTop = findViewById(R.id.linearTop);
+        linearSeekBar = findViewById(R.id.linearSeekBar);
+        //linear_ab_loop = findViewById(R.id.linear_ab_loop);
+        linearLayoutDown = findViewById(R.id.linearDown);
+        //screenOfVideoView = findViewById(R.id.screenOfVideoView);
 
-        btnVideoMarkA = (ImageView) findViewById(R.id.btnVideoMarkA);
-        btnVideoMarkB = (ImageView) findViewById(R.id.btnVideoMarkB);
-        btnVideoClear = (ImageView) findViewById(R.id.btnVideoClear);
-        textVideoA = (EditText) findViewById(R.id.textViewVideoA);
-        textVideoB = (EditText) findViewById(R.id.textViewVideoB);
+        ImageView btnVideoMarkA = findViewById(R.id.btnVideoMarkA);
+        ImageView btnVideoMarkB = findViewById(R.id.btnVideoMarkB);
+        ImageView btnVideoClear = findViewById(R.id.btnVideoClear);
+        textVideoA = findViewById(R.id.textViewVideoA);
+        textVideoB = findViewById(R.id.textViewVideoB);
 
         //set videoview center
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -207,11 +205,12 @@ public class VideoPlayActivity extends AppCompatActivity {
 
             int minisec = (videoList.get(video_selected).getMark_a()) % 1000;
 
-
-            textVideoA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+            String msg = f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec);
+            textVideoA.setText(msg);
             setVideoDuration(videoList.get(video_selected).getMark_a());
         } else {
-            textVideoA.setText("00:00.000");
+            String msg = "00:00.000";
+            textVideoA.setText(msg);
             setVideoDuration(0);
         }
 
@@ -227,10 +226,11 @@ public class VideoPlayActivity extends AppCompatActivity {
 
             int minisec = (videoList.get(video_selected).getMark_b()) % 1000;
 
-
-            textVideoB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+            String msg = f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec);
+            textVideoB.setText(msg);
         } else {
-            textVideoB.setText("00:00.000");
+            String msg = "00:00.000";
+            textVideoB.setText(msg);
         }
 
 
@@ -997,7 +997,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         int minisec = (timeStamp%1000);
 
-        videoDuration.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+        String msg = f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec);
+        videoDuration.setText(msg);
     }
 
     private void setTextVideoA(double duration) {
@@ -1010,8 +1011,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         int minisec = (int) duration % 1000;
 
-
-        textVideoA.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+        String msg = f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec);
+        textVideoA.setText(msg);
     }
 
     private void setTextVideoB(double duration) {
@@ -1024,8 +1025,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         int minisec = (int) duration % 1000;
 
-
-        textVideoB.setText(f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec));
+        String msg = f.format(minutes) + ":" + f.format(seconds) + "." + f2.format(minisec);
+        textVideoB.setText(msg);
     }
 
     private class videoplaytask extends AsyncTask<Integer, Integer, String>
@@ -1247,8 +1248,8 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         alertDialogBuilder.setView(promptView);
 
-        final TextView textVolume = (TextView) promptView.findViewById(R.id.textVolume);
-        final SeekBar seekbarVolume = (SeekBar) promptView.findViewById(R.id.seekBarVolume);
+        final TextView textVolume = promptView.findViewById(R.id.textVolume);
+        final SeekBar seekbarVolume = promptView.findViewById(R.id.seekBarVolume);
 
         current_volume = mediaOperation.getCurrent_volume();
 

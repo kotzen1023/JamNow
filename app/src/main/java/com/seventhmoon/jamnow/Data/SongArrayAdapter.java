@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 //import android.util.Log;
 //import android.util.SparseBooleanArray;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +56,7 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
         return items.get(position);
     }
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public @NonNull View getView(int position, View convertView,@NonNull ViewGroup parent) {
 
         //Log.e(TAG, "getView = "+ position);
         View view;
@@ -105,12 +106,15 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
             holder.songicon.setImageBitmap(bitmap);
             holder.songname.setText(songItem.getName());
             //holder.songtime.setText(f.format(minutes)+":"+f.format(seconds)+"."+f2.format(minisec));
+            String msg;
             if (seconds > 1) {
-                holder.songtime.setText(minutes+":"+f.format(seconds));
+                msg = minutes+":"+f.format(seconds);
+                //holder.songtime.setText(msg);
             } else {
-                holder.songtime.setText(seconds+"."+f2.format(minisec));
+                msg = seconds+"."+f2.format(minisec);
+                //holder.songtime.setText();
             }
-
+            holder.songtime.setText(msg);
 
 
             if (songItem.isSelected()) {
@@ -141,9 +145,9 @@ public class SongArrayAdapter extends ArrayAdapter<Song> {
 
 
         private ViewHolder(View view) {
-            this.songicon = (ImageView) view.findViewById(R.id.songIcon);
-            this.songname = (TextView) view.findViewById(R.id.songName);
-            this.songtime = (TextView) view.findViewById(R.id.songTime);
+            this.songicon = view.findViewById(R.id.songIcon);
+            this.songname = view.findViewById(R.id.songName);
+            this.songtime = view.findViewById(R.id.songTime);
         }
     }
 }
