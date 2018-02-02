@@ -33,18 +33,22 @@ public class GetThumbImageService extends IntentService {
 
         Log.i(TAG, "Handle");
 
-        if (intent.getAction().equals(Constants.ACTION.GET_THUMB_IMAGE_ACTION)) {
-            Log.i(TAG, "GET_THUMB_IMAGE_ACTION");
-        }
+        if (intent.getAction() != null) {
+            if (intent.getAction().equals(Constants.ACTION.GET_THUMB_IMAGE_ACTION)) {
+                Log.i(TAG, "GET_THUMB_IMAGE_ACTION");
+            }
 
-        if (videoList.size() > 0) {
-            for (int i=0; i<videoList.size(); i++) {
-                Bitmap thumb = ThumbnailUtils.createVideoThumbnail(videoList.get(0).getPath(),
-                        MediaStore.Images.Thumbnails.MINI_KIND);
+            if (videoList.size() > 0) {
+                for (int i=0; i<videoList.size(); i++) {
+                    Bitmap thumb = ThumbnailUtils.createVideoThumbnail(videoList.get(0).getPath(),
+                            MediaStore.Images.Thumbnails.MINI_KIND);
 
-                videoList.get(i).setBitmap(thumb);
+                    videoList.get(i).setBitmap(thumb);
+                }
             }
         }
+
+
 
     }
 

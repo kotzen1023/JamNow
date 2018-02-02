@@ -44,50 +44,54 @@ public class GetSongListFromRecordService extends IntentService {
         String filename = intent.getStringExtra("FILENAME");
 
 
-        if (intent.getAction().equals(Constants.ACTION.GET_SONGLIST_ACTION)) {
-            Log.i(TAG, "GET_SONGLIST_ACTION");
-        }
-
-        if (check_record_exist("favorite")) {
-            Log.d(TAG, "load file success!");
-
-
-            String message = read_record(filename);
-            //Log.d(TAG, "message = "+ message);
-            String msg[] = message.split("\\|");
-
-            //Log.d(TAG, "msg[0] = "+ msg[0]);
-
-
-
-
-            for (int i=0; i<msg.length; i++) {
-
-                Log.d(TAG, "msg["+i+"] = "+ msg[i]);
-                String info[] = msg[i].split(";");
-
-
-
-                Song new_song = new Song();
-                File file = new File(info[0]); //path
-
-
-
-                if (check_file_exist(info[0])) { // if file exist, then add
-
-
-
-                    new_song.setName(file.getName());
-                    new_song.setPath(info[0]);
-                    new_song.setDuration_u(Long.valueOf(info[1]));
-                    new_song.setMark_a(Integer.valueOf(info[2]));
-                    new_song.setMark_b(Integer.valueOf(info[3]));
-
-                    songList.add(new_song);
-                }
+        if (intent.getAction() != null) {
+            if (intent.getAction().equals(Constants.ACTION.GET_SONGLIST_ACTION)) {
+                Log.i(TAG, "GET_SONGLIST_ACTION");
             }
 
+            if (check_record_exist("favorite")) {
+                Log.d(TAG, "load file success!");
+
+
+                String message = read_record(filename);
+                //Log.d(TAG, "message = "+ message);
+                String msg[] = message.split("\\|");
+
+                //Log.d(TAG, "msg[0] = "+ msg[0]);
+
+
+
+
+                for (int i=0; i<msg.length; i++) {
+
+                    Log.d(TAG, "msg["+i+"] = "+ msg[i]);
+                    String info[] = msg[i].split(";");
+
+
+
+                    Song new_song = new Song();
+                    File file = new File(info[0]); //path
+
+
+
+                    if (check_file_exist(info[0])) { // if file exist, then add
+
+
+
+                        new_song.setName(file.getName());
+                        new_song.setPath(info[0]);
+                        new_song.setDuration_u(Long.valueOf(info[1]));
+                        new_song.setMark_a(Integer.valueOf(info[2]));
+                        new_song.setMark_b(Integer.valueOf(info[3]));
+
+                        songList.add(new_song);
+                    }
+                }
+
+            }
         }
+
+
     }
 
     @Override

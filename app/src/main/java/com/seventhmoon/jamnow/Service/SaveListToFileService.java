@@ -8,9 +8,9 @@ import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.FileOperation;
 
 import static com.seventhmoon.jamnow.Data.FileOperation.clear_record;
-import static com.seventhmoon.jamnow.Data.FileOperation.read_record;
+
 import static com.seventhmoon.jamnow.MainActivity.songList;
-import static com.seventhmoon.jamnow.MainActivity.videoList;
+
 
 
 public class SaveListToFileService extends IntentService {
@@ -34,29 +34,32 @@ public class SaveListToFileService extends IntentService {
 
         Log.i(TAG, "Handle");
 
-        String filename = intent.getStringExtra("FILENAME");
+        //String filename = intent.getStringExtra("FILENAME");
 
-
-        if (intent.getAction().equals(Constants.ACTION.SAVE_SONGLIST_ACTION)) {
-            Log.i(TAG, "SAVE_SONGLIST_ACTION");
-        }
-
-        //clear list
-        clear_record("favorite");
-
-        //write list file
-        for (int i=0; i<songList.size(); i++) {
-            String msg;
-            if (i== 0) {
-                msg = songList.get(i).getPath()+";"+
-                        songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
-            } else {
-                msg = "|"+songList.get(i).getPath()+";"+
-                        songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+        if (intent.getAction() != null) {
+            if (intent.getAction().equals(Constants.ACTION.SAVE_SONGLIST_ACTION)) {
+                Log.i(TAG, "SAVE_SONGLIST_ACTION");
             }
 
-            FileOperation.append_record(msg, "favorite");
+            //clear list
+            clear_record("favorite");
+
+            //write list file
+            for (int i=0; i<songList.size(); i++) {
+                String msg;
+                if (i== 0) {
+                    msg = songList.get(i).getPath()+";"+
+                            songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                } else {
+                    msg = "|"+songList.get(i).getPath()+";"+
+                            songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                }
+
+                FileOperation.append_record(msg, "favorite");
+            }
         }
+
+
     }
 
     @Override

@@ -83,7 +83,7 @@ public class VideoPlayActivity extends AppCompatActivity {
     private LinearLayout linearLayoutDown;
     //private LinearLayout screenOfVideoView;
     private VideoView videoView;
-    private boolean is_playing = false;
+    //private boolean is_playing = false;
     private boolean is_fullscreen = false;
     //private ActionBar actionBar;
     private DottedSeekBar seekBar;

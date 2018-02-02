@@ -46,17 +46,20 @@ public class SearchFileService extends IntentService {
 
         //String filename = intent.getStringExtra("FILENAME");
 
+        if (intent.getAction() != null) {
+            if (intent.getAction().equals(Constants.ACTION.GET_SEARCHLIST_ACTION)) {
+                Log.i(TAG, "GET_SEARCHLIST_ACTION");
+            }
 
-        if (intent.getAction().equals(Constants.ACTION.GET_SEARCHLIST_ACTION)) {
-            Log.i(TAG, "GET_SEARCHLIST_ACTION");
+            //clear add list
+            addSongList.clear();
+            //clear video add list
+            addVideoList.clear();
+
+            searchFiles();
         }
 
-        //clear add list
-        addSongList.clear();
-        //clear video add list
-        addVideoList.clear();
 
-        searchFiles();
     }
 
     @Override

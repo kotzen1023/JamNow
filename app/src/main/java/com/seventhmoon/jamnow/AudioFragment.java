@@ -1,6 +1,6 @@
 package com.seventhmoon.jamnow;
 
-import android.app.AlertDialog;
+
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -130,7 +130,7 @@ public class AudioFragment extends Fragment {
     //private static String currentAcitonBarTitle;
     //public static boolean isPlayPress = false;
 
-    private static AlertDialog dialog = null;
+    //private static AlertDialog dialog = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

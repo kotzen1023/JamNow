@@ -47,7 +47,7 @@ public class MediaOperation {
     private int ab_loop_start = 0;
     private int ab_loop_end = 0;
 
-    private boolean taskDone = true;
+    //private boolean taskDone = true;
 
     private STATE current_state = STATE.Created;
 
