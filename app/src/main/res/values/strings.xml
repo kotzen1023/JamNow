@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Jam Now</string>
+    <string name="app_name">Jam Player</string>
     <string name="play_mode_all">All</string>
     <string name="play_mode_shuffle">Shuffle</string>
     <string name="play_mode_repeat">Single Repeat</string>
@@ -23,4 +23,15 @@
     <string name="song_list_empty">Song list is empty</string>
     <string name="list_empty">Play list is empty. Try to use \"add\" button to add songs to your list!</string>
     <string name="play_mode_video">Video</string>
+    <string name="menu_link">URL</string>
+    <string name="add_local">From this device</string>
+    <string name="add_remote">From remote(Samba)</string>
+    <string name="remote_menu_refresh">Refresh</string>
+    <string name="remote_menu_remove">Remove</string>
+    <string name="remote_menu_modify">Modify</string>
+    <string name="hint_server_name">Server Name</string>
+    <string name="hint_server_address">Server Address</string>
+    <string name="hint_server_port">"Server Port "</string>
+    <string name="hint_server_auth">Account Name</string>
+    <string name="hint_server_password">Password</string>
 </resources>

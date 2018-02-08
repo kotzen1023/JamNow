@@ -3,9 +3,11 @@ package com.seventhmoon.jamnow.Data;
 
 import android.graphics.Bitmap;
 import android.widget.ImageView;
+import android.widget.VideoView;
 
 public class VideoItem {
     private Bitmap bitmap;
+    private VideoView videoView;
     private String name;
     private String path;
     //private byte channel;
@@ -25,6 +27,14 @@ public class VideoItem {
 
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
+    }
+
+    public VideoView getVideoView() {
+        return videoView;
+    }
+
+    public void setVideoView(VideoView videoView) {
+        this.videoView = videoView;
     }
 
     public String getName() {

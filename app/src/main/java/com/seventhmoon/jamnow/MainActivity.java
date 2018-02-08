@@ -1,5 +1,6 @@
 package com.seventhmoon.jamnow;
 
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
@@ -41,6 +42,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -59,6 +61,8 @@ import com.seventhmoon.jamnow.Data.VideoItemArrayAdapter;
 
 import com.seventhmoon.jamnow.Service.SaveListToFileService;
 import com.seventhmoon.jamnow.Service.SaveVideoListToFileService;
+
+
 
 
 import java.text.DecimalFormat;
@@ -165,6 +169,8 @@ public class MainActivity extends AppCompatActivity {
     private static AlertDialog dialog = null;
 
     public static MenuItem item_remove, item_clear;
+
+    public static boolean isVideoPreview = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -363,10 +369,19 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.action_add:
+                showInputDialog();
 
-                intent = new Intent(MainActivity.this, FileChooseActivity.class);
-                startActivity(intent);
+
+                //intent = new Intent(MainActivity.this, FileChooseActivity.class);
+                //startActivity(intent);
                 break;
+
+            //case R.id.action_link:
+            //    showInputDialog();
+
+            //    break;
+
+
             case R.id.action_play_all:
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_all_inclusive_white_48dp);
                 currentAcitonBarTitle = getResources().getString(R.string.play_mode_all);
@@ -972,11 +987,17 @@ public class MainActivity extends AppCompatActivity {
         //        android.Manifest.permission.WRITE_CALENDAR);
         int locationPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+        int networkPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.INTERNET);
+
         //int cameraPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
 
         List<String> listPermissionsNeeded = new ArrayList<>();
         if (locationPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+
+        if (networkPermission != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(android.Manifest.permission.INTERNET);
         }
         //if (permissionSendMessage != PackageManager.PERMISSION_GRANTED) {
         //    listPermissionsNeeded.add(android.Manifest.permission.WRITE_CALENDAR);
@@ -1307,5 +1328,69 @@ public class MainActivity extends AppCompatActivity {
             layout_seekbar_time.setOrientation(LinearLayout.VERTICAL);
 
         }
+    }
+
+    protected void showInputDialog() {
+
+        // get prompts.xml view
+        /*LayoutInflater layoutInflater = LayoutInflater.from(Nfc_read_app.this);
+        View promptView = layoutInflater.inflate(R.layout.input_dialog, null);*/
+        View promptView = View.inflate(MainActivity.this, R.layout.select_source_dialog, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setView(promptView);
+
+        //final EditText editFileName = (EditText) promptView.findViewById(R.id.editFileName);
+        //final EditText editUrlInput = promptView.findViewById(R.id.editUrlAddress);
+        final RadioButton radioBtnLocal = promptView.findViewById(R.id.radioBtnLocal);
+        final RadioButton radioBtnRemote = promptView.findViewById(R.id.radioBtnRemote);
+        //final EditText editPlayerDown = promptView.findViewById(R.id.editResetPlayerDown);
+        //if (playerUp != null)
+        //    editPlayerUp.setText(playerUp);
+        //if (playerDown != null)
+        //    editPlayerDown.setText(playerDown);
+        // setup a dialog window
+        radioBtnLocal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radioBtnRemote.setChecked(false);
+            }
+        });
+
+        radioBtnRemote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radioBtnLocal.setChecked(false);
+            }
+        });
+
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setPositiveButton(getResources().getString(R.string.confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //resultText.setText("Hello, " + editText.getText());
+                //Log.e(TAG, "input password = " + editText.getText());
+
+                if (radioBtnLocal.isChecked()) {
+                    Log.d(TAG, "local checked");
+                    Intent intent = new Intent(MainActivity.this, FileChooseActivity.class);
+                    startActivity(intent);
+                } else if (radioBtnRemote.isChecked()) {
+                    Log.d(TAG, "remote checked");
+                    Intent intent = new Intent(MainActivity.this, RemoteActivity.class);
+                    startActivity(intent);
+                } else {
+                    Log.d(TAG, "no checked");
+                }
+
+
+
+            }
+        });
+        alertDialogBuilder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        alertDialogBuilder.show();
     }
 }

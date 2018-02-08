@@ -16,6 +16,12 @@
         app:showAsAction="ifRoom|withText" />
 
     <!--item
+        android:id="@+id/action_link"
+        android:title="@string/menu_link"
+        android:icon="@drawable/ic_link_white_24dp"
+        app:showAsAction="ifRoom|withText" /-->
+
+    <!--item
         android:id="@+id/action_selectall"
         android:title="@string/honey_key_all"
         android:icon="@drawable/ic_select_all_white_24dp"

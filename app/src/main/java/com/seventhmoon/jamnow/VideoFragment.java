@@ -7,6 +7,7 @@ import android.content.Context;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.session.MediaController;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -57,6 +58,7 @@ public class VideoFragment extends Fragment {
     private static BroadcastReceiver mReceiver = null;
     private static boolean isRegister = false;
     private int previous_selected = -1;
+    MediaController mediacontroller;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -124,6 +126,8 @@ public class VideoFragment extends Fragment {
                     startActivity(intent);
                 } else {
                     previous_selected = video_selected;
+
+
                 }
             }
         });
@@ -290,6 +294,18 @@ public class VideoFragment extends Fragment {
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_VIDEOLIST_TO_FILE_COMPLETE)) {
                         if (loadDialog != null)
                             loadDialog.dismiss();
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_FULLVIEW_ACTION)) {
+
+                        String mark_a = intent.getStringExtra("AB_LOOP_START");
+                        String mark_b = intent.getStringExtra("AB_LOOP_END");
+
+
+
+                        current_video_position = 0;
+                        Intent intentFullView = new Intent(context, VideoPlayActivity.class);
+                        intentFullView.putExtra("AB_LOOP_START", mark_a);
+                        intentFullView.putExtra("AB_LOOP_END", mark_b);
+                        startActivity(intentFullView);
                     }
                 }
 
@@ -318,6 +334,7 @@ public class VideoFragment extends Fragment {
             filter.addAction(Constants.ACTION.GET_VIDEOLIST_FROM_RECORD_FILE_COMPLETE);
             filter.addAction(Constants.ACTION.GET_THUMB_IMAGE_COMPLETE);
             filter.addAction(Constants.ACTION.SAVE_VIDEOLIST_TO_FILE_COMPLETE);
+            filter.addAction(Constants.ACTION.GET_FULLVIEW_ACTION);
 
             context.registerReceiver(mReceiver, filter);
             isRegister = true;

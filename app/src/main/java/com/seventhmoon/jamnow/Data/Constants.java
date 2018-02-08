@@ -32,6 +32,13 @@ public class Constants {
 
         String FILE_CHOOSE_CONFIRM_BUTTON_SHOW = "com.seventhmoon.JamNow.FileChooseConfirmButtonShow";
         String FILE_CHOOSE_CONFIRM_BUTTON_HIDE = "com.seventhmoon.JamNow.FileChooseConfirmButtonHide";
+
+        String GET_URLPATH_ACTION = "com.seventhmoon.JamNow.GetUrlPath";
+        String GET_FULLVIEW_ACTION = "com.seventhmoon.JamNow.GetFullViewAction";
+
+        String ADD_REMOTE_COMPLETE = "com.seventhmoon.JamNow.AddRemoteComplete";
+        String DELETE_REMOTE_COMPLETE = "com.seventhmoon.JamNow.DeleteRemoteComplete";
+        String MODIFY_REMOTE_COMPLETE = "com.seventhmoon.JamNow.ModifyRemoteComplete";
     }
 
     public enum STATE {

@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:allowBackup="true"
@@ -14,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,9 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".FileChooseActivity"></activity>
-        <activity android:name=".VideoPlayActivity"
-            android:configChanges="orientation|screenSize"></activity>
+        <activity android:name=".FileChooseActivity" />
+        <activity android:name=".RemoteActivity" />
+        <activity
+            android:name=".VideoPlayActivity"
+            android:configChanges="orientation|screenSize" />
 
         <service android:name=".Service.GetSongListFromRecordService" />
         <service android:name=".Service.GetVideoListFromRecordService" />
@@ -32,6 +36,8 @@
         <service android:name=".Service.SaveVideoListToFileService" />
         <service android:name=".Service.SearchFileService" />
         <service android:name=".Service.GetThumbImageService" />
+
+
     </application>
 
 </manifest>

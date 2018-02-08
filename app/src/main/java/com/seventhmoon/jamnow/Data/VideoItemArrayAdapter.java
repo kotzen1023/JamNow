@@ -2,31 +2,46 @@ package com.seventhmoon.jamnow.Data;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 
 import android.graphics.drawable.Drawable;
 
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 
+import android.os.Message;
 import android.support.annotation.NonNull;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.widget.VideoView;
 
 
 import com.seventhmoon.jamnow.R;
+import com.seventhmoon.jamnow.VideoPlayActivity;
 
 import java.util.ArrayList;
+
+import static com.seventhmoon.jamnow.MainActivity.current_video_position;
+import static com.seventhmoon.jamnow.MainActivity.current_volume;
+import static com.seventhmoon.jamnow.MainActivity.isVideoPreview;
+import static com.seventhmoon.jamnow.MainActivity.videoList;
+import static com.seventhmoon.jamnow.MainActivity.video_selected;
 
 
 public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
@@ -36,6 +51,9 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
     private int layoutResourceId;
     private ArrayList<VideoItem> items = new ArrayList<>();
     private Context context;
+    private MediaPlayer mediaPlayer;
+    private VideoView currentVideoView;
+
     //private Display display;
     //private android.widget.MediaController mediaController;
 
@@ -182,10 +200,68 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
             if (item.isSelected()) {
                 //Log.e(TAG, ""+position+" is selected.");
                 //view.setSelected(true);
+                //holder.progressBar.setVisibility(View.VISIBLE);
+                holder.videoicon.setVisibility(View.GONE);
+                holder.videoView.setVisibility(View.VISIBLE);
+                holder.videoView.setVideoURI(Uri.parse(item.getPath()));
+                //holder.videoView.setVideoPath(item.getPath());
+
+
+
+                holder.videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+
+                        holder.videoView.setVisibility(View.VISIBLE);
+                        holder.videoView.requestFocus();
+                        //holder.progressBar.setVisibility(View.GONE);
+
+                        mediaPlayer = mp;
+                        mediaPlayer.setVolume(current_volume, current_volume);
+                        Log.d(TAG, "onPrepared");
+                        isVideoPreview = true;
+                        holder.videoView.start();
+                        //videoView.start();
+                    }
+                });
+
+                holder.videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        Log.d(TAG, "onCompletion");
+                        holder.videoicon.setVisibility(View.VISIBLE);
+                        holder.videoView.setVisibility(View.GONE);
+                        isVideoPreview = false;
+                    }
+                });
+
+                holder.videoView.setOnTouchListener(new View.OnTouchListener() {
+
+                    public boolean onTouch(View v, MotionEvent event) {
+
+                        Log.e(TAG, "onTouch");
+
+                        Intent intent = new Intent(Constants.ACTION.GET_FULLVIEW_ACTION);
+                        intent.putExtra("AB_LOOP_START", String.valueOf(item.getMark_a()));
+                        intent.putExtra("AB_LOOP_END", String.valueOf(item.getMark_b()));
+                        context.sendBroadcast(intent);
+
+                        return false;
+                    }
+                });
+
+
                 view.setBackgroundColor(Color.rgb(0x4d, 0x90, 0xfe));
             } else {
                 //Log.e(TAG, ""+position+" clear.");
                 //view.setSelected(false);
+                //holder.progressBar.setVisibility(View.GONE);
+                holder.videoicon.setVisibility(View.VISIBLE);
+                holder.videoView.setVisibility(View.GONE);
+
+
+                holder.videoView.stopPlayback();
+                isVideoPreview = false;
                 view.setBackgroundColor(Color.TRANSPARENT);
             }
 
@@ -200,16 +276,20 @@ public class VideoItemArrayAdapter extends ArrayAdapter<VideoItem> {
         return view;
     }
 
+
+
     private class ViewHolder {
         ImageView videoicon;
-        //VideoView videoView;
+        ProgressBar progressBar;
+        VideoView videoView;
         TextView videoname;
         //TextView videotime;
 
 
         private ViewHolder(View view) {
             this.videoicon = view.findViewById(R.id.imageView);
-            //this.videoView = (VideoView) view.findViewById(R.id.videoView);
+            this.progressBar = view.findViewById(R.id.progressBar);
+            this.videoView = view.findViewById(R.id.videoView);
             this.videoname = view.findViewById(R.id.itemText);
             //this.videotime = (TextView) view.findViewById(R.id.songTime);
         }

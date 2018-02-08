@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">即興演奏</string>
+    <string name="app_name">Jam 撥放器</string>
     <string name="play_mode_all">全部撥放</string>
     <string name="play_mode_shuffle">隨機撥放</string>
     <string name="play_mode_repeat">單一重複</string>
@@ -23,4 +23,15 @@
     <string name="song_list_empty">播放清單為空</string>
     <string name="list_empty">播放清單為空. 試著按下\"新增\"按鈕來增加歌曲到你的播放清單!</string>
     <string name="play_mode_video">影片</string>
+    <string name="menu_link">網址</string>
+    <string name="add_local">從本機</string>
+    <string name="add_remote">從遠端(Samba)</string>
+    <string name="remote_menu_refresh">重整</string>
+    <string name="remote_menu_remove">移除</string>
+    <string name="remote_menu_modify">修改</string>
+    <string name="hint_server_name">伺服器名稱</string>
+    <string name="hint_server_address">伺服器位址</string>
+    <string name="hint_server_port">port</string>
+    <string name="hint_server_auth">帳號</string>
+    <string name="hint_server_password">密碼</string>
 </resources>

@@ -59,6 +59,9 @@ import static com.seventhmoon.jamnow.MainActivity.videoList;
 import static com.seventhmoon.jamnow.MainActivity.video_selected;
 import static com.seventhmoon.jamnow.MainActivity.current_video_position;
 
+
+
+
 public class VideoPlayActivity extends AppCompatActivity {
     private static final String TAG = VideoPlayActivity.class.getName();
 
@@ -135,6 +138,7 @@ public class VideoPlayActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
+        //boolean is_youtube =  intent.getBooleanExtra("IS_YOUTUBE", false);
         ab_loop_video_start = Integer.valueOf(intent.getStringExtra("AB_LOOP_START"));
         ab_loop_video_end = Integer.valueOf(intent.getStringExtra("AB_LOOP_END"));
 
@@ -234,9 +238,6 @@ public class VideoPlayActivity extends AppCompatActivity {
         }
 
 
-
-
-
         //mediacontroller = new MediaController(this);
         //mediacontroller.setAnchorView(videoView);
         //videoView.setMediaController(mediacontroller);
@@ -256,6 +257,9 @@ public class VideoPlayActivity extends AppCompatActivity {
             videoView.setForeground(f);
             videoView.setForegroundGravity(Gravity.CENTER);
         }
+
+
+
 
 
 
