@@ -25,7 +25,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:hint="@string/hint_server_port"/>
+        android:hint="@string/hint_server_port"
+        android:inputType="numberDecimal"
+        android:maxLength="5"/>
 
     <EditText
         android:id="@+id/serverAccount"
@@ -39,7 +41,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
+        android:inputType="textPassword"
         android:hint="@string/hint_server_password"/>
 
+    <EditText
+        android:id="@+id/serverPwdRe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:inputType="textPassword"
+        android:hint="@string/hint_server_password_re"/>
 
 </LinearLayout>

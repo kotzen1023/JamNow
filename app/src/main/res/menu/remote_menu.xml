@@ -9,6 +9,12 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
+        android:id="@+id/action_link"
+        android:title="@string/menu_link"
+        android:icon="@drawable/ic_link_white_24dp"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/action_settings"
         android:title=""
         android:icon="@drawable/ic_more_vert_white_24dp"

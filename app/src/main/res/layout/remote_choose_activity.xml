@@ -18,5 +18,21 @@
         android:columnWidth="120dp"
         android:stretchMode="columnWidth"
         android:gravity="center_horizontal"
-        android:choiceMode="multipleChoice" />
+        android:choiceMode="singleChoice" />
+
+    <GridView
+        android:id="@+id/gridViewSmhFiles"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="10dp"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="10dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1"
+        android:numColumns="auto_fit"
+        android:columnWidth="120dp"
+        android:stretchMode="columnWidth"
+        android:gravity="center_horizontal"
+        android:choiceMode="multipleChoice"
+        android:visibility="gone"/>
 </LinearLayout>

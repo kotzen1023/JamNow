@@ -3,6 +3,7 @@ package com.seventhmoon.jamnow.Data;
 
 
 public class RemoteServerItem {
+    private String filename;
     private String name;
     private String urlAddress;
     private String port;
@@ -10,12 +11,21 @@ public class RemoteServerItem {
     private String password;
     private boolean selected;
 
-    public RemoteServerItem (String name, String urlAddress, String port, String authName, String password) {
+    public RemoteServerItem (String filename, String name, String urlAddress, String port, String authName, String password) {
+        this.filename = filename;
         this.name = name;
         this.urlAddress = urlAddress;
         this.port = port;
         this.authName = authName;
         this.password = password;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     public String getName() {

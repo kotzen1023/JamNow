@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:padding="10dp" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:orientation="vertical"
+            android:layout_centerInParent="true">
+
+            <ImageView
+                android:id="@+id/smbFileImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:scaleType="fitCenter"
+                android:src="@drawable/file"
+                android:visibility="visible"/>
+
+            <ProgressBar
+                android:id="@+id/smbFileProgressBar"
+                style="?android:attr/progressBarStyle"
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"/>
+
+
+
+        </LinearLayout>
+
+
+
+
+
+
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/smbFileText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="text"
+        android:layout_below="@+id/imageView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
+</LinearLayout>

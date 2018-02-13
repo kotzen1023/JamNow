@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class FileOperation {
 
@@ -34,15 +35,30 @@ public class FileOperation {
             RootDirectory = Environment.getExternalStorageDirectory();
         }
 
-        File folder_tennis = new File(RootDirectory.getAbsolutePath() + "/.jamNow/");
+        File folder_jam = new File(RootDirectory.getAbsolutePath() + "/.jamNow/");
+        File folder_server = new File(RootDirectory.getAbsolutePath() + "/.jamNow/servers");
 
-        if(!folder_tennis.exists()) {
-            Log.i(TAG, "folder not exist");
-            ret = folder_tennis.mkdirs();
+        if(!folder_jam.exists()) {
+            Log.i(TAG, "folder_jam folder not exist");
+            ret = folder_jam.mkdirs();
             if (!ret)
                 Log.e(TAG, "init_folder_and_files: failed to mkdir hidden");
             try {
-                ret = folder_tennis.createNewFile();
+                ret = folder_jam.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (!ret)
+                Log.e(TAG, "init_info: failed to create hidden file");
+        }
+
+        if(!folder_server.exists()) {
+            Log.i(TAG, "folder_server folder not exist");
+            ret = folder_server.mkdirs();
+            if (!ret)
+                Log.e(TAG, "init_folder_and_files: failed to mkdir hidden");
+            try {
+                ret = folder_server.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -51,7 +67,7 @@ public class FileOperation {
         }
 
         while(true) {
-            if(folder_tennis.exists())
+            if(folder_jam.exists() && folder_server.exists())
                 break;
         }
 
@@ -321,5 +337,150 @@ public class FileOperation {
         return dest_file.getName();
     }
 
+    public static boolean append_server(String fileName, String ipAddress, String port, String authName, String password) {
+        Log.i(TAG, "append_server --- start ---");
+        boolean ret = true;
 
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            //path = Environment.getExternalStorageDirectory();
+            RootDirectory = Environment.getExternalStorageDirectory();
+        }
+        //check folder
+        File folder = new File(RootDirectory.getAbsolutePath() + "/.jamNow/servers");
+
+        if(!folder.exists()) {
+            Log.i(TAG, "folder not exist");
+            ret = folder.mkdirs();
+            if (!ret)
+                Log.e(TAG, "append_message: failed to mkdir ");
+        }
+
+        File file_txt;
+        String message;
+        if (fileName.equals("")) {
+            file_txt = new File(folder+"/"+ipAddress);
+            message = ipAddress+";"+fileName+";"+ipAddress+";"+port+";"+authName+";"+password;
+        } else {
+            file_txt = new File(folder+"/"+fileName);
+            message = fileName+";"+fileName+";"+ipAddress+";"+port+";"+authName+";"+password;
+        }
+
+
+        //String message = fileName+";"+ipAddress+";"+port+";"+authName+";"+password;
+
+        //if file is not exist, create!
+        if(!file_txt.exists()) {
+            Log.i(TAG, "file not exist");
+
+            try {
+                ret = file_txt.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (!ret)
+                Log.e(TAG, "append_record: failed to create file "+file_txt.getAbsolutePath());
+
+        }
+
+
+
+        try {
+            FileWriter fw = new FileWriter(file_txt.getAbsolutePath(), false);
+            fw.write(message);
+            fw.flush();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            ret = false;
+        }
+
+
+        Log.i(TAG, "append_server --- end (success) ---");
+
+        return ret;
+    }
+
+    public static RemoteServerItem load_file(String fileName) {
+        RemoteServerItem item = null;
+
+        if (fileName.length() > 0) {
+
+            File folder = new File(RootDirectory.getAbsolutePath() + "/.jamNow/servers");
+
+            File file_txt = new File(folder + "/" + fileName);
+
+            String message = "";
+
+            if (!file_txt.exists()) {
+                Log.i(TAG, "read_last_message() " + file_txt.getAbsolutePath() + " not exist");
+                return item;
+            } else {
+                try {
+
+                    FileReader fr = new FileReader(file_txt.getAbsolutePath());
+                    BufferedReader br = new BufferedReader(fr);
+                    while (br.ready()) {
+
+                        message = br.readLine();
+
+                    }
+                    fr.close();
+                    Log.i(TAG, message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Log.i(TAG, "read_last_message() --- end ---");
+            }
+
+
+            if (!message.equals("")) {
+                String msg_split[] = message.split(";");
+
+                item = new RemoteServerItem(msg_split[0], msg_split[1], msg_split[2], msg_split[3], msg_split[4], msg_split[5]);
+                /*item.setName(msg_split[0]);
+                item.setUrlAddress(msg_split[1]);
+                item.setPort(msg_split[2]);
+                item.setAuthName(msg_split[3]);
+                item.setPassword(msg_split[4]);*/
+            }
+        }
+
+        return item;
+    }
+
+    public static boolean remove_server_file(String fileName) {
+        boolean ret = false;
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            //path = Environment.getExternalStorageDirectory();
+            RootDirectory = Environment.getExternalStorageDirectory();
+        }
+
+        File file = new File(RootDirectory.getAbsolutePath() + "/.jamNow/servers/"+fileName);
+
+        if (file.exists()) {
+            ret = file.delete();
+        } else {
+            Log.d(TAG, "file "+file.getName()+ " is not exist");
+        }
+
+        return ret;
+    }
+
+    public static ArrayList<RemoteServerItem> load_folder() {
+        ArrayList<RemoteServerItem> remotServerList = new ArrayList<>();
+        File file = new File(RootDirectory.getAbsolutePath() + "/.jamNow/servers");
+
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                RemoteServerItem item = load_file(child.getName());
+                if (item != null) {
+                    remotServerList.add(item);
+                }
+            }
+        }
+
+
+        return remotServerList;
+    }
 }

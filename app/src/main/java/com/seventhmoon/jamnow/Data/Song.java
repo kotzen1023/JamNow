@@ -12,6 +12,8 @@ public class Song {
 	private int mark_a;
 	private int mark_b;
 	private boolean selected;
+	private boolean is_remote;
+	private String remote_path;
 
 
 	public String getName() {
@@ -83,5 +85,19 @@ public class Song {
 		this.selected = selected;
 	}
 
+	public boolean isIs_remote() {
+		return is_remote;
+	}
 
+	public void setIs_remote(boolean is_remote) {
+		this.is_remote = is_remote;
+	}
+
+	public String getRemote_path() {
+		return remote_path;
+	}
+
+	public void setRemote_path(String remote_path) {
+		this.remote_path = remote_path;
+	}
 }

@@ -39,6 +39,11 @@ public class Constants {
         String ADD_REMOTE_COMPLETE = "com.seventhmoon.JamNow.AddRemoteComplete";
         String DELETE_REMOTE_COMPLETE = "com.seventhmoon.JamNow.DeleteRemoteComplete";
         String MODIFY_REMOTE_COMPLETE = "com.seventhmoon.JamNow.ModifyRemoteComplete";
+
+        String SMB_CONNECT_FAILED = "com.seventhmoon.JamNow.SmbConnectFailed";
+        String SMB_CONNECT_SUCCESS = "com.seventhmoon.JamNow.SmbConnectSuccess";
+        String GET_SMB_FILELIST_COMPLETE = "com.seventhmoon.JamNow.GetSmbFilelistComplete";
+        String SMB_LIST_CLEAR = "com.seventhmoon.JamNow.SmbListClear";
     }
 
     public enum STATE {
