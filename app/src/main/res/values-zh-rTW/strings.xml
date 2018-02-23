@@ -37,4 +37,5 @@
     <string name="hint_server_password_re">密碼確認</string>
     <string name="smb_connect_failed">連線失敗. 請檢查您的設定值.</string>
     <string name="smb_connect_success">連線成功</string>
+    <string name="menu_add_in">加入</string>
 </resources>

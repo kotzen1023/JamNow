@@ -30,6 +30,7 @@ import com.seventhmoon.jamnow.Data.RemoteServerItem;
 import com.seventhmoon.jamnow.Data.RemoteServerItemArrayAdapter;
 import com.seventhmoon.jamnow.Data.SmbFileItem;
 import com.seventhmoon.jamnow.Data.SmbFileItemArrayAdapter;
+import com.seventhmoon.jamnow.Service.SearchSmbFileService;
 
 
 import java.io.File;
@@ -50,6 +51,7 @@ import static com.seventhmoon.jamnow.Data.FileOperation.append_server;
 import static com.seventhmoon.jamnow.Data.FileOperation.load_file;
 import static com.seventhmoon.jamnow.Data.FileOperation.load_folder;
 import static com.seventhmoon.jamnow.Data.FileOperation.remove_server_file;
+import static com.seventhmoon.jamnow.MainActivity.searchList;
 
 
 public class RemoteActivity extends AppCompatActivity {
@@ -67,9 +69,11 @@ public class RemoteActivity extends AppCompatActivity {
     private static String current_smb_root_path = "";
     private static String current_smb_path = "";
     private static String current_smb_folder = "";
+    private static String current_auth_name = "";
+    private static String current_auth_password = "";
 
     private GridView myGridview, smbGridView;
-    MenuItem item_connect, menu_setting;
+    MenuItem item_connect, menu_setting, menu_add_in;
 
     private static connectTask goodTask;
     private static boolean is_in_smb_folder = false;
@@ -177,8 +181,23 @@ public class RemoteActivity extends AppCompatActivity {
                     setTaskStart();
                 }
 
+                menu_add_in.setVisible(false);
+
+                for (int i=0; i<smbFileList.size(); i++) {
+                    if (smbFileList.get(i).isSelected() && smbFileList.get(i).getFileType() != 1) {
+                        menu_add_in.setVisible(true);
+                    }
+                }
+
 
                 smbGridView.invalidateViews();
+            }
+        });
+
+        myGridview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                return false;
             }
         });
 
@@ -220,6 +239,7 @@ public class RemoteActivity extends AppCompatActivity {
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SMB_CONNECT_FAILED)) {
                         toast(getResources().getString(R.string.smb_connect_failed));
                         item_connect.setVisible(true);
+                        menu_add_in.setVisible(false);
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SMB_LIST_CLEAR)) {
                         if (smbFileItemArrayAdapter != null) {
                             smbFileItemArrayAdapter.notifyDataSetChanged();
@@ -345,8 +365,10 @@ public class RemoteActivity extends AppCompatActivity {
 
         item_connect = menu.findItem(R.id.action_link);
         menu_setting = menu.findItem(R.id.action_settings);
+        menu_add_in = menu.findItem(R.id.action_add_in);
 
         item_connect.setVisible(false);
+        menu_add_in.setVisible(false);
 
 
         return true;
@@ -405,6 +427,32 @@ public class RemoteActivity extends AppCompatActivity {
                 Log.d(TAG, "=== stack  end  ===");
 
                 setTaskStart();
+
+                break;
+            case R.id.action_add_in:
+                searchList.clear();
+
+
+
+                for (int i=0; i<smbFileList.size(); i++) {
+                    if (smbFileList.get(i).isSelected()) {
+                        searchList.add(smbFileList.get(i).getFilePath());
+                    }
+                }
+
+                Log.d(TAG, "search list:");
+                for (int j =0; j<searchList.size(); j++) {
+                    Log.e(TAG, "path = "+searchList.get(j));
+                }
+
+                Intent saveintent = new Intent(RemoteActivity.this, SearchSmbFileService.class);
+                saveintent.setAction(Constants.ACTION.GET_SEARCHLIST_ACTION);
+                saveintent.putExtra("AUTH", current_auth_name);
+                saveintent.putExtra("PASSWORD", current_auth_password);
+                startService(saveintent);
+
+                //searchFiles();
+                finish();
 
                 break;
 
@@ -523,6 +571,8 @@ public class RemoteActivity extends AppCompatActivity {
 
             RemoteServerItem item1 = remotServerList.get(current_select_index);
 
+            current_auth_name = item1.getAuthName();
+            current_auth_password = item1.getPassword();
 
             try{
                 NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, item1.getAuthName(), item1.getPassword());

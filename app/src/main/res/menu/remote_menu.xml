@@ -15,6 +15,12 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
+        android:id="@+id/action_add_in"
+        android:title="@string/menu_add_in"
+        android:icon="@drawable/ic_add_white_24dp"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/action_settings"
         android:title=""
         android:icon="@drawable/ic_more_vert_white_24dp"

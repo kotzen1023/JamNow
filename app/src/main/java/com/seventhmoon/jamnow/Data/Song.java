@@ -14,6 +14,8 @@ public class Song {
 	private boolean selected;
 	private boolean is_remote;
 	private String remote_path;
+	private String auth_name;
+	private String auth_pwd;
 
 
 	public String getName() {
@@ -99,5 +101,21 @@ public class Song {
 
 	public void setRemote_path(String remote_path) {
 		this.remote_path = remote_path;
+	}
+
+	public String getAuth_name() {
+		return auth_name;
+	}
+
+	public void setAuth_name(String auth_name) {
+		this.auth_name = auth_name;
+	}
+
+	public String getAuth_pwd() {
+		return auth_pwd;
+	}
+
+	public void setAuth_pwd(String auth_pwd) {
+		this.auth_pwd = auth_pwd;
 	}
 }

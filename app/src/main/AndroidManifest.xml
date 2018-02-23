@@ -37,6 +37,8 @@
         <service android:name=".Service.SaveVideoListToFileService" />
         <service android:name=".Service.SearchFileService" />
         <service android:name=".Service.GetThumbImageService" />
+        <service android:name=".Service.SearchSmbFileService" />
+        <service android:name=".Service.SaveRemoteFileAsLocalTemp" />
 
 
     </application>

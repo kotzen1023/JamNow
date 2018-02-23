@@ -44,6 +44,8 @@ public class Constants {
         String SMB_CONNECT_SUCCESS = "com.seventhmoon.JamNow.SmbConnectSuccess";
         String GET_SMB_FILELIST_COMPLETE = "com.seventhmoon.JamNow.GetSmbFilelistComplete";
         String SMB_LIST_CLEAR = "com.seventhmoon.JamNow.SmbListClear";
+        String SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION = "com.seventhmoon.JamNow.SaveRemoteFileAsLocalTempAction";
+        String SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE = "com.seventhmoon.JamNow.SaveRemoteFileAsLocalTemp";
     }
 
     public enum STATE {

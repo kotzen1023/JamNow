@@ -31,16 +31,21 @@ import android.widget.Toast;
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.DottedSeekBar;
 
+import com.seventhmoon.jamnow.Data.SmbStreamSource;
 import com.seventhmoon.jamnow.Data.Song;
 import com.seventhmoon.jamnow.Data.SongArrayAdapter;
 import com.seventhmoon.jamnow.Service.GetSongListFromRecordService;
 import com.seventhmoon.jamnow.Service.SaveListToFileService;
+import com.seventhmoon.jamnow.Service.SaveRemoteFileAsLocalTemp;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
+import static com.seventhmoon.jamnow.Data.FileOperation.getAudioInfo;
+import static com.seventhmoon.jamnow.Data.FileOperation.saveSmbAsTemp;
 import static com.seventhmoon.jamnow.MainActivity.addSongList;
 
 import static com.seventhmoon.jamnow.MainActivity.item_clear;
@@ -811,8 +816,39 @@ public class AudioFragment extends Fragment {
                             Song item = songArrayAdapter.getItem(song_selected);
 
                             if (item != null) {
-                                songPath = item.getPath();
-                                songName = item.getName();
+
+                                if (item.isIs_remote()) { //remote file, must download as temp
+                                    /*Log.e(TAG, "file is remote, must download first");
+
+                                    Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
+                                    saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
+                                    saveintent.putExtra("AUTH", item.getAuth_name());
+                                    saveintent.putExtra("PASSWORD", item.getAuth_pwd());
+                                    saveintent.putExtra("PATH", item.getRemote_path());
+                                    context.startService(saveintent);*/
+
+                                    SmbStreamSource smbStreamSource = new SmbStreamSource(item.getRemote_path(), item.getAuth_name(), item.getAuth_pwd());
+
+                                    try {
+                                        smbStreamSource.open();
+                                        Song song = getAudioInfo();
+                                        song.setName(songList.get(song_selected).getName());
+                                        songList.set(song_selected, song);
+
+                                        myListview.invalidateViews();
+
+                                        songPath = songList.get(song_selected).getPath();
+                                        songName = songList.get(song_selected).getName();
+
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else { //local
+                                    songPath = item.getPath();
+                                    songName = item.getName();
+                                }
+
+
                             }
 
                             //songPath = songArrayAdapter.getItem(song_selected).getPath();
@@ -840,9 +876,38 @@ public class AudioFragment extends Fragment {
 
                                 current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
                             } else {
+                                if (songList.get(0).isIs_remote()) { //remote file, must download as temp
+                                    /*Log.e(TAG, "file is remote, must download first");
 
-                                songPath = songList.get(0).getPath();
-                                songName = songList.get(0).getName();
+                                    Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
+                                    saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
+                                    saveintent.putExtra("AUTH", songList.get(0).getAuth_name());
+                                    saveintent.putExtra("PASSWORD", songList.get(0).getAuth_pwd());
+                                    saveintent.putExtra("PATH", songList.get(0).getRemote_path());
+                                    context.startService(saveintent);*/
+
+                                    SmbStreamSource smbStreamSource = new SmbStreamSource(songList.get(0).getRemote_path(), songList.get(0).getAuth_name(), songList.get(0).getAuth_pwd());
+
+                                    try {
+                                        smbStreamSource.open();
+                                        Song song = getAudioInfo();
+                                        song.setName(songList.get(song_selected).getName());
+                                        songList.set(song_selected, song);
+
+                                        myListview.invalidateViews();
+
+                                        songPath = songList.get(0).getPath();
+                                        songName = songList.get(0).getName();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                } else {
+                                    songPath = songList.get(0).getPath();
+                                    songName = songList.get(0).getName();
+                                }
+
+
                                 current_song_duration = (int)(songList.get(0).getDuration_u()/1000);
                             }
                         }
@@ -874,13 +939,26 @@ public class AudioFragment extends Fragment {
                                 songPlaying = song_selected;
 
 
-                                if (current_mode == MODE_PLAY_AB_LOOP) {
-                                    current_position = songList.get(song_selected).getMark_a();
-                                    mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
-                                    mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                if (songList.get(0).isIs_remote()) { //remote file, must download as temp
+                                    Log.e(TAG, "file is remote, must download first");
+
+                                    Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
+                                    saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
+                                    saveintent.putExtra("AUTH", songList.get(0).getAuth_name());
+                                    saveintent.putExtra("PASSWORD", songList.get(0).getAuth_pwd());
+                                    saveintent.putExtra("PATH", songList.get(0).getRemote_path());
+                                    context.startService(saveintent);
                                 } else {
-                                    current_position = 0;
+                                    if (current_mode == MODE_PLAY_AB_LOOP) {
+                                        current_position = songList.get(song_selected).getMark_a();
+                                        mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                        mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                    } else {
+                                        current_position = 0;
+                                    }
                                 }
+
+
                             }
                         } else { //not pause, maybe stop
                             Log.d(TAG, "not pause, maybe stop");
@@ -925,7 +1003,12 @@ public class AudioFragment extends Fragment {
                         //audioOperation.setCurrentPosition(current_position_d);
                         //audioOperation.doPlay(songPath);
                         mediaOperation.setCurrentPosition(current_position);
+
+
+
                         mediaOperation.doPlay(songPath);
+
+
                     }
 
                 } else {
@@ -1347,9 +1430,20 @@ public class AudioFragment extends Fragment {
 
                             boolean found = false;
                             for (int j=0; j<songList.size(); j++) {
-                                if (songList.get(j).getPath().equals(addSongList.get(i).getPath())) {
-                                    found = true;
+
+                                if (!songList.get(j).isIs_remote()) { //local file
+                                    if (songList.get(j).getPath().equals(addSongList.get(i).getPath())) {
+                                        found = true;
+                                    }
+                                } else { //remote file
+                                    if (songList.get(j).getRemote_path().equals(addSongList.get(i).getRemote_path())) {
+                                        found = true;
+                                    }
                                 }
+
+
+
+
                             }
 
                             if (!found) {
@@ -1438,6 +1532,22 @@ public class AudioFragment extends Fragment {
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_SONGLIST_TO_FILE_COMPLETE)) {
                         if (loadDialog != null)
                             loadDialog.dismiss();
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE)) {
+                        Log.d(TAG, "receive SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE !");
+
+
+                        Song song = getAudioInfo();
+                        song.setName(songList.get(song_selected).getName());
+                        songList.set(song_selected, song);
+
+
+
+                        myListview.invalidateViews();
+
+                        current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
+
+                        mediaOperation.doPlay(songList.get(song_selected).getPath());
+
                     }
                 }
 
@@ -1454,6 +1564,7 @@ public class AudioFragment extends Fragment {
             filter.addAction(Constants.ACTION.SAVE_SONGLIST_TO_FILE_COMPLETE);
             filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
             filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
+            filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;
             Log.d(TAG, "registerReceiver mReceiver");

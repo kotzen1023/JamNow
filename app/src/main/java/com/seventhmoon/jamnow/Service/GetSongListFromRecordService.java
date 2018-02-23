@@ -86,6 +86,12 @@ public class GetSongListFromRecordService extends IntentService {
 
                         songList.add(new_song);
                     }
+
+                    if (info.length > 4) {
+                        if (Boolean.valueOf(info[4])) {
+                            Log.e(TAG, "====> file "+info[5]+ "is remote" );
+                        }
+                    }
                 }
 
             }

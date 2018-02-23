@@ -4,6 +4,7 @@ package com.seventhmoon.jamnow.Data;
 import android.content.Context;
 import android.content.Intent;
 
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 
 import android.os.AsyncTask;
@@ -13,12 +14,15 @@ import android.os.Message;
 import android.util.Log;
 
 
+import com.seventhmoon.jamnow.Service.SaveRemoteFileAsLocalTemp;
 
 import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
+
+import jcifs.smb.SmbFileInputStream;
 
 import static com.seventhmoon.jamnow.MainActivity.current_mode;
 import static com.seventhmoon.jamnow.MainActivity.current_song_duration;
@@ -60,6 +64,7 @@ public class MediaOperation {
     private int current_volume_progress = 50;
 
     private boolean looping = false;
+    //private static boolean is_stream = false;
 
 
     public MediaOperation (Context context){
@@ -241,7 +246,15 @@ public class MediaOperation {
         Log.d(TAG, "<doPlay>");
 
         pause = false;
-        playing(songPath);
+        //is_stream = stream;
+
+        if (songPath != null && !songPath.equals("")) {
+            playing(songPath);
+        } else {
+            Log.e(TAG, "songPath = null or \"\"");
+        }
+
+
         Log.d(TAG, "</doPlay>");
     }
 
@@ -318,7 +331,12 @@ public class MediaOperation {
         }
 
         String songPath = songList.get(song_selected).getPath();
-        playing(songPath);
+        //is_stream = songList.get(song_selected).isIs_remote();
+        if (songList.get(song_selected).isIs_remote()) {
+
+        } else {
+            playing(songPath);
+        }
 
         Log.d(TAG, "</doPrev>");
     }
@@ -370,7 +388,18 @@ public class MediaOperation {
         }
 
         String songPath = songList.get(song_selected).getPath();
-        playing(songPath);
+        //is_stream = songList.get(song_selected).isIs_remote();
+
+
+        Log.e(TAG, "song_selected = "+song_selected+" getRemote_path() = "+songList.get(song_selected).getRemote_path());
+
+        if (songList.get(song_selected).getRemote_path() != null && !songList.get(song_selected).getRemote_path().equals("")) {
+
+        } else {
+            playing(songPath);
+        }
+
+
 
         Log.d(TAG, "</doNext>");
     }
@@ -402,7 +431,19 @@ public class MediaOperation {
         current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
 
         String songPath = songList.get(song_selected).getPath();
-        playing(songPath);
+
+        if (songList.get(song_selected).isIs_remote()) {
+            Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
+            saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
+            saveintent.putExtra("AUTH", songList.get(song_selected).getAuth_name());
+            saveintent.putExtra("PASSWORD", songList.get(song_selected).getAuth_pwd());
+            saveintent.putExtra("PATH", songList.get(song_selected).getRemote_path());
+            context.startService(saveintent);
+        } else {
+            playing(songPath);
+        }
+
+
 
         Log.d(TAG, "</doShuffle>");
     }
@@ -432,6 +473,7 @@ public class MediaOperation {
             myListview.invalidateViews();*/
 
             String songPath = songList.get(song_selected).getPath();
+            //is_stream = songList.get(song_selected).isIs_remote();
             playing(songPath);
         }
 
@@ -465,6 +507,7 @@ public class MediaOperation {
             myListview.invalidateViews();*/
 
             String songPath = songList.get(song_selected).getPath();
+            //is_stream = songList.get(song_selected).isIs_remote();
             playing(songPath);
         }
 
@@ -597,6 +640,8 @@ public class MediaOperation {
             Log.e(TAG, "*** mediaPlayer == null (start)****");
 
             mediaPlayer = new MediaPlayer();
+
+
             //set state
             current_state = STATE.Created;
             Log.d(TAG, "===>Created");
@@ -611,6 +656,7 @@ public class MediaOperation {
 
 
         if (current_state == STATE.Idle) {
+
             try {
 
                 mediaPlayer.setDataSource(songPath);
@@ -630,7 +676,6 @@ public class MediaOperation {
                         //Log.e(TAG, "==== IllegalStateException end====");
                     }
                 }
-
 
 
                 mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -681,12 +726,14 @@ public class MediaOperation {
                 });
 
 
-
             } catch (IOException e) {
                 e.printStackTrace();
                 Intent newNotifyIntent = new Intent(Constants.ACTION.GET_PLAY_COMPLETE);
                 context.sendBroadcast(newNotifyIntent);
             }
+
+
+
         }
 
 

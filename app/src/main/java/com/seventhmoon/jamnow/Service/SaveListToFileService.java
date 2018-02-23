@@ -49,10 +49,12 @@ public class SaveListToFileService extends IntentService {
                 String msg;
                 if (i== 0) {
                     msg = songList.get(i).getPath()+";"+
-                            songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                            songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b()+";"+
+                            songList.get(i).isIs_remote()+";"+songList.get(i).getRemote_path()+";"+songList.get(i).getAuth_name()+";"+songList.get(i).getAuth_pwd();
                 } else {
                     msg = "|"+songList.get(i).getPath()+";"+
-                            songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b();
+                            songList.get(i).getDuration_u()+";"+songList.get(i).getMark_a()+";"+songList.get(i).getMark_b()+";"+
+                            songList.get(i).isIs_remote()+";"+songList.get(i).getRemote_path()+";"+songList.get(i).getAuth_name()+";"+songList.get(i).getAuth_pwd();
                 }
 
                 FileOperation.append_record(msg, "favorite");
