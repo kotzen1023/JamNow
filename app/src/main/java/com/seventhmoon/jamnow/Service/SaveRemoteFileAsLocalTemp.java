@@ -76,6 +76,9 @@ public class SaveRemoteFileAsLocalTemp extends IntentService {
         Log.d(TAG, "onDestroy()");
 
         Intent intent = new Intent(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
+        intent.putExtra("AUTH", auth_name);
+        intent.putExtra("PASSWORD", auth_password);
+        intent.putExtra("PATH", path);
         sendBroadcast(intent);
 
         //Intent videointent = new Intent(Constants.ACTION.ADD_VIDEO_LIST_COMPLETE);

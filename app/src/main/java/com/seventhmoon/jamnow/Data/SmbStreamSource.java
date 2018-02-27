@@ -23,7 +23,7 @@ import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
 
 
 public class SmbStreamSource {
-    private static final String TAG = MediaOperation.class.getName();
+    private static final String TAG = SmbStreamSource.class.getName();
 
     private static File RootDirectory = new File("/");
 

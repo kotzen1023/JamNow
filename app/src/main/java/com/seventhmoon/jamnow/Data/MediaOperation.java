@@ -332,8 +332,13 @@ public class MediaOperation {
 
         String songPath = songList.get(song_selected).getPath();
         //is_stream = songList.get(song_selected).isIs_remote();
-        if (songList.get(song_selected).isIs_remote()) {
+        if (songList.get(song_selected).getRemote_path() != null && !songList.get(song_selected).getRemote_path().equals("")) {
+            Intent intent = new Intent(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION);
+            intent.putExtra("remote_path", songList.get(song_selected).getRemote_path());
+            intent.putExtra("auth_name", songList.get(song_selected).getAuth_name());
+            intent.putExtra("auth_pwd", songList.get(song_selected).getAuth_pwd());
 
+            context.sendBroadcast(intent);
         } else {
             playing(songPath);
         }
@@ -394,7 +399,12 @@ public class MediaOperation {
         Log.e(TAG, "song_selected = "+song_selected+" getRemote_path() = "+songList.get(song_selected).getRemote_path());
 
         if (songList.get(song_selected).getRemote_path() != null && !songList.get(song_selected).getRemote_path().equals("")) {
+            Intent intent = new Intent(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION);
+            intent.putExtra("remote_path", songList.get(song_selected).getRemote_path());
+            intent.putExtra("auth_name", songList.get(song_selected).getAuth_name());
+            intent.putExtra("auth_pwd", songList.get(song_selected).getAuth_pwd());
 
+            context.sendBroadcast(intent);
         } else {
             playing(songPath);
         }
@@ -432,13 +442,13 @@ public class MediaOperation {
 
         String songPath = songList.get(song_selected).getPath();
 
-        if (songList.get(song_selected).isIs_remote()) {
-            Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
-            saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
-            saveintent.putExtra("AUTH", songList.get(song_selected).getAuth_name());
-            saveintent.putExtra("PASSWORD", songList.get(song_selected).getAuth_pwd());
-            saveintent.putExtra("PATH", songList.get(song_selected).getRemote_path());
-            context.startService(saveintent);
+        if (songList.get(song_selected).getRemote_path() != null && !songList.get(song_selected).getRemote_path().equals("")) {
+            Intent intent = new Intent(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION);
+            intent.putExtra("remote_path", songList.get(song_selected).getRemote_path());
+            intent.putExtra("auth_name", songList.get(song_selected).getAuth_name());
+            intent.putExtra("auth_pwd", songList.get(song_selected).getAuth_pwd());
+
+            context.sendBroadcast(intent);
         } else {
             playing(songPath);
         }
