@@ -5,12 +5,17 @@ import android.app.IntentService;
 import android.content.Intent;
 
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import com.seventhmoon.jamnow.Data.Constants;
 import com.seventhmoon.jamnow.Data.Song;
 
 
 import java.io.File;
+import java.io.IOException;
+
+import jcifs.smb.NtlmPasswordAuthentication;
+import jcifs.smb.SmbFile;
 
 import static com.seventhmoon.jamnow.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.jamnow.Data.FileOperation.check_record_exist;
@@ -74,6 +79,9 @@ public class GetSongListFromRecordService extends IntentService {
 
 
 
+
+
+
                     if (check_file_exist(info[0])) { // if file exist, then add
 
 
@@ -89,7 +97,35 @@ public class GetSongListFromRecordService extends IntentService {
 
                     if (info.length > 4) {
                         if (Boolean.valueOf(info[4])) {
-                            Log.e(TAG, "====> file "+info[5]+ "is remote" );
+                            Log.e(TAG, "====> file "+info[4]+ " is remote" );
+
+                            String remote_path = info[5];
+                            String auth_name = info[6];
+                            String auth_password = info[7];
+
+                            try {
+                                NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, auth_name, auth_password);
+
+
+                                SmbFile smbFile = new SmbFile(remote_path, auth);
+                                smbFile.connect();
+
+                                if (smbFile.exists()) {
+                                    Log.d(TAG, "file exist.");
+
+                                    new_song.setName(smbFile.getName());
+                                    new_song.setIs_remote(true);
+                                    new_song.setRemote_path(remote_path);
+                                    new_song.setAuth_name(auth_name);
+                                    new_song.setAuth_pwd(auth_password);
+                                    songList.add(new_song);
+                                } else {
+                                    Log.e(TAG, "file not exist.");
+                                }
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }

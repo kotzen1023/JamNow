@@ -39,4 +39,5 @@
     <string name="smb_connect_success">Connection Success.</string>
     <string name="menu_add_in">Add</string>
     <string name="buffering">Buffering...</string>
+    <string name="smb_connect_error">Error connection. Please check your network .</string>
 </resources>

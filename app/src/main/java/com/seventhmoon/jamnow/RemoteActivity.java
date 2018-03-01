@@ -65,7 +65,7 @@ public class RemoteActivity extends AppCompatActivity {
     private static BroadcastReceiver mReceiver = null;
     private static boolean isRegister = false;
     private static String current_select_filename="";
-    private static int current_select_index = 0;
+    private static int current_select_index = -1;
     private static String current_smb_root_path = "";
     private static String current_smb_path = "";
     private static String current_smb_folder = "";
@@ -217,6 +217,9 @@ public class RemoteActivity extends AppCompatActivity {
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.MODIFY_REMOTE_COMPLETE)) {
                         remoteServerItemArrayAdapter.notifyDataSetChanged();
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GET_SMB_FILELIST_COMPLETE)) {
+
+                        Log.d(TAG, "receive GET_SMB_FILELIST_COMPLETE");
+
                         myGridview.setVisibility(View.GONE);
                         smbGridView.setVisibility(View.VISIBLE);
 
@@ -240,6 +243,10 @@ public class RemoteActivity extends AppCompatActivity {
                         toast(getResources().getString(R.string.smb_connect_failed));
                         item_connect.setVisible(true);
                         menu_add_in.setVisible(false);
+
+                        if (!pathstack.isEmpty()) {
+                            pathstack.pop();
+                        }
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SMB_LIST_CLEAR)) {
                         if (smbFileItemArrayAdapter != null) {
                             smbFileItemArrayAdapter.notifyDataSetChanged();
@@ -323,8 +330,8 @@ public class RemoteActivity extends AppCompatActivity {
                 current_smb_path = "";
                 pathstack.clear();
             } else {
-                pathstack.pop();
-
+                String path = pathstack.pop();
+                Log.d(TAG, "Pop <= "+path+" out of stack");
                 Log.d(TAG, "=== stack start ===");
                 for (String s : pathstack) {
                     Log.e(TAG, "s = "+s);
@@ -351,7 +358,7 @@ public class RemoteActivity extends AppCompatActivity {
 
 
         } else {
-
+            pathstack.clear();
             finish();
         }
 
@@ -399,11 +406,19 @@ public class RemoteActivity extends AppCompatActivity {
                 break;
 
             case R.id.action_remove:
-                remove_server_file(current_select_filename);
-                remotServerList.remove(current_select_index);
+                Log.d(TAG, "current_select_filename = "+current_select_filename+", current_select_index = "+current_select_index);
 
-                Intent intent = new Intent(Constants.ACTION.DELETE_REMOTE_COMPLETE);
-                sendBroadcast(intent);
+                if (current_select_index > -1) {
+                    remove_server_file(current_select_filename);
+                    remotServerList.remove(current_select_index);
+
+                    Intent intent = new Intent(Constants.ACTION.DELETE_REMOTE_COMPLETE);
+                    sendBroadcast(intent);
+                } else {
+                    Log.e(TAG, "No select");
+                }
+
+
 
                 break;
 
@@ -521,7 +536,7 @@ public class RemoteActivity extends AppCompatActivity {
 
 
 
-                if (password.getText().equals(passwordRe.getText())) {
+                if (password.getText().toString().equals(passwordRe.getText().toString())) {
 
                     if (code == 1) { //modify
                         remove_server_file(current_select_filename);
@@ -529,7 +544,7 @@ public class RemoteActivity extends AppCompatActivity {
                     }
 
                     RemoteServerItem item;
-                    append_server(name.getText().toString(), address.getText().toString(), port.getText().toString(), account.getText().toString(), password.getText().toString());
+                    append_server(name.getText().toString(), address.getText().toString()+"/", port.getText().toString(), account.getText().toString(), password.getText().toString());
 
                     if (name.getText() != null && name.getText().length() > 0) {
                         item = new RemoteServerItem(name.getText().toString(), name.getText().toString(), address.getText().toString(), port.getText().toString(), account.getText().toString(), password.getText().toString());
@@ -543,7 +558,7 @@ public class RemoteActivity extends AppCompatActivity {
                     Intent intent = new Intent(Constants.ACTION.ADD_REMOTE_COMPLETE);
                     sendBroadcast(intent);
                 } else {
-
+                    Log.e(TAG, "password mismatch!");
                 }
 
 
@@ -609,6 +624,7 @@ public class RemoteActivity extends AppCompatActivity {
                 sendBroadcast(intent);
 
 
+
                 for (SmbFile smbFile : dir.listFiles()) {
                     SmbFileItem item = new SmbFileItem();
 
@@ -627,6 +643,15 @@ public class RemoteActivity extends AppCompatActivity {
                     smbFileList.add(item);
 
                 }
+
+                /*Log.d(TAG, "Push => "+current_smb_path+" into stack");
+
+                pathstack.push(current_smb_path);
+                Log.d(TAG, "=== stack start ===");
+                for (String s : pathstack) {
+                    Log.e(TAG, "s = "+s);
+                }
+                Log.d(TAG, "=== stack  end  ===");*/
 
             } catch(Exception e){
                 this.cancel(true);

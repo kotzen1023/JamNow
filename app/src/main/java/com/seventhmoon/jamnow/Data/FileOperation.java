@@ -507,8 +507,10 @@ public class FileOperation {
         return remotServerList;
     }
 
-    public static void saveSmbAsTemp(String path, String auth_name, String auth_password ) {
+    public static boolean saveSmbAsTemp(String path, String auth_name, String auth_password ) {
         File file_temp = new File(RootDirectory.getAbsolutePath() + "/.jamNow/temp");
+
+        boolean save_ret = false;
 
         //save file to local
         try{
@@ -549,7 +551,7 @@ public class FileOperation {
 
             outputFileStream.close();
             inputSmbFileStream.close();
-
+            save_ret = true;
 
         } catch(Exception e){
 
@@ -557,6 +559,8 @@ public class FileOperation {
 
             e.printStackTrace();
         }
+
+        return save_ret;
     }
 
 

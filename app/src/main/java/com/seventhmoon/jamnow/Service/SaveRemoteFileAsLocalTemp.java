@@ -34,6 +34,7 @@ public class SaveRemoteFileAsLocalTemp extends IntentService {
     private String auth_name = "";
     private String auth_password = "";
     private String path = "";
+    private boolean ret = false;
 
     @Override
     public void onCreate() {
@@ -64,7 +65,7 @@ public class SaveRemoteFileAsLocalTemp extends IntentService {
                 Log.i(TAG, "SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION");
             }
 
-            saveSmbAsTemp(path,auth_name,auth_password);
+            ret = saveSmbAsTemp(path,auth_name,auth_password);
         }
 
 
@@ -75,11 +76,21 @@ public class SaveRemoteFileAsLocalTemp extends IntentService {
         super.onDestroy();
         Log.d(TAG, "onDestroy()");
 
-        Intent intent = new Intent(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
-        intent.putExtra("AUTH", auth_name);
-        intent.putExtra("PASSWORD", auth_password);
-        intent.putExtra("PATH", path);
-        sendBroadcast(intent);
+        if (ret) {
+            Intent intent = new Intent(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
+            intent.putExtra("AUTH", auth_name);
+            intent.putExtra("PASSWORD", auth_password);
+            intent.putExtra("PATH", path);
+            sendBroadcast(intent);
+        } else {
+            Intent intent = new Intent(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_FAIL);
+            intent.putExtra("AUTH", auth_name);
+            intent.putExtra("PASSWORD", auth_password);
+            intent.putExtra("PATH", path);
+            sendBroadcast(intent);
+        }
+
+
 
         //Intent videointent = new Intent(Constants.ACTION.ADD_VIDEO_LIST_COMPLETE);
         //sendBroadcast(videointent);

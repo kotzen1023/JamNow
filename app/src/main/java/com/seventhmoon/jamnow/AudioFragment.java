@@ -1685,6 +1685,14 @@ public class AudioFragment extends Fragment {
 
                         mediaOperation.doPlay(songList.get(song_selected).getPath());
 
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_FAIL)) {
+                        Log.d(TAG, "receive SAVE_REMOTE_FILE_AS_LOCAL_FAIL !");
+
+                        if (loadDialog != null)
+                            loadDialog.dismiss();
+
+                        toast(getResources().getString(R.string.smb_connect_error));
+
                     } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION)) {
                         Log.d(TAG, "receive PLAY_NEXT_REMOTE_ACTION !");
 
@@ -1760,6 +1768,7 @@ public class AudioFragment extends Fragment {
             filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_PLAYED);
             filter.addAction(Constants.ACTION.MEDIAPLAYER_STATE_PAUSED);
             filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
+            filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_FAIL);
             filter.addAction(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;

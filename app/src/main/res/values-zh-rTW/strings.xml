@@ -39,4 +39,5 @@
     <string name="smb_connect_success">連線成功</string>
     <string name="menu_add_in">加入</string>
     <string name="buffering">緩衝處理中...</string>
+    <string name="smb_connect_error">連線錯誤. 請檢查您的網路設定 .</string>
 </resources>
