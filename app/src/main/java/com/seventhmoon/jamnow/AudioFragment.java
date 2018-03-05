@@ -49,6 +49,7 @@ import static com.seventhmoon.jamnow.Data.FileOperation.saveSmbAsTemp;
 import static com.seventhmoon.jamnow.MainActivity.addSongList;
 
 
+import static com.seventhmoon.jamnow.MainActivity.item_add;
 import static com.seventhmoon.jamnow.MainActivity.item_clear;
 import static com.seventhmoon.jamnow.MainActivity.item_remove;
 import static com.seventhmoon.jamnow.MainActivity.linearSpeed;
@@ -801,6 +802,8 @@ public class AudioFragment extends Fragment {
                         mediaOperation.setTaskStop();
 
                         isPlayPress = false;
+                        item_add.setVisible(true);
+
 
                         mediaOperation.doPause();
                         current_position = mediaOperation.getCurrentPosition();
@@ -813,7 +816,7 @@ public class AudioFragment extends Fragment {
 
                         String songPath="", songName="";
                         isPlayPress = true;
-
+                        item_add.setVisible(false);
 
                         Song item = songArrayAdapter.getItem(song_selected);
 

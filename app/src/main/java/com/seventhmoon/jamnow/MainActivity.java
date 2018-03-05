@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static AlertDialog dialog = null;
 
-    public static MenuItem item_remove, item_clear;
+    public static MenuItem item_remove, item_clear, item_add;
 
     public static boolean isVideoPreview = false;
 
@@ -337,6 +337,7 @@ public class MainActivity extends AppCompatActivity {
             item_search = menu.findItem(R.id.action_search);
             item_remove = menu.findItem(R.id.action_remove);
             item_clear = menu.findItem(R.id.action_clear);
+            item_add = menu.findItem(R.id.action_add);
 
             item_play_all = menu.findItem(R.id.action_play_all);
             item_shuffle = menu.findItem(R.id.action_shuffle);
@@ -984,8 +985,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private  boolean checkAndRequestPermissions() {
-        //int permissionSendMessage = ContextCompat.checkSelfPermission(this,
-        //        android.Manifest.permission.WRITE_CALENDAR);
+
+        int accessNetworkStatePermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_NETWORK_STATE);
+
+        int accessWiFiStatePermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_WIFI_STATE);
+
+        int readPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
         int writePermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         int networkPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.INTERNET);
@@ -993,12 +1001,25 @@ public class MainActivity extends AppCompatActivity {
         //int cameraPermission = ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
 
         List<String> listPermissionsNeeded = new ArrayList<>();
+
+        if (readPermission != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+
         if (writePermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
 
         if (networkPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(android.Manifest.permission.INTERNET);
+        }
+
+        if (accessNetworkStatePermission != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(android.Manifest.permission.ACCESS_NETWORK_STATE);
+        }
+
+        if (accessWiFiStatePermission != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(android.Manifest.permission.ACCESS_WIFI_STATE);
         }
         //if (permissionSendMessage != PackageManager.PERMISSION_GRANTED) {
         //    listPermissionsNeeded.add(android.Manifest.permission.WRITE_CALENDAR);
@@ -1054,14 +1075,20 @@ public class MainActivity extends AppCompatActivity {
                 perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
                 perms.put(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
                 perms.put(android.Manifest.permission.INTERNET, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.ACCESS_NETWORK_STATE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.ACCESS_WIFI_STATE
+                        , PackageManager.PERMISSION_GRANTED);
                 // Fill with actual results from user
                 if (grantResults.length > 0) {
                     for (int i = 0; i < permissions.length; i++)
                         perms.put(permissions[i], grantResults[i]);
                     // Check for both permissions
-                    if (perms.get(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    if (perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                        perms.get(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                             perms.get(Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED &&
-                            perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                            perms.get(Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED &&
+                            perms.get(Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED)
+
                     {
                         Log.d(TAG, "write permission granted");
 
@@ -1074,9 +1101,11 @@ public class MainActivity extends AppCompatActivity {
                         //permission is denied (this is the first time, when "never ask again" is not checked) so ask again explaining the usage of permission
 //                        // shouldShowRequestPermissionRationale will return true
                         //show the dialog or snackbar saying its necessary and try again otherwise proceed with setup.
-                        if (//ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_CALENDAR) ||
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) ||
                                 ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            //|| ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.CAMERA)
+                            || ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.INTERNET ) ||
+                                ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_NETWORK_STATE ) ||
+                                ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_WIFI_STATE )
                                 ) {
                             showDialogOK("Warning",
                                     new DialogInterface.OnClickListener() {

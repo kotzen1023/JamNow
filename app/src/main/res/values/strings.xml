@@ -35,7 +35,7 @@
     <string name="hint_server_auth">Account Name</string>
     <string name="hint_server_password">Password</string>
     <string name="hint_server_password_re">Password Confirm</string>
-    <string name="smb_connect_failed">Connection failed. Please check your config.</string>
+    <string name="smb_connect_failed">Samba connection failed. Please check your config. You must use WiFi as samba connection. </string>
     <string name="smb_connect_success">Connection Success.</string>
     <string name="menu_add_in">Add</string>
     <string name="buffering">Buffering...</string>

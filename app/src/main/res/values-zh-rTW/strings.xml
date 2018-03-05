@@ -35,7 +35,7 @@
     <string name="hint_server_auth">帳號</string>
     <string name="hint_server_password">密碼</string>
     <string name="hint_server_password_re">密碼確認</string>
-    <string name="smb_connect_failed">連線失敗. 請檢查您的設定值.</string>
+    <string name="smb_connect_failed">Samba連線失敗. 請檢查您的設定值. 您必須使用WiFi才能連線到Samba伺服器</string>
     <string name="smb_connect_success">連線成功</string>
     <string name="menu_add_in">加入</string>
     <string name="buffering">緩衝處理中...</string>

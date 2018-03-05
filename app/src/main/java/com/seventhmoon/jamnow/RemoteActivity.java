@@ -167,7 +167,14 @@ public class RemoteActivity extends AppCompatActivity {
                 }
 
                 if (item.getFileType() == 1) { //folder
-                    current_smb_path = current_smb_path + item.getFileName();
+
+                    if (pathstack.size() == 1) {
+                        current_smb_path = current_smb_path +"/"+ item.getFileName();
+                    } else {
+                        current_smb_path = current_smb_path + item.getFileName();
+                    }
+
+
                     Log.e(TAG, "current_smb_path = "+current_smb_path);
 
                     pathstack.push(current_smb_path);
@@ -544,7 +551,7 @@ public class RemoteActivity extends AppCompatActivity {
                     }
 
                     RemoteServerItem item;
-                    append_server(name.getText().toString(), address.getText().toString()+"/", port.getText().toString(), account.getText().toString(), password.getText().toString());
+                    append_server(name.getText().toString(), address.getText().toString(), port.getText().toString(), account.getText().toString(), password.getText().toString());
 
                     if (name.getText() != null && name.getText().length() > 0) {
                         item = new RemoteServerItem(name.getText().toString(), name.getText().toString(), address.getText().toString(), port.getText().toString(), account.getText().toString(), password.getText().toString());
@@ -594,7 +601,7 @@ public class RemoteActivity extends AppCompatActivity {
 
                 Log.e(TAG, "connectTask path = "+current_smb_path);
 
-                SmbFile dir = new SmbFile(current_smb_path, auth);
+                SmbFile dir = new SmbFile(current_smb_path+"/", auth);
                 /*if (pathstack.isEmpty()) {
                     Log.e(TAG, "path stack is empty");
                     dir = new SmbFile(item1.getUrlAddress(), auth);

@@ -108,7 +108,15 @@ public class GetSongListFromRecordService extends IntentService {
 
 
                                 SmbFile smbFile = new SmbFile(remote_path, auth);
-                                smbFile.connect();
+
+                                new_song.setName(smbFile.getName());
+                                new_song.setIs_remote(true);
+                                new_song.setRemote_path(remote_path);
+                                new_song.setAuth_name(auth_name);
+                                new_song.setAuth_pwd(auth_password);
+                                songList.add(new_song);
+                                /*smbFile.connect();
+                                smbFile.setConnectTimeout(5000);
 
                                 if (smbFile.exists()) {
                                     Log.d(TAG, "file exist.");
@@ -121,7 +129,7 @@ public class GetSongListFromRecordService extends IntentService {
                                     songList.add(new_song);
                                 } else {
                                     Log.e(TAG, "file not exist.");
-                                }
+                                }*/
 
                             } catch (IOException e) {
                                 e.printStackTrace();
