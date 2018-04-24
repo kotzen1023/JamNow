@@ -49,6 +49,7 @@ public class Constants {
         String SAVE_REMOTE_FILE_AS_LOCAL_FAIL = "com.seventhmoon.JamNow.SaveRemoteFileAsLocalFail";
 
         String PLAY_NEXT_REMOTE_ACTION = "com.seventhmoon.JamNow.PlayNextRemoteAction";
+        String CHROME_CAST_AUDIO_ACTION = "com.seventhmoon.JamNow.ChromeCastAudioAction";
     }
 
     public enum STATE {

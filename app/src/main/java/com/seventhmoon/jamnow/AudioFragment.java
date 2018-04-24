@@ -1754,6 +1754,12 @@ public class AudioFragment extends Fragment {
                         }*/
 
 
+                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.CHROME_CAST_AUDIO_ACTION)) {
+                        Log.d(TAG, "receive CHROME_CAST_AUDIO_ACTION !");
+
+
+
+
                     }
                 }
 
@@ -1773,6 +1779,7 @@ public class AudioFragment extends Fragment {
             filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
             filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_FAIL);
             filter.addAction(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION);
+            filter.addAction(Constants.ACTION.CHROME_CAST_AUDIO_ACTION);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;
             Log.d(TAG, "registerReceiver mReceiver");

@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">Jam 撥放器</string>
+    <string name="app_id">com.seventhmoon.JamNow</string>
+    <string name="video_title">JamNow Chromecast Video Stream</string>
+    <string name="video_url">xxxxx</string>
+    <string name="play_video">Play Video</string>
+    <string name="pause_video">Pause Video</string>
+    <string name="resume_video">Resume Video</string>
+    <string name="content_type_mp4">video/mp4</string>
     <string name="play_mode_all">全部撥放</string>
     <string name="play_mode_shuffle">隨機撥放</string>
     <string name="play_mode_repeat">單一重複</string>
