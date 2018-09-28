@@ -56,6 +56,7 @@ import static com.seventhmoon.jamnow.MainActivity.linearSpeed;
 import static com.seventhmoon.jamnow.MainActivity.linearLayoutAB;
 import static com.seventhmoon.jamnow.MainActivity.layout_seekbar_time;
 import static com.seventhmoon.jamnow.MainActivity.loadDialog;
+import static com.seventhmoon.jamnow.MainActivity.mSelectedDevice;
 import static com.seventhmoon.jamnow.MainActivity.mediaOperation;
 
 import static com.seventhmoon.jamnow.MainActivity.songArrayAdapter;
@@ -76,6 +77,8 @@ import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_ALL;
 import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_SHUFFLE;
 import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_REPEAT;
 import static com.seventhmoon.jamnow.MainActivity.MODE_PLAY_AB_LOOP;
+
+import android.support.v4.media.MediaBrowserCompat;
 
 public class AudioFragment extends Fragment {
     private static final String TAG = AudioFragment.class.getName();
@@ -794,130 +797,90 @@ public class AudioFragment extends Fragment {
                 if (songList.size() > 0) { //check if songs exist in list
                     //set click disable
                     //imgPlayOrPause.setClickable(false);
-
-                    if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
-
-                        Log.d(TAG, "[imgPlayOrPause] isPlaying, songPlaying = "+songPlaying);
-
-                        mediaOperation.setTaskStop();
-
-                        isPlayPress = false;
-                        item_add.setVisible(true);
+                    MediaBrowserCompat.MediaItem mediaItem;
 
 
-                        mediaOperation.doPause();
-                        current_position = mediaOperation.getCurrentPosition();
-                        Log.e(TAG, "===> current_position = "+current_position);
+                    if (mSelectedDevice == null) {
 
-                    } else { //pause or stop state start
-                        Log.d(TAG, "[imgPlayOrPause] state is paused, stopped...");
 
-                        mediaOperation.setTaskStart();
+                        if (mediaOperation.getCurrent_state() == Constants.STATE.Started) { //if playing, pause
 
-                        String songPath="", songName="";
-                        isPlayPress = true;
-                        item_add.setVisible(false);
+                            Log.d(TAG, "[imgPlayOrPause] isPlaying, songPlaying = " + songPlaying);
 
-                        Song item = songArrayAdapter.getItem(song_selected);
+                            mediaOperation.setTaskStop();
 
-                        if (item != null) {
-                            Log.d(TAG, "select item["+song_selected+"]");
-                        } else {
-                            Log.e(TAG, "item = null");
-                        }
+                            isPlayPress = false;
+                            item_add.setVisible(true);
 
-                        if (song_selected > 0) { //if selected, get selected
 
+                            mediaOperation.doPause();
+                            current_position = mediaOperation.getCurrentPosition();
+                            Log.e(TAG, "===> current_position = " + current_position);
+
+                        } else { //pause or stop state start
+                            Log.d(TAG, "[imgPlayOrPause] state is paused, stopped...");
+
+                            mediaOperation.setTaskStart();
+
+                            String songPath = "", songName = "";
+                            isPlayPress = true;
+                            item_add.setVisible(false);
+
+                            Song item = songArrayAdapter.getItem(song_selected);
 
                             if (item != null) {
-
-                                if (item.isIs_remote()) { //remote file, must download as temp
-                                    Log.e(TAG, "file is remote, must download first");
-
-                                    /*Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
-                                    saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
-                                    saveintent.putExtra("AUTH", item.getAuth_name());
-                                    saveintent.putExtra("PASSWORD", item.getAuth_pwd());
-                                    saveintent.putExtra("PATH", item.getRemote_path());
-                                    context.startService(saveintent);
-
-                                    loadDialog = new ProgressDialog(context);
-                                    loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                                    loadDialog.setTitle("buffering...");
-                                    loadDialog.setIndeterminate(false);
-                                    loadDialog.setCancelable(false);
-
-                                    loadDialog.show();*/
-
-
-                                    /*loadDialog = new ProgressDialog(context);
-                                    loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                                    loadDialog.setTitle("buffering...");
-                                    loadDialog.setIndeterminate(false);
-                                    loadDialog.setCancelable(false);
-
-                                    loadDialog.show();
-
-                                    SmbStreamSource smbStreamSource = new SmbStreamSource(item.getRemote_path(), item.getAuth_name(), item.getAuth_pwd());
-
-                                    try {
-                                        smbStreamSource.open();
-                                        Song song = getAudioInfo();
-                                        song.setName(songList.get(song_selected).getName());
-                                        song.setRemote_path(item.getRemote_path());
-                                        song.setAuth_name(item.getAuth_name());
-                                        song.setAuth_pwd(item.getAuth_pwd());
-                                        songList.set(song_selected, song);
-
-                                        myListview.invalidateViews();
-                                        loadDialog.dismiss();
-
-                                        songPath = songList.get(song_selected).getPath();
-                                        songName = songList.get(song_selected).getName();
-
-                                    } catch (IOException e) {
-                                        loadDialog.dismiss();
-
-                                        e.printStackTrace();
-                                    }*/
-                                } else { //local
-                                    songPath = item.getPath();
-                                    songName = item.getName();
-                                }
-
-
+                                Log.d(TAG, "select item[" + song_selected + "]");
+                            } else {
+                                Log.e(TAG, "item = null");
                             }
 
-                            //songPath = songArrayAdapter.getItem(song_selected).getPath();
-                            //songName = songArrayAdapter.getItem(song_selected).getName();
+                            if (song_selected > 0) { //if selected, get selected
 
-                            current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                        } else { //song_selected == 0
 
-                            //shuffle should get a random position
-                            if (current_mode == MODE_PLAY_SHUFFLE) {
-                                songPath = songList.get(mediaOperation.getShufflePosition()).getPath();
-                                songName = songList.get(mediaOperation.getShufflePosition()).getName();
-                                song_selected = mediaOperation.getShufflePosition();
+                                if (item != null) {
 
-                                //deselect other
-                                for (int i=0; i<songList.size(); i++) {
+                                    if (item.isIs_remote()) { //remote file, must download as temp
+                                        Log.e(TAG, "file is remote, must download first");
 
-                                    if (i == song_selected) {
-                                        songList.get(i).setSelected(true);
 
-                                    } else {
-                                        songList.get(i).setSelected(false);
-
+                                    } else { //local
+                                        songPath = item.getPath();
+                                        songName = item.getName();
                                     }
+
+
                                 }
 
-                                current_song_duration = (int)(songList.get(song_selected).getDuration_u()/1000);
-                            } else {
-                                //else use first
-                                song_selected = 0;
-                                if (songList.get(song_selected).isIs_remote()) { //remote file, must download as temp
-                                    Log.e(TAG, "file is remote, must download first(No select)");
+                                //songPath = songArrayAdapter.getItem(song_selected).getPath();
+                                //songName = songArrayAdapter.getItem(song_selected).getName();
+
+                                current_song_duration = (int) (songList.get(song_selected).getDuration_u() / 1000);
+                            } else { //song_selected == 0
+
+                                //shuffle should get a random position
+                                if (current_mode == MODE_PLAY_SHUFFLE) {
+                                    songPath = songList.get(mediaOperation.getShufflePosition()).getPath();
+                                    songName = songList.get(mediaOperation.getShufflePosition()).getName();
+                                    song_selected = mediaOperation.getShufflePosition();
+
+                                    //deselect other
+                                    for (int i = 0; i < songList.size(); i++) {
+
+                                        if (i == song_selected) {
+                                            songList.get(i).setSelected(true);
+
+                                        } else {
+                                            songList.get(i).setSelected(false);
+
+                                        }
+                                    }
+
+                                    current_song_duration = (int) (songList.get(song_selected).getDuration_u() / 1000);
+                                } else {
+                                    //else use first
+                                    song_selected = 0;
+                                    if (songList.get(song_selected).isIs_remote()) { //remote file, must download as temp
+                                        Log.e(TAG, "file is remote, must download first(No select)");
 
                                     /*Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
                                     saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
@@ -963,45 +926,42 @@ public class AudioFragment extends Fragment {
                                         e.printStackTrace();
                                     }*/
 
-                                } else {
-                                    songPath = songList.get(song_selected).getPath();
-                                    songName = songList.get(song_selected).getName();
-                                }
-
-
-                                current_song_duration = (int)(songList.get(0).getDuration_u()/1000);
-                            }
-                        }
-
-
-
-
-
-                        myListview.invalidateViews();
-
-                        if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
-                            if (songPlaying == song_selected) {
-                                Log.d(TAG, "The same song from pause to play");
-
-                                if (current_mode == MODE_PLAY_AB_LOOP) {
-                                    if (current_position >= songList.get(song_selected).getMark_b()) {
-                                        current_position = songList.get(song_selected).getMark_a();
+                                    } else {
+                                        songPath = songList.get(song_selected).getPath();
+                                        songName = songList.get(song_selected).getName();
                                     }
-                                    mediaOperation.setLooping(false);
-                                } else if (current_mode == MODE_PLAY_REPEAT) {
-                                    mediaOperation.setLooping(true);
-                                } else {
-                                    mediaOperation.setLooping(false);
+
+
+                                    current_song_duration = (int) (songList.get(0).getDuration_u() / 1000);
                                 }
-                            } else {
-                                Log.d(TAG, "The song was different from pause to play, stop!");
-                                mediaOperation.doStop();
-
-                                songPlaying = song_selected;
+                            }
 
 
-                                if (songList.get(song_selected).isIs_remote()) { //remote file, must download as temp
-                                    Log.e(TAG, "file is remote, must download first(different)");
+                            myListview.invalidateViews();
+
+                            if (mediaOperation.getCurrent_state() == Constants.STATE.Paused) {
+                                if (songPlaying == song_selected) {
+                                    Log.d(TAG, "The same song from pause to play");
+
+                                    if (current_mode == MODE_PLAY_AB_LOOP) {
+                                        if (current_position >= songList.get(song_selected).getMark_b()) {
+                                            current_position = songList.get(song_selected).getMark_a();
+                                        }
+                                        mediaOperation.setLooping(false);
+                                    } else if (current_mode == MODE_PLAY_REPEAT) {
+                                        mediaOperation.setLooping(true);
+                                    } else {
+                                        mediaOperation.setLooping(false);
+                                    }
+                                } else {
+                                    Log.d(TAG, "The song was different from pause to play, stop!");
+                                    mediaOperation.doStop();
+
+                                    songPlaying = song_selected;
+
+
+                                    if (songList.get(song_selected).isIs_remote()) { //remote file, must download as temp
+                                        Log.e(TAG, "file is remote, must download first(different)");
 
                                     /*Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
                                     saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
@@ -1046,99 +1006,98 @@ public class AudioFragment extends Fragment {
                                         loadDialog.dismiss();
                                         e.printStackTrace();
                                     }*/
-                                } else {
-                                    if (current_mode == MODE_PLAY_AB_LOOP) {
-                                        current_position = songList.get(song_selected).getMark_a();
-                                        mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
-                                        mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
                                     } else {
-                                        current_position = 0;
+                                        if (current_mode == MODE_PLAY_AB_LOOP) {
+                                            current_position = songList.get(song_selected).getMark_a();
+                                            mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                            mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                        } else {
+                                            current_position = 0;
+                                        }
                                     }
+
+
+                                }
+                            } else { //not pause, maybe stop
+                                Log.d(TAG, "not pause, maybe stop");
+
+                                if (current_mode == MODE_PLAY_AB_LOOP) {
+                                    NumberFormat f = new DecimalFormat("00");
+                                    NumberFormat f2 = new DecimalFormat("000");
+
+                                    progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
+                                    progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
+
+                                    int minutes_a = songList.get(song_selected).getMark_a() / 60000;
+                                    int seconds_a = (songList.get(song_selected).getMark_a() / 1000) % 60;
+                                    int minisec_a = songList.get(song_selected).getMark_a() % 1000;
+
+                                    int minutes_b = songList.get(song_selected).getMark_b() / 60000;
+                                    int seconds_b = (songList.get(song_selected).getMark_b() / 1000) % 60;
+                                    int minisec_b = songList.get(song_selected).getMark_b() % 1000;
+
+                                    seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
+                                    seekBar.setDotsDrawable(R.drawable.dot);
+                                    seekBar.setmLine(R.drawable.line);
+
+                                    String msg_a = f.format(minutes_a) + ":" + f.format(seconds_a) + "." + f2.format(minisec_a);
+                                    String msg_b = f.format(minutes_b) + ":" + f.format(seconds_b) + "." + f2.format(minisec_b);
+
+
+                                    textA.setText(msg_a);
+                                    textB.setText(msg_b);
+
+                                    current_position = songList.get(song_selected).getMark_a();
+                                    mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
+                                    mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
+                                }
+                            }
+
+
+                            Log.d(TAG, "play " + songName + " position = " + current_position);
+                            //audioOperation.setCurrentPosition(current_position_d);
+                            //audioOperation.doPlay(songPath);
+                            mediaOperation.setCurrentPosition(current_position);
+
+                            if (songList.get(song_selected).isIs_remote()) {
+                                Log.d(TAG, "=======>start remote process");
+
+                                if (songPlaying == song_selected && getAudioInfo().getDuration_u() == songList.get(song_selected).getDuration_u()) {
+
+                                    songPath = songList.get(song_selected).getPath();
+
+                                    Log.d(TAG, "====>same song, just play " + songPath);
+                                    //songName = songList.get(song_selected).getName();
+
+                                    mediaOperation.doPlay(songPath);
+                                } else {
+                                    Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
+                                    saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
+                                    saveintent.putExtra("AUTH", item.getAuth_name());
+                                    saveintent.putExtra("PASSWORD", item.getAuth_pwd());
+                                    saveintent.putExtra("PATH", item.getRemote_path());
+                                    context.startService(saveintent);
+
+                                    loadDialog = new ProgressDialog(context);
+                                    loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                                    loadDialog.setTitle(getResources().getString(R.string.buffering));
+                                    loadDialog.setIndeterminate(false);
+                                    loadDialog.setCancelable(false);
+
+                                    loadDialog.show();
                                 }
 
 
-                            }
-                        } else { //not pause, maybe stop
-                            Log.d(TAG, "not pause, maybe stop");
-
-                            if (current_mode == MODE_PLAY_AB_LOOP) {
-                                NumberFormat f = new DecimalFormat("00");
-                                NumberFormat f2 = new DecimalFormat("000");
-
-                                progress_mark_a = (int) ((float) songList.get(song_selected).getMark_a() / (float) current_song_duration * 1000.0);
-                                progress_mark_b = (int) ((float) songList.get(song_selected).getMark_b() / (float) current_song_duration * 1000.0);
-
-                                int minutes_a = songList.get(song_selected).getMark_a() / 60000;
-                                int seconds_a = (songList.get(song_selected).getMark_a() / 1000) % 60;
-                                int minisec_a = songList.get(song_selected).getMark_a() % 1000;
-
-                                int minutes_b = songList.get(song_selected).getMark_b() / 60000;
-                                int seconds_b = (songList.get(song_selected).getMark_b() / 1000) % 60;
-                                int minisec_b = songList.get(song_selected).getMark_b() % 1000;
-
-                                seekBar.setDots(new int[]{progress_mark_a, progress_mark_b});
-                                seekBar.setDotsDrawable(R.drawable.dot);
-                                seekBar.setmLine(R.drawable.line);
-
-                                String msg_a = f.format(minutes_a) + ":" + f.format(seconds_a) + "." + f2.format(minisec_a);
-                                String msg_b = f.format(minutes_b) + ":" + f.format(seconds_b) + "." + f2.format(minisec_b);
-
-
-                                textA.setText(msg_a);
-                                textB.setText(msg_b);
-
-                                current_position = songList.get(song_selected).getMark_a();
-                                mediaOperation.setAb_loop_start(songList.get(song_selected).getMark_a());
-                                mediaOperation.setAb_loop_end(songList.get(song_selected).getMark_b());
-                            }
-                        }
-
-
-
-
-
-                        Log.d(TAG, "play "+songName+" position = "+current_position);
-                        //audioOperation.setCurrentPosition(current_position_d);
-                        //audioOperation.doPlay(songPath);
-                        mediaOperation.setCurrentPosition(current_position);
-
-                        if (songList.get(song_selected).isIs_remote()) {
-                            Log.d(TAG, "=======>start remote process");
-
-                            if (songPlaying == song_selected && getAudioInfo().getDuration_u() == songList.get(song_selected).getDuration_u()) {
-
-                                songPath = songList.get(song_selected).getPath();
-
-                                Log.d(TAG, "====>same song, just play "+songPath);
-                                //songName = songList.get(song_selected).getName();
-
-                                mediaOperation.doPlay(songPath);
                             } else {
-                                Intent saveintent = new Intent(context, SaveRemoteFileAsLocalTemp.class);
-                                saveintent.setAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_TEMP_ACTION);
-                                saveintent.putExtra("AUTH", item.getAuth_name());
-                                saveintent.putExtra("PASSWORD", item.getAuth_pwd());
-                                saveintent.putExtra("PATH", item.getRemote_path());
-                                context.startService(saveintent);
-
-                                loadDialog = new ProgressDialog(context);
-                                loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                                loadDialog.setTitle(getResources().getString(R.string.buffering));
-                                loadDialog.setIndeterminate(false);
-                                loadDialog.setCancelable(false);
-
-                                loadDialog.show();
+                                mediaOperation.doPlay(songPath);
                             }
 
 
-                        } else {
-                            mediaOperation.doPlay(songPath);
-                        }
-
-
-
-
-                    } //pause or stop state end
+                        } //pause or stop state end
+                    } else { // cast connected
+                        Intent intent = new Intent(Constants.ACTION.CHROME_CAST_AUDIO_ACTION);
+                        context.sendBroadcast(intent);
+                    }
 
                 } else {
                     toast(getResources().getString(R.string.song_list_empty));
@@ -1754,12 +1713,6 @@ public class AudioFragment extends Fragment {
                         }*/
 
 
-                    } else if (intent.getAction().equalsIgnoreCase(Constants.ACTION.CHROME_CAST_AUDIO_ACTION)) {
-                        Log.d(TAG, "receive CHROME_CAST_AUDIO_ACTION !");
-
-
-
-
                     }
                 }
 
@@ -1779,7 +1732,7 @@ public class AudioFragment extends Fragment {
             filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_COMPLETE);
             filter.addAction(Constants.ACTION.SAVE_REMOTE_FILE_AS_LOCAL_FAIL);
             filter.addAction(Constants.ACTION.PLAY_NEXT_REMOTE_ACTION);
-            filter.addAction(Constants.ACTION.CHROME_CAST_AUDIO_ACTION);
+            //filter.addAction(Constants.ACTION.CHROME_CAST_AUDIO_ACTION);
             context.registerReceiver(mReceiver, filter);
             isRegister = true;
             Log.d(TAG, "registerReceiver mReceiver");

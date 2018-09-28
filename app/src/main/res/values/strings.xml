@@ -2,6 +2,7 @@
     <string name="app_name">Jam Player</string>
     <string name="app_id">com.seventhmoon.JamNow</string>
     <string name="video_title">JamNow Chromecast Video Stream</string>
+    <string name="audio_title">JamNow Chromecast Audio Stream</string>
     <string name="video_url">xxxxx</string>
     <string name="play_video">Play Video</string>
     <string name="pause_video">Pause Video</string>
@@ -47,4 +48,18 @@
     <string name="menu_add_in">Add</string>
     <string name="buffering">Buffering...</string>
     <string name="smb_connect_error">Error connection. Please check your network .</string>
+    <string name="browse_genres">Genres</string>
+    <string name="browse_genre_subtitle">Songs by genre</string>
+    <string name="browse_musics_by_genre_subtitle">%1$s songs</string>
+    <string name="search_queue_title">Search results</string>
+    <string name="random_queue_title">Random music</string>
+    <string name="favorite">Favorite</string>
+    <string name="casting_to_device">Casting to %1$s</string>
+    <string name="cast_application_id">09CBA5D1</string>
+    <string name="media_route_menu_title">Play on&#8230;</string>
+    <string name="error_no_metadata">Unable to retrieve metadata.</string>
+
+    <!-- Notificaiton Channel -->
+    <string name="notification_channel">UAMP_Channel_ID</string>
+    <string name="notification_channel_description">Channel ID for UAMP</string>
 </resources>

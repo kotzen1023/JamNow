@@ -15,6 +15,13 @@
         android:icon="@drawable/ic_add_white_24dp"
         app:showAsAction="ifRoom|withText" />
 
+    <item
+        android:id="@+id/action_cast"
+        android:title="Cast"
+        android:icon="@drawable/ic_cast_white_24dp"
+        app:actionProviderClass="android.support.v7.app.MediaRouteActionProvider"
+        app:showAsAction="ifRoom|withText" />
+
     <!--item
         android:id="@+id/action_link"
         android:title="@string/menu_link"
@@ -39,6 +46,8 @@
         app:showAsAction="always">
 
         <menu>
+
+
             <item
                 android:id="@+id/action_play_all"
                 android:title="@string/play_mode_all"
@@ -87,12 +96,7 @@
                 android:icon="@drawable/ic_delete_white_24dp"
                 app:showAsAction="ifRoom|withText" /-->
 
-            <item
-                android:id="@+id/action_cast"
-                android:title="Cast"
-                android:icon="@drawable/ic_cast_black_24dp"
-                app:actionProviderClass="android.support.v7.app.MediaRouteActionProvider"
-                app:showAsAction="always|withText" />
+
         </menu>
     </item>
 
